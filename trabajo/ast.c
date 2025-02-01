@@ -43,6 +43,20 @@ int	set_split_index(char **tokens, int start, int end)
 	return (split_index);
 }
 
+int	get_operator_precedence(char *op)
+{
+	if (!ft_strcmp(op, "||"))
+		return (1);
+	else if (!ft_strcmp(op, "&&"))
+		return (2);
+	else if (!ft_strcmp(op, "|"))
+		return (3);
+	else if (!ft_strcmp(op, "<") || !ft_strcmp(op, ">") ||
+		!ft_strcmp(op, "<<") || !ft_strcmp(op, ">>"))
+		return (4);
+	return (0);
+}
+
 int	set_args_count(char **tokens, int start, int end)
 {
 	int	i;
@@ -61,12 +75,33 @@ t_ast	*create_ast_opnode(char *op)
 	node = ft_calloc(1, sizeof(t_ast));
 	if (!node)
 		return (NULL);
-	node->type = NODE_OP;
+	node->node_type = NODE_OP;
+	node->op_type = set_op_type(op);
 	node->value = ft_strdup(op);
 	node->args = NULL;
 	node->left_node = NULL;
 	node->right_node = NULL;
 	return (node);
+}
+
+t_optype	set_op_type(char *op)
+{
+	if (!ft_strcmp(op, "||"))
+		return (OP_OR);
+	else if (!ft_strcmp(op, "&&"))
+		return (OP_AND);
+	else if (!ft_strcmp(op, "|"))
+		return (OP_PIPE);
+	else if (!ft_strcmp(op, "<"))
+		return (OP_IN);
+	else if (!ft_strcmp(op, ">"))
+		return (OP_OUT);
+	else if (!ft_strcmp(op, "<<"))
+		return (OP_HEREDOC);
+	else if (!ft_strcmp(op, ">>"))
+		return (OP_OUTAPD);
+	else
+		return (OP_NULL);
 }
 
 t_ast	*create_ast_cmdnode(char *cmd, char **args, int arg_count)
@@ -77,13 +112,15 @@ t_ast	*create_ast_cmdnode(char *cmd, char **args, int arg_count)
 	node = ft_calloc(1, sizeof(t_ast));
 	if (!node)
 		return (NULL);
-	node->type = NODE_CMD;
+	node->node_type = NODE_CMD;
+	node->op_type = OP_NULL;
 	node->value = ft_strdup(cmd);
 	if (!node->value)
 		return (NULL);
-	node->args = ft_calloc(arg_count + 1, sizeof(char *));
+	node->args = ft_calloc(arg_count + 2, sizeof(char *));
 	if (!node->args)
 		return (NULL);
+	node->args[0] = ft_strdup(cmd);
 	i = -1;
 	while (++i < arg_count)
 	{
@@ -92,25 +129,31 @@ t_ast	*create_ast_cmdnode(char *cmd, char **args, int arg_count)
 			return (NULL);
 	}
 	node->args[arg_count] = NULL;
+	node->strexec = set_strexec(node, arg_count);
 	node->left_node = NULL;
 	node->right_node = NULL;
 	return (node);
 }
 
-int	get_operator_precedence(char *op)
+char	**set_strexec(t_ast *node, int arg_count)
 {
-	if (!ft_strcmp(op, "||"))
-		return (1);
-	else if (!ft_strcmp(op, "&&"))
-		return (2);
-	else if (!ft_strcmp(op, "|"))
-		return (3);
-	else if (!ft_strcmp(op, "<") || !ft_strcmp(op, ">") ||
-		!ft_strcmp(op, "<<") || !ft_strcmp(op, ">>"))
-		return (4);
-	return (0);
-}
+	char	**strexec;
+	int		i;
 
+	strexec = ft_calloc(arg_count + 2, sizeof(char*));
+	if (!strexec)
+		return (NULL);
+	strexec[0] = ft_strdup(node->value);
+	i = 0;
+	while (++i < arg_count + 1)
+	{
+		strexec[i] = ft_strdup(node->args[i - 1]);
+		if (!strexec[i])
+			return (NULL);
+	}
+	strexec[i] = NULL;
+	return (strexec);
+}
 
 void	free_ast(t_ast *root_node)
 {
@@ -122,7 +165,7 @@ void	free_ast(t_ast *root_node)
 	free_ast(root_node->right_node);
 	free(root_node->value);
 	i = -1;
-	if (root_node->type == NODE_CMD && root_node->args)
+	if (root_node->node_type == NODE_CMD && root_node->args)
 	{
 		while (root_node->args[++i])
 			free(root_node->args[i]);

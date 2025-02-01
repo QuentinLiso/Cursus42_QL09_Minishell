@@ -15,6 +15,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 {
 	mnsh->env_mnsh = NULL;
 	mnsh->prompt = NULL;
+	mnsh->last_exit_status = 0;
 }
 
 t_error	duplicate_env(char **env, char ***env_mnsh)

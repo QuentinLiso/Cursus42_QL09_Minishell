@@ -5,11 +5,11 @@
 
 void execute_command(char *cmd, char **args, char **env) {
     pid_t pid = fork();
-    (void)cmd; (void)args; (void)env;
+    
     if (pid == 0) {  // Child process
         execve(cmd, args, env);
         perror("execve failed"); // If execve fails, print an error
-        exit(12);  // Exit with error status
+        exit(127);  // Exit with error status
     }
     
     int status;
@@ -24,7 +24,7 @@ void execute_command(char *cmd, char **args, char **env) {
 }
 
 int main(int argc, char *argv[], char *envp[]) {
-    char *cmd = "/bin/sssls";  // Try changing to an invalid command like "/bin/doesnotexist"
+    char *cmd = "/bin/ls";  // Try changing to an invalid command like "/bin/doesnotexist"
     char *args[] = { "ls", "-l", NULL };
 
     execute_command(cmd, args, envp);

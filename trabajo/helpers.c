@@ -2,7 +2,7 @@
 
 void	print_node(t_ast *node)
 {
-	ft_printf("Type : %d\n", node->type);
+	ft_printf("====\nType : %d\n", node->node_type);
 	ft_printf("Value : %s\n", node->value);
 	ft_printf("Args : \n");
 	print_strarray(node->args);
@@ -18,8 +18,8 @@ void	print_ast(t_ast *node, int depth)
 	while (++i < depth)
 		ft_printf("\t");
 	i = -1;
-	if (node->type == NODE_OP)
-		ft_printf("OPERATOR : %s\n", node->value);
+	if (node->node_type == NODE_OP)
+		ft_printf("OPERATOR : %s (type : %d)\n", node->value, node->op_type);
 	else
 	{
 		ft_printf("COMMAND : %s ", node->value);

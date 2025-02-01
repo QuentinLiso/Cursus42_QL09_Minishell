@@ -73,20 +73,37 @@ typedef enum	e_nodetype
 	NODE_OP
 }	t_nodetype;
 
+typedef enum	e_optype
+{
+	OP_NULL,
+	OP_AND,
+	OP_OR,
+	OP_PIPE,
+	OP_OUT,
+	OP_OUTAPD,
+	OP_IN,
+	OP_HEREDOC
+}	t_optype;
+
 typedef struct minishell
 {
 	t_error	status;
 	char	**env_mnsh;
 	char	*prompt;
+	int		last_exit_status;
 	t_sa	sa;
 }	t_mnsh;
 
 // Ast stands for Abstract Syntax Tree
 typedef struct ast
 {
-	t_nodetype	type;
+	t_nodetype	node_type;
+	t_optype	op_type;
 	char		*value;
 	char		**args;
+	char		**strexec;
+	char		*file;
+	char		*heredoc;
 	struct ast	*left_node;
 	struct ast	*right_node;
 }	t_ast;
@@ -112,10 +129,24 @@ t_error	tok_check_regular(char **s, char ***tokens, int *i);
 t_ast	*create_ast(char **tokens, int start, int end);
 int		set_split_index(char **tokens, int start, int end);
 int		set_args_count(char **tokens, int start, int end);
+int		get_operator_precedence(char *op);
 t_ast	*create_ast_opnode(char *op);
 t_ast	*create_ast_cmdnode(char *cmd, char **args, int arg_count);
-int		get_operator_precedence(char *op);
+t_optype	set_op_type(char *op);
+char	**set_strexec(t_ast *node, int arg_count);
 void	free_ast(t_ast *root_node);
+
+// exec
+void	execute_ast(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
+void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
+void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
+void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
+void	exec_ast_op_out(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_op_outapd(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_op_in(t_ast **node, t_mnsh *mnsh);
 
 // helpers
 void	print_node(t_ast *node);
