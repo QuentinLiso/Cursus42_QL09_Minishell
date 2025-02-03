@@ -26,38 +26,24 @@ void	exec_ast_cmd_out(t_ast **node, int *fd)
 		return ;
 	while (iterator != NULL)
 	{
-		printf("1 %s\n", iterator->outfile);
 		if (iterator->outstyle == OUT_TRUNC)
-		{
-			printf("Prems\n");
 			exec_ast_cmd_outfile(iterator->outfile, fd, O_TRUNC);
-		}
 		else if (iterator->outstyle == OUT_APPEND)
-		{
-			printf("Deuz\n");
 			exec_ast_cmd_outfile(iterator->outfile, fd, O_APPEND);
-		}
-		printf("2 %s\n", iterator->outfile);
 		iterator = iterator->next;
-		printf("3 %s\n", iterator->outfile);
 	}
 }
 
 void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag)
 {
-	printf("toto\n");
 	*fd = open(outfile, O_WRONLY | O_CREAT | flag, 0644);
-	printf("toto\n");
 	if (*fd < 0)
 	{
 		perror("open failed");
 		exit (errno);
 	}
-	printf("toto\n");
 	dup2(*fd, STDOUT_FILENO);
-	printf("toto\n");
 	close(*fd);
-	printf("toto\n");
 }
 
 void	exec_ast_cmd_in(t_ast **node, int *fd)

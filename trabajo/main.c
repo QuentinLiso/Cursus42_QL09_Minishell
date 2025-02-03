@@ -8,7 +8,7 @@ int main(int ac, char **av, char **env)
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
 	
-	char *str = " /bin/ls -l | /bin/grep mini > tutu.out >> totu.out";
+	char *str = ">> tuto.out /bin/ls -l | /bin/grep mini ";// > tutu.out >> totu.out";
 	char **tokens = ft_calloc(128, sizeof(char *));
 	int	i = 0;
 	printf("Shell : %s\n", str);
