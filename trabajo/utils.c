@@ -20,30 +20,17 @@ t_error	perror_malloc(char *func_name)
 	return (ERR_MALLOC);
 }
 
-void	print_strarray(char **arr)
-{
-	int	i;
-
-	i = 0;
-	if (!arr)
-		return ;
-	ft_printf("Strarray : [");
-	while (arr[++i])
-		ft_printf("\"%s\", ", arr[i - 1]);
-	ft_printf("\"%s\"]\n", arr[i - 1]);
-}
-
 bool	ft_isspace(char c)
 {
 	return (c == '\f' || c == '\t' || c == '\n' || c == '\r'
 			|| c == '\v' || c == ' ');
 }
 
-bool	ft_isspecial(char c)
+bool	ft_isspecial(char c, const char *list_specials)
 {
 	char *specials;
 
-	specials = SPECIALS;
+	specials = (char *)list_specials;
 	while (*specials)
 	{
 		if (c == *specials)
@@ -53,38 +40,71 @@ bool	ft_isspecial(char c)
 	return (false);
 }
 
-void	free_strarray(char ***arr)
+void	ft_free_str(char **ptr)
 {
-	int		i;
-	char	**buf;
-
-	buf = *arr;
-	i = -1;
-	while (buf[++i])
-	{
-		free(buf[i]);
-	}	
-	free(buf);
+	if (*ptr == NULL)
+		return ;
+	free(*ptr);
+	(*ptr) = NULL;
 }
 
-int		is_operator(const char *s)
+void	ft_free_strarray(char ***arr)
+{
+	int		i;
+
+	i = -1;
+	if ((*arr) == NULL)
+		return ;
+	while ((*arr)[++i])
+		ft_free_str(&(*arr)[i]);
+	ft_free_str(*arr);
+	// {
+	// 	free((*arr)[i]);
+	// 	(*arr)[i] = NULL;
+	// }	
+	// free(*arr);
+	// *arr = NULL;
+}
+
+int		is_operator(const char *s, const char *list_operators)
 {
 	char	**operators;
 	int		i;
 	size_t	len;
 
-	operators = ft_split(OPERATORS, ' ');
+	operators = ft_split(list_operators, ' ');
 	i = -1;
 	while (operators[++i])
 	{
 		len = ft_strlen(operators[i]);
 		if (ft_strncmp(s, operators[i], len) == 0)
 		{
-			free_strarray(&operators);
+			ft_free_strarray(&operators);
 			return (len);
 		}
 	}
-	free_strarray(&operators);	
+	ft_free_strarray(&operators);	
+	return (0);
+}
+
+int		is_indir(const char *s)
+{
+	char	**indir;
+	int		i;
+	size_t	len;
+
+	indir = ft_split(INDIR, ' ');
+	i = -1;
+	while (indir[++i])
+	{
+		len = ft_strlen(indir[i]);
+		if (ft_strncmp(s, indir[i], len) == 0)
+		{
+			ft_free_strarray(&indir);
+			return (len);
+		}
+	}
+	ft_free_strarray(&indir);	
 	return (0);
 }
 

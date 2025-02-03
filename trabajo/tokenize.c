@@ -55,7 +55,7 @@ t_error	tok_check_operator(char **s, char ***tokens, int *i)
 {
 	int	len_operator;
 
-	len_operator = is_operator(*s);
+	len_operator = is_operator(*s, TOK_OPERATORS);
 	if (len_operator > 0)
 	{
 		(*tokens)[*i] = ft_strndup(*s, len_operator);
@@ -82,7 +82,7 @@ t_error	tok_check_quotes(char **s, char ***tokens, int *i)
 			(*s)++;
 		if (**s == '\0')
 		{
-			free_strarray(tokens);
+			ft_free_strarray(tokens);
 			return (mnsh_perror(ERR_QUOTE));
 		}
 		(*tokens)[*i] = ft_strndup(start, *s - start + 1);
@@ -100,7 +100,7 @@ t_error	tok_check_regular(char **s, char ***tokens, int *i)
 	char	*start;
 
 	start = *s;
-	while (**s && !ft_isspace(**s) && !ft_isspecial(**s))
+	while (**s && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS))
 		(*s)++;
 	(*tokens)[*i] = ft_strndup(start, *s - start);
 	if ((*tokens)[*i] == NULL)

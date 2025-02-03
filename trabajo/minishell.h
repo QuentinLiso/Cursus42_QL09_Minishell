@@ -47,8 +47,11 @@
 
 # define MAX_TOKENS 128
 # define MAX_TOKEN_LEN 128
-# define OPERATORS "&& || >> << | < > & ;"
-# define SPECIALS "&|><;\"'"
+# define AST_OPERATORS "&& || | & ;"
+# define TOK_OPERATORS "&& || | & ; << < >> >"
+# define AST_SPECIALS "&|;\"'"
+# define TOK_SPECIALS "&|;<>\"'"
+# define INDIR ">> > << <"
 
 # define ERR_NOERR_MSG "no error\n"
 # define ERR_ARGS_MSG "args error\n"
@@ -85,7 +88,34 @@ typedef enum	e_optype
 	OP_HEREDOC
 }	t_optype;
 
-typedef struct minishell
+typedef enum	e_outstyle
+{
+	OUT_NULL,
+	OUT_TRUNC,
+	OUT_APPEND
+}	t_outstyle;
+
+typedef enum	e_instyle
+{
+	IN_NULL,
+	IN_FILE,
+	IN_HEREDOC
+}	t_instyle;
+
+typedef struct s_infiles
+{
+	char				*infile;
+	struct s_infiles	*next;
+}	t_infiles;
+
+typedef struct s_outfiles
+{
+	char				*outfile;
+	t_outstyle			outstyle;
+	struct s_outfiles	*next;
+}	t_outfiles;
+
+typedef struct s_minishell
 {
 	t_error	status;
 	char	**env_mnsh;
@@ -95,17 +125,18 @@ typedef struct minishell
 }	t_mnsh;
 
 // Ast stands for Abstract Syntax Tree
-typedef struct ast
+typedef struct s_ast
 {
 	t_nodetype	node_type;
 	t_optype	op_type;
-	char		*value;
 	char		**args;
-	char		**strexec;
-	char		*file;
-	char		*heredoc;
-	struct ast	*left_node;
-	struct ast	*right_node;
+	t_infiles	*infiles;
+	char		**heredoc;
+	char		*heredoc_end;
+	t_instyle	instyle;
+	t_outfiles		*outfiles;
+	struct s_ast	*left_node;
+	struct s_ast	*right_node;
 }	t_ast;
 
 
@@ -131,37 +162,63 @@ int		set_split_index(char **tokens, int start, int end);
 int		set_args_count(char **tokens, int start, int end);
 int		get_operator_precedence(char *op);
 t_ast	*create_ast_opnode(char *op);
-t_ast	*create_ast_cmdnode(char *cmd, char **args, int arg_count);
 t_optype	set_op_type(char *op);
-char	**set_strexec(t_ast *node, int arg_count);
+t_ast	*create_ast_cmdnode(char ***cmd_tok, int end);
+t_ast   *init_cmd_node(char ***cmd_tok, int end);
+int     final_args_count(char **cmd_tok, int end);
+void    set_node_outfile(char ***tok, t_ast **node, int *i, t_outstyle style);
+void    set_node_infile(char ***tok, t_ast **node, int *i);
+void    set_node_heredoc(char ***cmd_tok, t_ast **node, int *i);
+void    lst_to_arr(t_list *heredoc, t_ast **node);
 void	free_ast(t_ast *root_node);
 
 // exec
 void	execute_ast(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
+void	exec_ast_cmd_in(t_ast **node, int *fd);
+void	exec_ast_cmd_infile(char *last_infile, int *fd);
+char	*check_infiles(t_ast **node);
+void	exec_ast_cmd_heredoc(t_ast **node);
+void	exec_ast_cmd_out(t_ast **node, int *fd);
+void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
+
 void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
 void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
 void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
 void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
 void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
-void	exec_ast_op_out(t_ast **node, t_mnsh *mnsh);
-void	exec_ast_op_outapd(t_ast **node, t_mnsh *mnsh);
-void	exec_ast_op_in(t_ast **node, t_mnsh *mnsh);
 
 // helpers
 void	print_node(t_ast *node);
 void	print_ast(t_ast *node, int depth);
+void	print_strarray(char *name, char **arr);
+void	print_infiles(t_infiles *infiles);
+void	print_outfiles(t_outfiles *outfiles);
 
 // Utils
 t_error	mnsh_perror(t_error	error);
 t_error	perror_malloc(char *func_name);
-void	print_strarray(char **arr);
-void	free_strarray(char ***arr);
+void	ft_free_str(char **ptr);
+void	ft_free_strarray(char ***arr);
 bool	ft_isspace(char c);
-bool	ft_isspecial(char c);
-int		is_operator(const char *s);
+bool	ft_isspecial(char c, const char *list_specials);
+int		is_operator(const char *s, const char *list_operators);
+int		is_indir(const char *s);
 char	*ft_strndup(const char *s, int n);
 int		ft_strcmp(const char *s1, const char *s2);
 int		ft_strarrlen(char **arr);
+
+// outfiles lst
+t_outfiles	*outfiles_new(char *outfile, t_outstyle style);
+void	outfiles_add_back(t_outfiles **outfiles, t_outfiles *new);
+t_outfiles	*outfiles_last(t_outfiles *outfiles);
+int	outfiles_size(t_outfiles *outfiles);
+
+// infiles lst
+t_infiles	*infiles_new(char *infile);
+void	infiles_add_back(t_infiles **infiles, t_infiles *new);
+t_infiles	*infiles_last(t_infiles *infiles);
+int	infiles_size(t_infiles *infiles);
 
 #endif

@@ -4,6 +4,8 @@ SRCS=$(addsuffix .c, \
 	helpers \
 	init \
 	main \
+	inlst \
+	outlst \
 	tokenize \
 	utils \
 	\
@@ -15,5 +17,5 @@ all :
 	-L/usr/local/lib -lreadline -L./libft/ -lft
 
 make ess : essayage.c
-	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c -o ess \
+	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c ast.c utils.c helpers.c -o ess \
 	-L/usr/local/lib -lreadline -L./libft/ -lft

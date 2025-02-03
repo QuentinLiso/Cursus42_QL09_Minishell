@@ -1,34 +1,36 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include "minishell.h"
 
-void execute_command(char *cmd, char **args, char **env) {
-    pid_t pid = fork();
-    (void)cmd; (void)args; (void)env;
-    if (pid == 0) {  // Child process
-        execve(cmd, args, env);
-        perror("execve failed"); // If execve fails, print an error
-        exit(12);  // Exit with error status
-    }
-    
-    int status;
-    waitpid(pid, &status, 0);  // Parent waits for child
 
-    if (WIFEXITED(status)) {
-        int exit_code = WEXITSTATUS(status);
-        if (exit_code == 127) {
-            printf("Error: Command execution failed (execve failed)\n");
-        }
-    }
+int main()
+{
+
+
+
+
+
+    return (0);
 }
 
-int main(int argc, char *argv[], char *envp[]) {
-    char *cmd = "/bin/sssls";  // Try changing to an invalid command like "/bin/doesnotexist"
-    char *args[] = { "ls", "-l", NULL };
+char	*exec_ast_cmd_infiles(t_ast **node)
+{
+	t_infiles	*iterator;
+	int			check_access;
 
-    execute_command(cmd, args, envp);
-	(void)argc; (void)argv;
-
-    return 0;
+	iterator = (*node)->infiles;
+	if (!iterator->infile)
+		return (NULL);
+	while (iterator->infile)
+	{
+		printf("Iter infile : %s\n", iterator->infile);
+		check_access = access(iterator->infile, O_RDONLY);
+		if (check_access < 0)
+		{
+			perror("open failed");
+			exit (errno);
+		}
+		if (iterator->next == NULL)
+			return (iterator->infile);
+		iterator = iterator->next;
+	}
+	return (iterator->infile);
 }
