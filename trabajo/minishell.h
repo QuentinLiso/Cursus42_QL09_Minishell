@@ -14,6 +14,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <sys/uio.h>
+# include <sys/stat.h>
 
 # include <readline/readline.h>
 # include <readline/history.h>
@@ -119,6 +120,7 @@ typedef struct s_minishell
 {
 	t_error	status;
 	char	**env_mnsh;
+	char	**paths;
 	char	*prompt;
 	int		last_exit_status;
 	t_sa	sa;
@@ -143,10 +145,16 @@ typedef struct s_ast
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
 void	init_mnsh_struct(t_mnsh *mnsh);
 t_error	duplicate_env(char **env, char ***env_mnsh);
+t_error	set_mnsh_paths(char **env_mnsh, char ***paths);
+char	*ft_get_env_var(char **env, char *var);
 void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
 void	handle_signal(int signum, siginfo_t *info, void *other);
 void	print_minishell_header();
 int		mnsh_prompt(char **buf);
+
+
+// env var
+
 
 // tokens
 t_error	ft_strtok_mnsh(char *s, char ***tokens);
@@ -173,6 +181,9 @@ void    lst_to_arr(t_list *heredoc, t_ast **node);
 void	free_ast(t_ast *root_node);
 
 // exec
+void	expand_env_vars(char ***args);
+void	set_cmd_path(char **cmd, char **paths);
+
 void	execute_ast(t_ast **node, t_mnsh *mnsh);
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
 void	exec_ast_cmd_in(t_ast **node, int *fd);
@@ -193,6 +204,8 @@ void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 void	print_node(t_ast *node);
 void	print_ast(t_ast *node, int depth);
 void	print_strarray(char *name, char **arr);
+void	print_strarray_endl(char *name, char **arr);
+void	print_env(char **env);
 void	print_infiles(t_infiles *infiles);
 void	print_outfiles(t_outfiles *outfiles);
 

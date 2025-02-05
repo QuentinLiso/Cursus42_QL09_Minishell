@@ -23,6 +23,30 @@ void	print_strarray(char *name, char **arr)
 	ft_printf("\"%s\"]\n", arr[i - 1]);
 }
 
+void	print_strarray_endl(char *name, char **arr)
+{
+	int	i;
+
+	i = 0;
+	if (!arr)
+		return ;
+	ft_printf("%s\n", name);
+	while (arr[++i])
+		ft_printf("\"%s\"\n", arr[i - 1]);
+	ft_printf("\"%s\"\n", arr[i - 1]);
+}
+
+void	print_env(char **env)
+{
+	int	i;
+
+	i = -1;
+	if (!env)
+		return ;
+	while(env[++i])
+		ft_printf("%s\n", env[i]);
+}
+
 void	print_ast(t_ast *node, int depth)
 {
 	int	i;

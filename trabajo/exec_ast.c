@@ -1,5 +1,15 @@
 #include "minishell.h"
 
+void	execute_ast(t_ast **node, t_mnsh *mnsh)
+{
+	if (!(*node))
+		return ;
+	if ((*node)->node_type == NODE_CMD)
+		exec_ast_cmd(node, mnsh);
+	else if ((*node)->node_type == NODE_OP)
+		exec_ast_op(node, (*node)->op_type, mnsh);
+}
+
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 {
 	pid_t	pid;
@@ -10,11 +20,44 @@ void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 	{
 		exec_ast_cmd_in(node, &fd_inout[0]);
 		exec_ast_cmd_out(node, &fd_inout[1]);
+		// expand_env_vars(&(*node)->args);
+		set_cmd_path(&(*node)->args[0], mnsh->paths);
 		execve((*node)->args[0], (*node)->args, NULL);
 		perror("execve failed");
 		exit(127);
 	}
 	waitpid(pid, &mnsh->last_exit_status, 0);
+}
+
+// void	expand_env_vars(char ***args)
+// {
+// 	int	i;
+
+// 	i = -1;
+// 	while ((*args)[++i])
+// 	{
+// 		printf("%s\n", (*args)[i]);
+// 	}
+// }
+
+void	set_cmd_path(char **cmd, char **paths)
+{
+	int		i;
+	char 	*buf;
+	struct stat	st;
+
+	i = -1;
+	while (paths[++i])
+	{
+		buf = ft_strjoin(paths[i], *cmd);
+		if (stat(buf, &st) == 0 && (st.st_mode & S_IXUSR))
+		{
+			free(*cmd);
+			*cmd = buf;
+			return ;	
+		}
+		free(buf);
+	}
 }
 
 void	exec_ast_cmd_out(t_ast **node, int *fd)
@@ -117,10 +160,15 @@ void	exec_ast_cmd_heredoc(t_ast **node)
 	close(fd[1]);
 }
 
-// void	exec_ast_cmd_outfiles(t_ast	**node, t_mnsh *mnsh)
-// {
-
-// }
+void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
+{
+	if (op == OP_AND)
+		exec_ast_op_and(node, mnsh);
+	else if (op == OP_OR)
+		exec_ast_op_or(node, mnsh);
+	else if (op == OP_PIPE)
+		exec_ast_op_pipe(node, mnsh);
+}
 
 void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh)
 {
@@ -172,53 +220,3 @@ void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh)
 	execute_ast(&(*node)->right_node, mnsh);
 	exit(0);
 }
-
-// void	exec_ast_op_out(t_ast **node, t_mnsh *mnsh)
-// {
-// 	int	flags;
-// 	int	fd;
-// 	pid_t	pid;
-
-// 	flags = O_WRONLY | O_CREAT | O_TRUNC;
-// 	fd = open((*node)->right_node->outfiles->outfile, flags, 0644);
-// 	if (fd < 0)
-// 	{
-// 		perror("open failed");
-// 		return ;
-// 	}
-// 	pid = fork();
-// 	if (pid == 0)
-// 	{
-// 		dup2(fd, STDOUT_FILENO);
-// 		close(fd);
-// 		execute_ast(&(*node)->left_node, mnsh);
-// 		exit(0);
-// 	}
-// 	close(fd);
-// 	waitpid(pid, NULL, 0);
-// }
-
-// void	exec_ast_op_outapd(t_ast **node, t_mnsh *mnsh)
-// {
-// 	int	flags;
-// 	int	fd;
-// 	pid_t	pid;
-
-// 	flags = O_WRONLY | O_CREAT | O_APPEND;
-// 	fd = open((*node)->right_node->outfiles->outfile, flags, 0644);
-// 	if (fd < 0)
-// 	{
-// 		perror("open failed");
-// 		return ;
-// 	}
-// 	pid = fork();
-// 	if (pid == 0)
-// 	{
-// 		dup2(fd, STDOUT_FILENO);
-// 		close(fd);
-// 		execute_ast(&(*node)->left_node, mnsh);
-// 		exit(0);
-// 	}
-// 	close(fd);
-// 	waitpid(pid, NULL, 0);
-// }

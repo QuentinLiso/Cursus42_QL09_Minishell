@@ -1,5 +1,29 @@
 #include "minishell.h"
 
+int ft_strncmp_exact(char *s1, char *s2, size_t len)
+{
+    int i;
+
+    i = 0;
+    while (len > 0)
+    {
+        if (!s1[i])
+            s1[i] = 0;
+        if (!s2[i])
+            s2[i] = 0;
+        if (s1[i] == s2[i])
+        {
+            i++;
+            len--;
+            continue;
+        }
+        else
+    }
+    
+
+}
+
+
 
 int main()
 {
@@ -11,26 +35,3 @@ int main()
     return (0);
 }
 
-char	*exec_ast_cmd_infiles(t_ast **node)
-{
-	t_infiles	*iterator;
-	int			check_access;
-
-	iterator = (*node)->infiles;
-	if (!iterator->infile)
-		return (NULL);
-	while (iterator->infile)
-	{
-		printf("Iter infile : %s\n", iterator->infile);
-		check_access = access(iterator->infile, O_RDONLY);
-		if (check_access < 0)
-		{
-			perror("open failed");
-			exit (errno);
-		}
-		if (iterator->next == NULL)
-			return (iterator->infile);
-		iterator = iterator->next;
-	}
-	return (iterator->infile);
-}
