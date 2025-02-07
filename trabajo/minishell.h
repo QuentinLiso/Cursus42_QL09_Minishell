@@ -69,7 +69,8 @@ typedef enum	e_error
 	ERR_MALLOC,
 	ERR_ENV,
 	ERR_QUOTE,
-	ERR_CD
+	ERR_CD,
+	ERR_EXPORT
 }	t_error;
 
 typedef enum	e_nodetype
@@ -117,16 +118,6 @@ typedef struct s_outfiles
 	struct s_outfiles	*next;
 }	t_outfiles;
 
-typedef struct s_minishell
-{
-	t_error	status;
-	char	**env_mnsh;
-	char	**paths;
-	char	*prompt;
-	int		last_exit_status;
-	t_sa	sa;
-}	t_mnsh;
-
 // Ast stands for Abstract Syntax Tree
 typedef struct s_ast
 {
@@ -142,14 +133,29 @@ typedef struct s_ast
 	struct s_ast	*right_node;
 }	t_ast;
 
+typedef struct s_minishell
+{
+	t_error	status;
+	char	**env_mnsh;
+	char	**paths;
+	char	**tokens;
+	char	*prompt;
+	int		last_exit_status;
+	t_sa	sa;
+	t_ast	*node;
+}	t_mnsh;
+
+
+
 // init
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
 void	init_mnsh_struct(t_mnsh *mnsh);
-t_error	duplicate_env(char **env, char ***env_mnsh);
+t_error	duplicate_env(char **env_src, int len, char ***env_dst);
 t_error	set_mnsh_paths(char **env_mnsh, char ***paths);
 char	*ft_get_env_var(char **env, char *var);
 int		ft_get_env_var_index(char **env, char *var);
-void	ft_reset_env_var(char ***env, char *var, char *value);
+t_error	ft_reset_env_var(char ***env, char *var, char *value);
+t_error	ft_reset_env_var_index(char ***env, char *var, char *value, int i);
 t_error	ft_new_env_var(char ***env, char *var, char *value);
 void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
 void	handle_signal(int signum, siginfo_t *info, void *other);
@@ -209,21 +215,23 @@ void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 
 // builtins
-bool	check_builtin(char *s);
-void	mnsh_echo(char **args, int *mnsh_status);
-void	mnsh_env(t_mnsh *mnsh);
-void	mnsh_pwd(t_mnsh *mnsh);
-t_error	mnsh_cd(char *path, t_mnsh *mnsh);
-void	mnsh_export(char **args, t_mnsh *mnsh);
-void	ft_print_export_var(char **env);
+bool	is_builtin(char *s);
+t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env);
+t_error	mnsh_echo(char **args, t_mnsh *mnsh);
+t_error	mnsh_env(t_mnsh *mnsh);
+t_error	mnsh_pwd(t_mnsh *mnsh);
+t_error	mnsh_cd(char **args, t_mnsh *mnsh);
+t_error	mnsh_export(char **args, t_mnsh *mnsh);
+t_error	ft_print_export_var(char **env);
 void	ft_print_substr_before_char(char *s, char c, int *j);
 void	ft_print_substr_after_char(char *s, int *j);
 t_error	export_check_specials(char *s, int *j);
-void	handle_export_var(char ***env, char *arg, int *j);
-t_error	mnsh_unset(char ***env, char **args, t_mnsh *mnsh);
+t_error	handle_export_var(char ***env, char *arg, int *j);
+t_error	mnsh_unset(char **args, t_mnsh *mnsh, char ***env);
 size_t	unset_newenvlen(char ***env, char **args);
 bool	env_var_is_in_args(char *var, char **args);
 bool	str_is_in_arr(char *s, char **arr);
+t_error	mnsh_exit(char **args, t_mnsh *mnsh);
 
 // helpers
 void	print_node(t_ast *node);

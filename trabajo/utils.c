@@ -56,7 +56,7 @@ void	ft_free_str(char **ptr)
 	if (*ptr == NULL)
 		return ;
 	free(*ptr);
-	(*ptr) = NULL;
+	*ptr = NULL;
 }
 
 void		ft_free_strarray(char ***arr)
@@ -68,7 +68,7 @@ void		ft_free_strarray(char ***arr)
 		return ;
 	while ((*arr)[++i])
 		ft_free_str(&(*arr)[i]);
-	ft_free_str(*arr);
+	free(*arr);
 }
 
 t_error		ft_free_strarray_perror(char ***arr, t_error err)
@@ -136,7 +136,7 @@ char	*ft_strndup(const char *s, int n)
 
 	if (!s || n < 0)
 		return (NULL);
-	d = ft_calloc(ft_strlen(s), sizeof(char));
+	d = ft_calloc(ft_strlen(s) + 1, sizeof(char));
 	if (!d)
 		return (NULL);
 	i = -1;

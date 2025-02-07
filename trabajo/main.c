@@ -3,42 +3,28 @@
 int main(int ac, char **av, char **env)
 {
 	t_mnsh	mnsh;
-	t_ast	*node;
 
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
-	
-	char *str = "export BALLON=toto";
-	char **tokens = ft_calloc(128, sizeof(char *));
-	int	i = 0;
-	ft_printf("Shell : %s\n", str);
-	if (ft_strtok_mnsh(str, &tokens))
-		return (ERR_QUOTE);
-	// print_env(mnsh.env_mnsh);
-	// char	*my_env;
-	// my_env = ft_get_env_var(mnsh.env_mnsh, "PWD");
-	// if (my_env)
-	// 	printf("%s\n", my_env);
-	int	tok_len = ft_strarrlen(tokens);
-	// printf("%d\n", tok_len);
-	print_strarray("Tokens", tokens);
-	node = create_ast(tokens, 0, tok_len - 1);
-	print_ast(node, 0);
-	// mnsh_echo(tokens, &mnsh.last_exit_status);
-	// mnsh_env(&mnsh);
-	// mnsh_pwd(&mnsh);
-	// mnsh_cd("", &mnsh);
 
-	mnsh_env(&mnsh);
-	// execute_ast(&node, &mnsh);
-	// char *v = "";
-	// printf("%d\n", export_check_specials(v));
-	mnsh_export(tokens, &mnsh);
-	char *unset_tok[] = {"BALLON", NULL};
-	mnsh_unset(&mnsh.env_mnsh, unset_tok, &mnsh);
-	mnsh_env(&mnsh);
-	(void)i; (void)node;
+	char *str = "cd .. && ls";
+	ft_printf("Shell : %s\n", str);
+
+	if (ft_strtok_mnsh(str, &mnsh.tokens))
+		return (ERR_QUOTE);
+	print_strarray("Tokens", mnsh.tokens);
+
+	mnsh.node = create_ast(mnsh.tokens, 0, ft_strarrlen(mnsh.tokens) - 1);
+	print_ast(mnsh.node, 0);
+	execute_ast(&mnsh.node, &mnsh);
+	// print_strarray_raw(mnsh.env_mnsh, '\n');
+	// char	*exp_tok[] = {"export", NULL};
+	// mnsh_export(exp_tok, &mnsh);
+	// ft_free_strarray(&mnsh.tokens);
+	// ft_free_strarray(&mnsh.env_mnsh);
+	// ft_free_strarray(&mnsh.paths);
 	// print_minishell_header();
+	
 	// while (1)
 	// {
 	// 	if (mnsh_prompt(&(mnsh.prompt)))
@@ -50,10 +36,6 @@ int main(int ac, char **av, char **env)
 	return (EXIT_SUCCESS);
 }
 
-
-
-
-
 int		mnsh_prompt(char **buf)
 {
 	char	*cwd;
@@ -63,3 +45,22 @@ int		mnsh_prompt(char **buf)
 	*buf = readline("$> ");
 	return (0);	
 }
+
+//============ TESTS à copier coller dans main =======
+
+	// mnsh_echo(mnsh.tokens, &mnsh);
+	// mnsh_env(&mnsh);
+	// mnsh_pwd(&mnsh);
+	// mnsh_cd(mnsh.tokens, &mnsh);
+	// mnsh_pwd(&mnsh);
+	// printf(B "\n*******************************************"RST);
+	// mnsh_export(mnsh.tokens, &mnsh);
+	// printf(R "\n*******************************************"RST);
+	// char	*exp_tok[] = {"export", "BALLON=salutcoucou", NULL};
+	// mnsh_export(exp_tok, &mnsh);
+	// mnsh_export(mnsh.tokens, &mnsh);
+	// printf(G "\n*******************************************"RST);
+	// char *unset_tok[] = {"unset", "BALLON", "HOME", "ZSH", NULL};
+	// mnsh_unset(unset_tok, &mnsh, &mnsh.env_mnsh);
+	// mnsh_export(mnsh.tokens, &mnsh);
+	// mnsh_exit(mnsh.tokens, &mnsh);

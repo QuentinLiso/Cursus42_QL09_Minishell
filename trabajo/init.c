@@ -5,7 +5,7 @@ t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh)
 	if (ac > 1 || av[1] || !env || !*env)
 		return (mnsh_perror(ERR_ARGS)); 
 	init_mnsh_struct(mnsh);
-	if (duplicate_env(env, &mnsh->env_mnsh))
+	if (duplicate_env(env, ft_strarrlen(env), &mnsh->env_mnsh))
 		return (mnsh_perror(ERR_ENV));
 	if (set_mnsh_paths(mnsh->env_mnsh, &mnsh->paths))
 		return (mnsh_perror(ERR_ENV));
@@ -18,28 +18,29 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->env_mnsh = NULL;
 	mnsh->paths = NULL;
 	mnsh->prompt = NULL;
+	mnsh->tokens = ft_calloc(128, sizeof(char *));
+	mnsh->node = NULL;
 	mnsh->last_exit_status = 56;
 }
 
-t_error	duplicate_env(char **env, char ***env_mnsh)
+t_error	duplicate_env(char **env_src, int len, char ***env_dst)
 {
 	int	i;
-	int	len;
 
 	i = -1;
-	len = -1;
-	while (env[++len])
-		;
-	*env_mnsh = ft_calloc(len + 2, sizeof(char *));
-	if (!*env_mnsh)
+	*env_dst = ft_calloc(len + 2, sizeof(char *));
+	if (!*env_dst)
 		return (ERR_MALLOC);
-	while (env[++i])
+	while (env_src[++i])
 	{
-		(*env_mnsh)[i] = ft_strdup(env[i]);
-		if ((*env_mnsh)[i] == NULL)
+		(*env_dst)[i] = ft_strdup(env_src[i]);
+		if ((*env_dst)[i] == NULL)
+		{
+			ft_free_strarray(env_dst);
 			return (ERR_MALLOC);
+		}
 	}
-	(*env_mnsh)[i] = NULL;
+	(*env_dst)[i] = NULL;
 	return (ERR_NOERR);
 }
 
@@ -54,7 +55,10 @@ t_error	set_mnsh_paths(char **env_mnsh, char ***paths)
 		return (ERR_MALLOC);
 	*paths = ft_split(path, ':');
 	if (!*paths)
+	{
+		free(path);
 		return (ERR_MALLOC);
+	}
 	i = -1;
 	while ((*paths)[++i])
 	{
@@ -64,7 +68,8 @@ t_error	set_mnsh_paths(char **env_mnsh, char ***paths)
 			free((*paths)[i]);
 			(*paths)[i] = buf;
 		}
-	}                
+	}
+	free(path);            
 	return (ERR_NOERR);
 }
 
@@ -117,47 +122,59 @@ int		ft_get_env_var_index(char **env, char *var)
 	return (-1);
 }
 
-void	ft_reset_env_var(char ***env, char *var, char *value)
+t_error	ft_reset_env_var(char ***env, char *var, char *value)
 {
 	int		i;
 	char	*new_env_var;
 
 	i = ft_get_env_var_index(*env, var);
 	if (i == -1)
-		return ;
+		return (ERR_ENV);
 	if (!value)
-		return ;
+		return (ERR_NOERR);
 	new_env_var = ft_strjoin_multi(3, var, "=", value);
 	if (!new_env_var)
-		return ;
+		return (perror_malloc("ft_reset_env_var"));
 	free((*env)[i]);
 	(*env)[i] = new_env_var;
+	return (ERR_NOERR);
+}
+
+t_error	ft_reset_env_var_index(char ***env, char *var, char *value, int i)
+{
+	char	*new_env_var;
+
+	if (i == -1)
+		return (ERR_ENV);
+	if (!value)
+		return (ERR_NOERR);
+	new_env_var = ft_strjoin_multi(3, var, "=", value);
+	if (!new_env_var)
+		return (perror_malloc("ft_reset_env_var"));
+	free((*env)[i]);
+	(*env)[i] = new_env_var;
+	return (ERR_NOERR);
 }
 
 t_error	ft_new_env_var(char ***env, char *var, char *value)
 {
-	int		env_len;
 	char	**new_env;
-	int		i;
+	int		env_len;
 
 	env_len = ft_strarrlen(*env);
-	new_env = ft_calloc(env_len + 1, sizeof(char *));
-	if (!new_env)
-		return (ERR_MALLOC);
-	i = -1;
-	while ((*env)[++i])
-	{
-		new_env[i] = ft_strdup((*env)[i]);
-		if (!new_env[i])
-			return (ft_free_strarray_perror(&new_env, ERR_MALLOC));
-	}
+	(void)var;(void)value;
+	if (duplicate_env(*env, env_len + 2, &new_env))
+		return (perror_malloc("ft_new_env_var"));
 	if (!value)
-		new_env[i++] = ft_strdup(var);
+		new_env[env_len] = ft_strdup(var);
 	else
-		new_env[i++] = ft_strjoin_multi(3, var, "=", value);
-	if (!new_env[i - 1])
-		return (ft_free_strarray_perror(&new_env, ERR_MALLOC));
-	new_env[i] = NULL;
+		new_env[env_len] = ft_strjoin_multi(3, var, "=", value);
+	if (!new_env[env_len])
+	{
+		ft_free_strarray(&new_env);
+		return (perror_malloc("ft_new_env_var"));
+	}
+	new_env[env_len + 1] = NULL;
 	ft_free_strarray(env);
 	*env = new_env;
 	return (ERR_NOERR);
