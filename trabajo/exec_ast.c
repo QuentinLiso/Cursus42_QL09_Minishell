@@ -12,27 +12,48 @@ void	execute_ast(t_ast **node, t_mnsh *mnsh)
 
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 {
-	pid_t	pid;
 	int		fd_inout[2];
-	int		e;
 
 	exec_ast_cmd_in(node, &fd_inout[0]);
 	exec_ast_cmd_out(node, &fd_inout[1]);
 	expand_env_vars(&(*node)->args, mnsh);
 	if (is_builtin((*node)->args[0]))
-		e = b_in((*node)->args[0], (*node)->args, mnsh, &mnsh->env_mnsh);
+		mnsh->last_exit_status = exec_ast_cmd_builtin((*node)->args, mnsh);
+	else
+		mnsh->last_exit_status = exec_ast_cmd_external((*node)->args, mnsh);
+}
+
+int	exec_ast_cmd_builtin(char **args, t_mnsh *mnsh)
+{
+	printf("Built-in %s\n", args[0]);
+	b_in(args[0], args, mnsh, &mnsh->env_mnsh);
+	mnsh->last_exit_status = 0;
+	(void)args;(void)mnsh;
+	return (0);
+}
+
+int	exec_ast_cmd_external(char **args, t_mnsh *mnsh)
+{
+	pid_t	pid;
+	int		status;
+
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork failed");
+		return (1);
+	}
+	else if (pid == 0)
+	{
+		set_cmd_path(&args[0], mnsh->paths);
+		execve(args[0], args, mnsh->env_mnsh);
+		perror("execve failed");
+		exit (127);
+	}
 	else
 	{
-		pid = fork();
-		if (pid == 0)
-		{
-			set_cmd_path(&(*node)->args[0], mnsh->paths);
-			execve((*node)->args[0], (*node)->args, mnsh->env_mnsh);
-			perror("execve failed");
-			e = 127;
-			exit (e);		
-		}
-		waitpid(pid, &mnsh->last_exit_status, 0);
+		waitpid(pid, &status, 0);
+		return (WEXITSTATUS(status));
 	}
 }
 

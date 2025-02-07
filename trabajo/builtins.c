@@ -21,7 +21,6 @@ bool	is_builtin(char *s)
 
 t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env)
 {
-	printf("Built-in\n");
 	if (ft_strcmp(s, "echo") == 0)
 		return (mnsh_echo(args, mnsh));
 	else if (ft_strcmp(s, "cd") == 0)

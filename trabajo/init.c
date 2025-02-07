@@ -20,7 +20,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->prompt = NULL;
 	mnsh->tokens = ft_calloc(128, sizeof(char *));
 	mnsh->node = NULL;
-	mnsh->last_exit_status = 56;
+	mnsh->last_exit_status = 0;
 }
 
 t_error	duplicate_env(char **env_src, int len, char ***env_dst)

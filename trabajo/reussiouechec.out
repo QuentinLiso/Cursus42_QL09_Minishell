@@ -1,0 +1,21 @@
+Ext
+total 168
+-rw-r--r-- 1 qzoli qzoli   400 Feb  6 16:49 Makefile
+-rw-r--r-- 1 qzoli qzoli  5247 Feb  3 08:16 ast.c
+-rw-r--r-- 1 qzoli qzoli  6700 Feb  7 15:05 builtins.c
+-rwxr-xr-x 1 qzoli qzoli 26888 Feb  7 11:52 ess
+-rw-r--r-- 1 qzoli qzoli   702 Feb  7 11:52 essayage.c
+-rw-r--r-- 1 qzoli qzoli  7908 Feb  7 15:18 exec_ast.c
+drwxr-xr-x 2 qzoli qzoli  4096 Jan 31 18:04 exemples a conserver
+-rw-r--r-- 1 qzoli qzoli  2151 Feb  6 17:31 helpers.c
+-rw-r--r-- 1 qzoli qzoli  4027 Feb  7 15:10 init.c
+-rw-r--r-- 1 qzoli qzoli   799 Feb  2 21:25 inlst.c
+drwxr-xr-x 6 qzoli qzoli  4096 Jan 10 14:27 libft
+-rw-r--r-- 1 qzoli qzoli  1869 Feb  7 15:18 main.c
+-rwxr-xr-x 1 qzoli qzoli 56560 Feb  7 15:19 minishell
+-rw-r--r-- 1 qzoli qzoli  8122 Feb  7 15:07 minishell.h
+-rw-r--r-- 1 qzoli qzoli  1745 Feb  5 09:47 outfile.out
+-rw-r--r-- 1 qzoli qzoli   875 Feb  2 21:18 outlst.c
+-rw-r--r-- 1 qzoli qzoli     4 Feb  7 15:19 reussiouechec.out
+-rw-r--r-- 1 qzoli qzoli  2103 Feb  7 11:54 tokenize.c
+-rw-r--r-- 1 qzoli qzoli  3553 Feb  7 11:40 utils.c

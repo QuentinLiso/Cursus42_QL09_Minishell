@@ -215,6 +215,8 @@ void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 
 // builtins
+int	exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
+int	exec_ast_cmd_external(char **args, t_mnsh *mnsh);
 bool	is_builtin(char *s);
 t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env);
 t_error	mnsh_echo(char **args, t_mnsh *mnsh);

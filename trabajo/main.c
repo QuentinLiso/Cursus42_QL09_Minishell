@@ -7,7 +7,7 @@ int main(int ac, char **av, char **env)
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
 
-	char *str = "cd .. && ls";
+	char *str = "pipi || ls -l";
 	ft_printf("Shell : %s\n", str);
 
 	if (ft_strtok_mnsh(str, &mnsh.tokens))
