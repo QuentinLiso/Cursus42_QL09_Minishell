@@ -18,7 +18,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->env_mnsh = NULL;
 	mnsh->paths = NULL;
 	mnsh->prompt = NULL;
-	mnsh->last_exit_status = 0;
+	mnsh->last_exit_status = 56;
 }
 
 t_error	duplicate_env(char **env, char ***env_mnsh)
@@ -68,6 +68,9 @@ t_error	set_mnsh_paths(char **env_mnsh, char ***paths)
 	return (ERR_NOERR);
 }
 
+/*
+Gets the value of an env var
+*/
 char	*ft_get_env_var(char **env, char *var)
 {
 	int	i;
@@ -91,6 +94,73 @@ char	*ft_get_env_var(char **env, char *var)
 		}	
 	}
 	return (NULL);
+}
+
+/*
+Returns the index of the env var
+*/
+int		ft_get_env_var_index(char **env, char *var)
+{
+	int	i;
+	size_t	len_var;
+
+	i = -1;
+	if (!env || !env[0] || !var)
+		return (-1);
+	len_var = ft_strlen(var);
+	(void)len_var;
+	while (env[++i])
+	{
+		if (ft_strncmp(env[i], var, len_var) == 0 && env[i][len_var] == '=')
+			return (i);
+	}
+	return (-1);
+}
+
+void	ft_reset_env_var(char ***env, char *var, char *value)
+{
+	int		i;
+	char	*new_env_var;
+
+	i = ft_get_env_var_index(*env, var);
+	if (i == -1)
+		return ;
+	if (!value)
+		return ;
+	new_env_var = ft_strjoin_multi(3, var, "=", value);
+	if (!new_env_var)
+		return ;
+	free((*env)[i]);
+	(*env)[i] = new_env_var;
+}
+
+t_error	ft_new_env_var(char ***env, char *var, char *value)
+{
+	int		env_len;
+	char	**new_env;
+	int		i;
+
+	env_len = ft_strarrlen(*env);
+	new_env = ft_calloc(env_len + 1, sizeof(char *));
+	if (!new_env)
+		return (ERR_MALLOC);
+	i = -1;
+	while ((*env)[++i])
+	{
+		new_env[i] = ft_strdup((*env)[i]);
+		if (!new_env[i])
+			return (ft_free_strarray_perror(&new_env, ERR_MALLOC));
+	}
+	if (!value)
+		new_env[i++] = ft_strdup(var);
+	else
+		new_env[i++] = ft_strjoin_multi(3, var, "=", value);
+	if (!new_env[i - 1])
+		return (ft_free_strarray_perror(&new_env, ERR_MALLOC));
+	new_env[i] = NULL;
+	ft_free_strarray(env);
+	*env = new_env;
+	return (ERR_NOERR);
 }
 
 void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *))

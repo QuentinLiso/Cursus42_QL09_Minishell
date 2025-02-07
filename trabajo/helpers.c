@@ -23,6 +23,22 @@ void	print_strarray(char *name, char **arr)
 	ft_printf("\"%s\"]\n", arr[i - 1]);
 }
 
+void	print_strarray_raw(char **arr, char sep)
+{
+	int	i;
+
+	i = 0;
+	if (!arr)
+		return ;
+	while(arr[i + 1])
+	{
+		ft_putstr_fd(arr[i], STDOUT_FILENO);
+		ft_putchar_fd(sep, STDOUT_FILENO);
+		i++;
+	}
+	ft_putstr_fd(arr[i], STDOUT_FILENO);
+}
+
 void	print_strarray_endl(char *name, char **arr)
 {
 	int	i;

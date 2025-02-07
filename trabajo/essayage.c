@@ -1,37 +1,27 @@
 #include "minishell.h"
 
-int ft_strncmp_exact(char *s1, char *s2, size_t len)
+bool	ft_str_contains(char *s, char c)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    while (len > 0)
-    {
-        if (!s1[i])
-            s1[i] = 0;
-        if (!s2[i])
-            s2[i] = 0;
-        if (s1[i] == s2[i])
-        {
-            i++;
-            len--;
-            continue;
-        }
-        else
-    }
-    
-
+	i = -1;
+	while (s[++i])
+		if (s[i] == c)
+			return (true);
+	return (false);
 }
-
-
 
 int main()
 {
+    char *str;
+    bool b;
 
-
-
-
-
+    str = "bonjour les amis";
+    b = ft_str_contains(str, 'f');
+    if (b)
+        printf("true\n");
+    else
+        printf("false\n");
     return (0);
 }
 

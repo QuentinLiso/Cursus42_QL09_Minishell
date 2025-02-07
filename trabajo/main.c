@@ -8,26 +8,35 @@ int main(int ac, char **av, char **env)
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
 	
-	char *str = "ls -l >> outfile.out";
+	char *str = "export BALLON=toto";
 	char **tokens = ft_calloc(128, sizeof(char *));
 	int	i = 0;
-	printf("Shell : %s\n", str);
+	ft_printf("Shell : %s\n", str);
 	if (ft_strtok_mnsh(str, &tokens))
 		return (ERR_QUOTE);
 	// print_env(mnsh.env_mnsh);
 	// char	*my_env;
-	
-	// my_env = ft_get_env_var(mnsh.env_mnsh, "TEST43");
+	// my_env = ft_get_env_var(mnsh.env_mnsh, "PWD");
 	// if (my_env)
 	// 	printf("%s\n", my_env);
-	
 	int	tok_len = ft_strarrlen(tokens);
 	// printf("%d\n", tok_len);
 	print_strarray("Tokens", tokens);
 	node = create_ast(tokens, 0, tok_len - 1);
 	print_ast(node, 0);
-	
-	execute_ast(&node, &mnsh);
+	// mnsh_echo(tokens, &mnsh.last_exit_status);
+	// mnsh_env(&mnsh);
+	// mnsh_pwd(&mnsh);
+	// mnsh_cd("", &mnsh);
+
+	mnsh_env(&mnsh);
+	// execute_ast(&node, &mnsh);
+	// char *v = "";
+	// printf("%d\n", export_check_specials(v));
+	mnsh_export(tokens, &mnsh);
+	char *unset_tok[] = {"BALLON", NULL};
+	mnsh_unset(&mnsh.env_mnsh, unset_tok, &mnsh);
+	mnsh_env(&mnsh);
 	(void)i; (void)node;
 	// print_minishell_header();
 	// while (1)

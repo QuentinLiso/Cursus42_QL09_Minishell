@@ -68,7 +68,8 @@ typedef enum	e_error
 	ERR_ARGS,
 	ERR_MALLOC,
 	ERR_ENV,
-	ERR_QUOTE
+	ERR_QUOTE,
+	ERR_CD
 }	t_error;
 
 typedef enum	e_nodetype
@@ -141,19 +142,19 @@ typedef struct s_ast
 	struct s_ast	*right_node;
 }	t_ast;
 
-
+// init
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
 void	init_mnsh_struct(t_mnsh *mnsh);
 t_error	duplicate_env(char **env, char ***env_mnsh);
 t_error	set_mnsh_paths(char **env_mnsh, char ***paths);
 char	*ft_get_env_var(char **env, char *var);
+int		ft_get_env_var_index(char **env, char *var);
+void	ft_reset_env_var(char ***env, char *var, char *value);
+t_error	ft_new_env_var(char ***env, char *var, char *value);
 void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
 void	handle_signal(int signum, siginfo_t *info, void *other);
 void	print_minishell_header();
 int		mnsh_prompt(char **buf);
-
-
-// env var
 
 
 // tokens
@@ -181,7 +182,14 @@ void    lst_to_arr(t_list *heredoc, t_ast **node);
 void	free_ast(t_ast *root_node);
 
 // exec
-void	expand_env_vars(char ***args);
+void	expand_env_vars(char ***args, t_mnsh *mnsh);
+t_error strtok_arg_env(char *s, char ***tokens, t_mnsh *mnsh);
+t_error env_check(char **s, char ***tokens, int *i, t_mnsh *mnsh);
+t_error env_check_dollar(char **s, char ***tokens, int *i, t_mnsh *mnsh);
+char    *expand_env_var(char *start, char *s, t_mnsh *mnsh);
+t_error env_check_regular(char **s, char ***tokens, int *i);
+char    *ft_strcat_arr(char **arr);
+
 void	set_cmd_path(char **cmd, char **paths);
 
 void	execute_ast(t_ast **node, t_mnsh *mnsh);
@@ -200,10 +208,28 @@ void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
 void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 
+// builtins
+bool	check_builtin(char *s);
+void	mnsh_echo(char **args, int *mnsh_status);
+void	mnsh_env(t_mnsh *mnsh);
+void	mnsh_pwd(t_mnsh *mnsh);
+t_error	mnsh_cd(char *path, t_mnsh *mnsh);
+void	mnsh_export(char **args, t_mnsh *mnsh);
+void	ft_print_export_var(char **env);
+void	ft_print_substr_before_char(char *s, char c, int *j);
+void	ft_print_substr_after_char(char *s, int *j);
+t_error	export_check_specials(char *s, int *j);
+void	handle_export_var(char ***env, char *arg, int *j);
+t_error	mnsh_unset(char ***env, char **args, t_mnsh *mnsh);
+size_t	unset_newenvlen(char ***env, char **args);
+bool	env_var_is_in_args(char *var, char **args);
+bool	str_is_in_arr(char *s, char **arr);
+
 // helpers
 void	print_node(t_ast *node);
 void	print_ast(t_ast *node, int depth);
 void	print_strarray(char *name, char **arr);
+void	print_strarray_raw(char **arr, char sep);
 void	print_strarray_endl(char *name, char **arr);
 void	print_env(char **env);
 void	print_infiles(t_infiles *infiles);
@@ -214,13 +240,19 @@ t_error	mnsh_perror(t_error	error);
 t_error	perror_malloc(char *func_name);
 void	ft_free_str(char **ptr);
 void	ft_free_strarray(char ***arr);
+t_error		ft_free_strarray_perror(char ***arr, t_error err);
 bool	ft_isspace(char c);
 bool	ft_isspecial(char c, const char *list_specials);
+bool	ft_str_contain(char *s, char c);
 int		is_operator(const char *s, const char *list_operators);
 int		is_indir(const char *s);
+size_t	ft_strlenchar(char *s, char c);
 char	*ft_strndup(const char *s, int n);
 int		ft_strcmp(const char *s1, const char *s2);
 int		ft_strarrlen(char **arr);
+char	*ft_strjoin_multi(int count, ...);
+size_t  ft_strjoin_multi_getlen(int count, va_list args);
+char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
 
 // outfiles lst
 t_outfiles	*outfiles_new(char *outfile, t_outstyle style);

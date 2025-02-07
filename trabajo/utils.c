@@ -40,6 +40,17 @@ bool	ft_isspecial(char c, const char *list_specials)
 	return (false);
 }
 
+bool	ft_str_contain(char *s, char c)
+{
+	int	i;
+
+	i = -1;
+	while (s[++i])
+		if (s[i] == c)
+			return (true);
+	return (false);
+}
+
 void	ft_free_str(char **ptr)
 {
 	if (*ptr == NULL)
@@ -48,7 +59,7 @@ void	ft_free_str(char **ptr)
 	(*ptr) = NULL;
 }
 
-void	ft_free_strarray(char ***arr)
+void		ft_free_strarray(char ***arr)
 {
 	int		i;
 
@@ -58,12 +69,12 @@ void	ft_free_strarray(char ***arr)
 	while ((*arr)[++i])
 		ft_free_str(&(*arr)[i]);
 	ft_free_str(*arr);
-	// {
-	// 	free((*arr)[i]);
-	// 	(*arr)[i] = NULL;
-	// }	
-	// free(*arr);
-	// *arr = NULL;
+}
+
+t_error		ft_free_strarray_perror(char ***arr, t_error err)
+{
+	ft_free_strarray(arr);
+	return (err);
 }
 
 int		is_operator(const char *s, const char *list_operators)
@@ -108,6 +119,16 @@ int		is_indir(const char *s)
 	return (0);
 }
 
+size_t	ft_strlenchar(char *s, char c)
+{
+	size_t	len;
+
+	len = 0;
+	while (s[len] && s[len] != c)
+		len++;
+	return (len);
+}
+
 char	*ft_strndup(const char *s, int n)
 {
 	char	*d;
@@ -145,4 +166,53 @@ int	ft_strarrlen(char **arr)
 	while (arr[len])
 		len++;
 	return (len);
+}
+
+char	*ft_strjoin_multi(int count, ...)
+{
+	va_list	args;
+	size_t	len;
+    char    *dest;
+
+	va_start(args, count);
+	len = ft_strjoin_multi_getlen(count, args);
+    va_end(args);
+    va_start(args, count);
+    dest = ft_strjoin_multi_setstr(len, count, args);
+    va_end(args);
+    return (dest);
+}
+
+size_t  ft_strjoin_multi_getlen(int count, va_list args)
+{
+    int     i;
+    size_t  len;
+
+    i = -1;
+    len = 0;
+    while (++i < count)
+        len += ft_strlen(va_arg(args, char *));
+    return (len);
+}
+
+char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args)
+{
+    char    *dest;
+    char    *buf;
+    int     i;
+    int     j;
+
+    dest = ft_calloc(len + 1, sizeof(char));
+    if (!dest)
+        return (NULL);
+    j = 0;
+    while (count--)
+    {
+        i = -1;
+        buf = va_arg(args, char *);
+        while (buf[++i])
+            dest[j++] = buf[i];
+    }
+    dest[j] = '\0';
+    return (dest);
 }
