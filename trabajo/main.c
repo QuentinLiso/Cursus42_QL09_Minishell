@@ -4,49 +4,47 @@ int main(int ac, char **av, char **env)
 {
 	t_mnsh	mnsh;
 
+	char	*str = "echo $blabla>>'$D'$|cat -e && ls -l";
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
-
-	char *str = "pipi || ls -l";
-	ft_printf("Shell : %s\n", str);
-
-	if (ft_strtok_mnsh(str, &mnsh.tokens))
-		return (ERR_QUOTE);
-	print_strarray("Tokens", mnsh.tokens);
-
-	mnsh.node = create_ast(mnsh.tokens, 0, ft_strarrlen(mnsh.tokens) - 1);
+	mnsh.prompt = ft_strdup(str);
+	mnsh.tokis = ft_strtok_mnsh(str, &mnsh);
+	print_tokis(mnsh.tokis);
+	printf("==================================\n");
+	expand_tok_mnsh(&mnsh.tokis, &mnsh);
+	print_tokis(mnsh.tokis);
+	printf("==================================\n");
+	// printf("%d\n", final_args_count(mnsh.tokis, mnsh.last_tokis));
+	// expand_tok_mnsh(&mnsh.tokens);
+	// print_strarray("Tokens", mnsh.tokens);
+	mnsh.node = create_ast(mnsh.tokis, mnsh.last_tokis);
 	print_ast(mnsh.node, 0);
-	execute_ast(&mnsh.node, &mnsh);
-	// print_strarray_raw(mnsh.env_mnsh, '\n');
-	// char	*exp_tok[] = {"export", NULL};
-	// mnsh_export(exp_tok, &mnsh);
-	// ft_free_strarray(&mnsh.tokens);
-	// ft_free_strarray(&mnsh.env_mnsh);
-	// ft_free_strarray(&mnsh.paths);
-	// print_minishell_header();
-	
+	// execute_ast(&mnsh.node, &mnsh);
+
 	// while (1)
 	// {
-	// 	if (mnsh_prompt(&(mnsh.prompt)))
-	// 		return (EXIT_FAILURE);
-	// 	ft_printf("%s\n", mnsh.prompt);
-	// 	if (ft_strncmp(mnsh.prompt, "exit", 4) == 0)
-	// 		return (EXIT_SUCCESS);
+	// 	ft_free_str(&mnsh.prompt);
+	// 	if (mnsh_prompt(&mnsh.prompt))
+	// 		continue;
+	// 	if (ft_strtok_mnsh(mnsh.prompt, &mnsh.tokens))
+	// 		continue;
+	// 	print_strarray("Tokens", mnsh.tokens);
+	// 	mnsh.node = create_ast(mnsh.tokens, 0, ft_strarrlen(mnsh.tokens) - 1);
+	// 	print_ast(mnsh.node, 0);
+	// 	execute_ast(&mnsh.node, &mnsh);
 	// }
+	ft_free_str(&mnsh.prompt);
+	// ft_free_strarray(&mnsh.tokens);
+	ft_free_strarray(&mnsh.env_mnsh);
+	ft_free_strarray(&mnsh.paths);
 	return (EXIT_SUCCESS);
 }
 
-int		mnsh_prompt(char **buf)
-{
-	char	*cwd;
-	
-	cwd = getcwd(NULL, 0);
-	ft_printf(R "%s 🐚 : " RST, cwd);
-	*buf = readline("$> ");
-	return (0);	
-}
 
 //============ TESTS à copier coller dans main =======
+
+	// char *str = "cd .. && ls -l";
+	// ft_printf("Shell : %s\n", str);
 
 	// mnsh_echo(mnsh.tokens, &mnsh);
 	// mnsh_env(&mnsh);

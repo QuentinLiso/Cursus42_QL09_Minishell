@@ -2,11 +2,13 @@ SRCS=$(addsuffix .c, \
 	ast \
 	builtins \
 	exec_ast \
+	expand \
 	helpers \
 	init \
 	main \
 	inlst \
 	outlst \
+	rl \
 	tokenize \
 	utils \
 	\

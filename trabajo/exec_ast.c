@@ -13,19 +13,25 @@ void	execute_ast(t_ast **node, t_mnsh *mnsh)
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 {
 	int		fd_inout[2];
+	int		default_inout[2];
 
+	default_inout[0] = dup(STDIN_FILENO);
+	default_inout[1] = dup(STDOUT_FILENO);
 	exec_ast_cmd_in(node, &fd_inout[0]);
 	exec_ast_cmd_out(node, &fd_inout[1]);
-	expand_env_vars(&(*node)->args, mnsh);
+	// expand_env_vars(&(*node)->args, mnsh);
 	if (is_builtin((*node)->args[0]))
 		mnsh->last_exit_status = exec_ast_cmd_builtin((*node)->args, mnsh);
 	else
 		mnsh->last_exit_status = exec_ast_cmd_external((*node)->args, mnsh);
+	dup2(default_inout[0], STDIN_FILENO);
+	dup2(default_inout[1], STDOUT_FILENO);
+	close(default_inout[0]);
+	close(default_inout[1]);
 }
 
 int	exec_ast_cmd_builtin(char **args, t_mnsh *mnsh)
 {
-	printf("Built-in %s\n", args[0]);
 	b_in(args[0], args, mnsh, &mnsh->env_mnsh);
 	mnsh->last_exit_status = 0;
 	(void)args;(void)mnsh;
@@ -63,14 +69,20 @@ void	expand_env_vars(char ***args, t_mnsh *mnsh)
 {
 	int	i;
 	char	**tokens;
-	(void)mnsh;
+	// char	*buf;
+
 	tokens = ft_calloc(128, sizeof(char *));
 
 	i = -1;
 	while((*args)[++i])
 	{
 		if ((*args)[i][0] == '\'')
+		{
+			// buf = &(*args)[i][1];
+			// ft_free_str(&(*args)[i]);
+			// (*args)[i] = buf;
 			return ;
+		}
 		if (strtok_arg_env((*args)[i], &tokens, mnsh))
 			return ;
 		free((*args)[i]);

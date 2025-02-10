@@ -27,16 +27,15 @@ void	print_strarray_raw(char **arr, char sep)
 {
 	int	i;
 
-	i = 0;
-	if (!arr)
+	i = -1;
+	if (!arr || !arr[0])
 		return ;
-	while(arr[i + 1])
+	while(arr[++i] != NULL)
 	{
 		ft_putstr_fd(arr[i], STDOUT_FILENO);
-		ft_putchar_fd(sep, STDOUT_FILENO);
-		i++;
+		if (arr[i + 1] != NULL)
+			ft_putchar_fd(sep, STDOUT_FILENO);
 	}
-	ft_putstr_fd(arr[i], STDOUT_FILENO);
 }
 
 void	print_strarray_endl(char *name, char **arr)
@@ -121,4 +120,21 @@ void	print_outfiles(t_outfiles *outfiles)
 		iter = iter->next;
 	}
 	printf("\n");
+}
+
+
+void	print_tokis(t_token *tokis)
+{
+	t_token *iter;
+
+	iter = tokis;
+	printf("Tokis : \n");
+	while (iter)
+	{
+		printf("%s[%d]", iter->word, iter->type);
+		// if (iter->prev)
+		// 	printf("PREV : %s", iter->prev->word);
+		printf("\n");
+		iter = iter->next;
+	}
 }

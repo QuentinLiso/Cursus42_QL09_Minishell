@@ -18,7 +18,17 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->env_mnsh = NULL;
 	mnsh->paths = NULL;
 	mnsh->prompt = NULL;
-	mnsh->tokens = ft_calloc(128, sizeof(char *));
+	// mnsh->tokens = ft_calloc(128, sizeof(char *));
+	// mnsh->tokis = ft_calloc(128, sizeof(t_token));
+	// i = -1;
+	// while (++i < 128)
+	// {
+	// 	mnsh->tokis[i].word = NULL;
+	// 	mnsh->tokis[i].type = 0;
+	// }
+	// mnsh->tokis[0].word = ft_strdup("bonjour");
+	mnsh->tokis = NULL;
+	mnsh->last_tokis = NULL;
 	mnsh->node = NULL;
 	mnsh->last_exit_status = 0;
 }
@@ -85,7 +95,7 @@ char	*ft_get_env_var(char **env, char *var)
 	i = -1;
 	
 	if (!env || !env[0] || !var)
-		return (NULL);
+		return (ft_strdup(""));
 	len_var = ft_strlen(var);
 	(void)len_var;
 	while (env[++i])
@@ -98,7 +108,7 @@ char	*ft_get_env_var(char **env, char *var)
 			return (str);
 		}	
 	}
-	return (NULL);
+	return (ft_strdup(""));
 }
 
 /*

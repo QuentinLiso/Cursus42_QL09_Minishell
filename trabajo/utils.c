@@ -77,6 +77,18 @@ t_error		ft_free_strarray_perror(char ***arr, t_error err)
 	return (err);
 }
 
+// void	ft_free_tokens(t_token **tokis)
+// {
+// 	int	i;
+
+// 	i = -1;
+// 	if (!tokis)
+// 		return ;
+// 	while ((*tokis)[++i].word != NULL)
+// 		ft_free_str(&(*tokis)[i].word);
+// 	free(*tokis);
+// }
+
 int		is_operator(const char *s, const char *list_operators)
 {
 	char	**operators;
@@ -104,7 +116,7 @@ int		is_indir(const char *s)
 	int		i;
 	size_t	len;
 
-	indir = ft_split(INDIR, ' ');
+	indir = ft_split(TOK_INDIR, ' ');
 	i = -1;
 	while (indir[++i])
 	{

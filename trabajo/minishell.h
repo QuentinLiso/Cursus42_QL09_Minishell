@@ -48,11 +48,11 @@
 
 # define MAX_TOKENS 128
 # define MAX_TOKEN_LEN 128
+# define TOK_OPERATORS "&& || | & ;"
+# define TOK_INDIR ">> > << <"
+# define TOK_SPECIALS "&|;<>"
 # define AST_OPERATORS "&& || | & ;"
-# define TOK_OPERATORS "&& || | & ; << < >> >"
-# define AST_SPECIALS "&|;\"'"
-# define TOK_SPECIALS "&|;<>\"'"
-# define INDIR ">> > << <"
+//# define AST_SPECIALS "&|;\"'"
 
 # define ERR_NOERR_MSG "no error\n"
 # define ERR_ARGS_MSG "args error\n"
@@ -105,6 +105,22 @@ typedef enum	e_instyle
 	IN_HEREDOC
 }	t_instyle;
 
+typedef enum	e_toktype
+{
+	TOKEN_NOTYPE,
+	TOKEN_WORD,
+	TOKEN_INDIR,
+	TOKEN_OPERATOR
+}	t_toktype;
+
+typedef struct s_token
+{
+	char			*word;
+	t_toktype		type;
+	struct s_token	*next;
+	struct s_token	*prev;
+}	t_token;
+
 typedef struct s_infiles
 {
 	char				*infile;
@@ -139,6 +155,8 @@ typedef struct s_minishell
 	char	**env_mnsh;
 	char	**paths;
 	char	**tokens;
+	t_token	*tokis;
+	t_token	*last_tokis;
 	char	*prompt;
 	int		last_exit_status;
 	t_sa	sa;
@@ -146,6 +164,8 @@ typedef struct s_minishell
 }	t_mnsh;
 
 
+// readline
+int		mnsh_prompt(char **prompt);
 
 // init
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
@@ -164,26 +184,57 @@ int		mnsh_prompt(char **buf);
 
 
 // tokens
-t_error	ft_strtok_mnsh(char *s, char ***tokens);
-t_error	tok_check(char **s, char ***tokens, int *i);
+t_token	*ft_strtok_mnsh(char *s, t_mnsh *mnsh);
 bool	tok_check_spaces(char **s);
-t_error	tok_check_operator(char **s, char ***tokens, int *i);
-t_error	tok_check_quotes(char **s, char ***tokens, int *i);
-t_error	tok_check_regular(char **s, char ***tokens, int *i);
+t_error	tok_check_operator(char **s, t_token **tokis, t_token **iterator);
+t_error	tok_check_indir(char **s, t_token **tokis, t_token **iter);
+t_error	tok_check_regular(char **s, t_token **tokis, t_token **iterator);
+void	update_quote(char c, char *quote);
+bool	is_quoted(char c, char quote);
+
+t_token	*new_toki(char *word, t_toktype type);
+t_error	add_to_tok(char *str, t_token **tok, t_token **iter, t_toktype t);
+
+// t_error	ft_strtok_mnsh(char *s, t_token **tokis);
+// t_error	tok_check(char **s, t_token **tokis, int *i);
+// bool	tok_check_spaces(char **s);
+// t_error	tok_check_operator(char **s, t_token **tokis, int *i);
+// t_error	tok_check_quotes(char **s, t_token **tokis, int *i);
+// t_error	tok_check_regular(char **s, t_token **tokis, int *i);
+// t_token	*new_toki(char *word, t_token_type type);
+
+// tokens expansion
+void	expand_tok_mnsh(t_token **tokis, t_mnsh *mnsh);
+
+t_token	*strtok_toktok(char *s, t_mnsh *mnsh);
+int	tok_check_singlequote(char **s, t_token **tok, t_token **iter);
+int	tok_check_doublequote(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
+int	tok_check_noquote(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
+
+int	tok_check_env(char **s, t_token **toktok, t_token **iter, t_mnsh *mnsh);
+int	special_expand(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
+char	*expanded_env(char *start, char *s, t_mnsh *mnsh);
+int	tok_check_dquote_noenv(char **s, t_token **tok, t_token **iter);
+int	tok_check_noquote_noenv(char **s, t_token **tok, t_token **iter);
+
+char	*tok_strcat(t_token *tok);
+size_t	tok_strcat_len(t_token *tok);
+void	ft_free_all_tok(t_token **tok);
+
 
 // ast
-t_ast	*create_ast(char **tokens, int start, int end);
-int		set_split_index(char **tokens, int start, int end);
-int		set_args_count(char **tokens, int start, int end);
+t_ast	*create_ast(t_token *start, t_token *end);
+t_token	*set_split_token(t_token *start, t_token *end);
 int		get_operator_precedence(char *op);
 t_ast	*create_ast_opnode(char *op);
 t_optype	set_op_type(char *op);
-t_ast	*create_ast_cmdnode(char ***cmd_tok, int end);
-t_ast   *init_cmd_node(char ***cmd_tok, int end);
-int     final_args_count(char **cmd_tok, int end);
-void    set_node_outfile(char ***tok, t_ast **node, int *i, t_outstyle style);
-void    set_node_infile(char ***tok, t_ast **node, int *i);
-void    set_node_heredoc(char ***cmd_tok, t_ast **node, int *i);
+t_ast   *create_ast_cmdnode(t_token	*start, t_token *end);
+t_ast   *init_cmd_node(t_token *start, t_token *end);
+int     final_args_count(t_token *start, t_token *end);
+void	set_indir(t_token **iterator, t_ast **node);
+void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
+void    set_node_infile(t_token **iterator, t_ast **node);
+void    set_node_heredoc(t_token **iterator, t_ast **node);
 void    lst_to_arr(t_list *heredoc, t_ast **node);
 void	free_ast(t_ast *root_node);
 
@@ -244,6 +295,7 @@ void	print_strarray_endl(char *name, char **arr);
 void	print_env(char **env);
 void	print_infiles(t_infiles *infiles);
 void	print_outfiles(t_outfiles *outfiles);
+void	print_tokis(t_token	*tokis);
 
 // Utils
 t_error	mnsh_perror(t_error	error);
@@ -254,6 +306,7 @@ t_error		ft_free_strarray_perror(char ***arr, t_error err);
 bool	ft_isspace(char c);
 bool	ft_isspecial(char c, const char *list_specials);
 bool	ft_str_contain(char *s, char c);
+void	ft_free_tokens(t_token **tokis);
 int		is_operator(const char *s, const char *list_operators);
 int		is_indir(const char *s);
 size_t	ft_strlenchar(char *s, char c);

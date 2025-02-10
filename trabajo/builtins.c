@@ -42,7 +42,6 @@ t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env)
 
 t_error	mnsh_echo(char **args, t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	if (args[1] == NULL)
 		printf("\n");
 	else if (ft_strcmp(args[1], "-n") == 0)
@@ -63,7 +62,6 @@ t_error	mnsh_echo(char **args, t_mnsh *mnsh)
 
 t_error	mnsh_env(t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	char	**env;
 	int		i;
 
@@ -82,7 +80,6 @@ t_error	mnsh_env(t_mnsh *mnsh)
 
 t_error	mnsh_pwd(t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	char	*pwd;
 
 	pwd = ft_get_env_var(mnsh->env_mnsh, "PWD");
@@ -104,7 +101,6 @@ t_error	mnsh_pwd(t_mnsh *mnsh)
 
 t_error	mnsh_cd(char **args, t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	char	*oldpwd;
 	char	cwd[512];
 
@@ -134,7 +130,6 @@ t_error	mnsh_cd(char **args, t_mnsh *mnsh)
 
 t_error	mnsh_export(char **args, t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	int	i;
 	int	j;
 
@@ -240,7 +235,6 @@ t_error	handle_export_var(char ***env, char *arg, int *j)
 
 t_error	mnsh_unset(char **args, t_mnsh *mnsh, char ***env)
 {
-	printf("Built-in called\n");
 	char	**new_env;
 	int		i;
 	int		j;
@@ -310,7 +304,6 @@ bool	str_is_in_arr(char *s, char **arr)
 
 t_error	mnsh_exit(char **args, t_mnsh *mnsh)
 {
-	printf("Built-in called\n");
 	unsigned int	exit_code;
 
 	if (ft_strarrlen(args) > 2)
