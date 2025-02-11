@@ -42,20 +42,41 @@ t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env)
 
 t_error	mnsh_echo(char **args, t_mnsh *mnsh)
 {
+	int		i;
+	bool	option;
+
 	if (args[1] == NULL)
 		printf("\n");
-	else if (ft_strcmp(args[1], "-n") == 0)
-	{
-		if (args[2])
-			print_strarray_raw(&args[2], ' ');
-	}
 	else
 	{
-		print_strarray_raw(&args[1], ' ');
-		ft_putchar_fd('\n', STDOUT_FILENO);
+		i = 0;
+		option = false;
+		while (args[++i])
+			if (!is_echo_option_valid(args[i]))
+				break;
+			else
+				option = true;
+		print_strarray_raw(&args[i], ' ');
+		if (!option)
+			ft_putchar_fd('\n', STDOUT_FILENO);
 	}
 	mnsh->last_exit_status = 0;
 	return (ERR_NOERR);
+}
+
+bool	is_echo_option_valid(char *arg)
+{
+	int	i;
+
+	if (ft_strncmp(arg, "-n", 2) == 0)
+	{
+		i = 1;
+		while (arg[++i])
+			if (arg[i] != 'n')
+				return (false);
+		return (true);
+	}
+	return (false);
 }
 
 //============================================================================
@@ -312,7 +333,7 @@ t_error	mnsh_exit(char **args, t_mnsh *mnsh)
 		exit_code = ft_atoi(args[1]);
 	else
 		exit_code = 0;
-	ft_free_strarray(&mnsh->tokens);
+	ft_free_all_tok(&mnsh->tokis);
 	ft_free_strarray(&mnsh->env_mnsh);
 	ft_free_strarray(&mnsh->paths);
 	exit(exit_code);

@@ -6,7 +6,9 @@ int		mnsh_prompt(char **prompt)
 
 	minishell = ft_strjoin_multi(3, B, "🐚 MINISHELL 🐚 > ", RST);
 	*prompt = readline(minishell);
-	if (!*prompt)
+	if (!prompt)
+		return (-1);
+	else if (!*prompt)
 		return (1);
 	free(minishell);
 	return (0);	

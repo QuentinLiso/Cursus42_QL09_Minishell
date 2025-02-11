@@ -131,9 +131,10 @@ void	print_tokis(t_token *tokis)
 	printf("Tokis : \n");
 	while (iter)
 	{
-		printf("%s[%d]", iter->word, iter->type);
-		// if (iter->prev)
-		// 	printf("PREV : %s", iter->prev->word);
+		if (!iter->word)
+			printf("(null)[%d]", iter->type);
+		else
+			printf("%s[%d]", iter->word, iter->type);			
 		printf("\n");
 		iter = iter->next;
 	}

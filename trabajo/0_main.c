@@ -3,40 +3,48 @@
 int main(int ac, char **av, char **env)
 {
 	t_mnsh	mnsh;
+	int		status;
 
-	char	*str = "echo $blabla>>'$D'$|cat -e && ls -l";
 	if (mnsh_initialization(ac, av, env, &mnsh))
 		return (ERR_ARGS);
-	mnsh.prompt = ft_strdup(str);
-	mnsh.tokis = ft_strtok_mnsh(str, &mnsh);
-	print_tokis(mnsh.tokis);
-	printf("==================================\n");
-	expand_tok_mnsh(&mnsh.tokis, &mnsh);
-	print_tokis(mnsh.tokis);
-	printf("==================================\n");
+	// mnsh.prompt = ft_strdup(str);
+	// mnsh.tokis = ft_strtok_mnsh(str, &mnsh);
+	// print_tokis(mnsh.tokis);
+	// printf("==================================\n");
+	// expand_tok_mnsh(&mnsh.tokis, &mnsh);
+	// print_tokis(mnsh.tokis);
+	// printf("==================================\n");
 	// printf("%d\n", final_args_count(mnsh.tokis, mnsh.last_tokis));
 	// expand_tok_mnsh(&mnsh.tokens);
 	// print_strarray("Tokens", mnsh.tokens);
-	mnsh.node = create_ast(mnsh.tokis, mnsh.last_tokis);
-	print_ast(mnsh.node, 0);
+	// mnsh.node = create_ast(mnsh.tokis, mnsh.last_tokis);
+	// print_ast(mnsh.node, 0);
 	// execute_ast(&mnsh.node, &mnsh);
 
-	// while (1)
-	// {
-	// 	ft_free_str(&mnsh.prompt);
-	// 	if (mnsh_prompt(&mnsh.prompt))
-	// 		continue;
-	// 	if (ft_strtok_mnsh(mnsh.prompt, &mnsh.tokens))
-	// 		continue;
-	// 	print_strarray("Tokens", mnsh.tokens);
-	// 	mnsh.node = create_ast(mnsh.tokens, 0, ft_strarrlen(mnsh.tokens) - 1);
-	// 	print_ast(mnsh.node, 0);
-	// 	execute_ast(&mnsh.node, &mnsh);
-	// }
-	ft_free_str(&mnsh.prompt);
-	// ft_free_strarray(&mnsh.tokens);
-	ft_free_strarray(&mnsh.env_mnsh);
-	ft_free_strarray(&mnsh.paths);
+	while (1)
+	{
+		ft_free_str(&mnsh.prompt);
+		status = mnsh_prompt(&mnsh.prompt);
+		if (status == 1)
+			exit (0);
+		add_history(mnsh.prompt);
+		mnsh.tokis = ft_strtok_mnsh(mnsh.prompt, &mnsh);
+		// printf("==================================\n");
+		// print_tokis(mnsh.tokis);
+		if (mnsh.tokis == NULL)
+			continue;
+		// printf("==================================\n");
+		// expand_tok_mnsh(&mnsh.tokis, &mnsh);
+		// printf("==================================\n");
+		// print_tokis(mnsh.tokis);
+		mnsh.node = create_ast(mnsh.tokis, mnsh.last_tokis);
+		execute_ast(&mnsh.node, &mnsh);
+	}
+	rl_clear_history();
+	// ft_free_str(&mnsh.prompt);
+	// ft_free_all_tok(&mnsh.tokis);
+	// ft_free_strarray(&mnsh.env_mnsh);
+	// ft_free_strarray(&mnsh.paths);
 	return (EXIT_SUCCESS);
 }
 

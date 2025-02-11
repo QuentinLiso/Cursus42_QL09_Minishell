@@ -46,13 +46,12 @@
 ========================================\
 ===================================\n\n"RST
 
-# define MAX_TOKENS 128
-# define MAX_TOKEN_LEN 128
-# define TOK_OPERATORS "&& || | & ;"
+// # define MAX_TOKENS 128
+// # define MAX_TOKEN_LEN 128
+# define TOK_OPERATORS "&& || | &"
 # define TOK_INDIR ">> > << <"
-# define TOK_SPECIALS "&|;<>"
-# define AST_OPERATORS "&& || | & ;"
-//# define AST_SPECIALS "&|;\"'"
+# define TOK_SPECIALS "&|<>"
+# define ENV_SPECIALS "#*@$!0123456789-"
 
 # define ERR_NOERR_MSG "no error\n"
 # define ERR_ARGS_MSG "args error\n"
@@ -154,7 +153,6 @@ typedef struct s_minishell
 	t_error	status;
 	char	**env_mnsh;
 	char	**paths;
-	char	**tokens;
 	t_token	*tokis;
 	t_token	*last_tokis;
 	char	*prompt;
@@ -186,39 +184,21 @@ int		mnsh_prompt(char **buf);
 // tokens
 t_token	*ft_strtok_mnsh(char *s, t_mnsh *mnsh);
 bool	tok_check_spaces(char **s);
-t_error	tok_check_operator(char **s, t_token **tokis, t_token **iterator);
-t_error	tok_check_indir(char **s, t_token **tokis, t_token **iter);
-t_error	tok_check_regular(char **s, t_token **tokis, t_token **iterator);
-void	update_quote(char c, char *quote);
-bool	is_quoted(char c, char quote);
+t_error	tok_check_operator(char **s, t_token **t, t_token **i);
+t_error	tok_check_indir(char **s, t_token **t, t_token **i);
+t_error	tok_check_regular(char **s, t_token **t, t_token **i, t_mnsh *mnsh);
+int		split_quote(char **s, char **buffer);
+int		split_dquote(char **s, char **buffer, t_mnsh *mnsh);
+int		split_dquote_env(char **s, char **dup_buf, t_mnsh *mnsh);
+int		split_dquote_env_spec(char **s, char **dup_buf, t_mnsh *mnsh);
+int		split_dquote_noenv(char **s, char **dup_buf);
+int		split_noquote(char **s, char **buffer, t_mnsh *mnsh);
+int		split_noquote_env(char **s, char **dup_buf, t_mnsh *mnsh);
+int		split_noquote_env_spec(char **s, char **dup_buf, t_mnsh *mnsh);
+int		split_noquote_noenv(char **s, char **dup_buf);
 
 t_token	*new_toki(char *word, t_toktype type);
 t_error	add_to_tok(char *str, t_token **tok, t_token **iter, t_toktype t);
-
-// t_error	ft_strtok_mnsh(char *s, t_token **tokis);
-// t_error	tok_check(char **s, t_token **tokis, int *i);
-// bool	tok_check_spaces(char **s);
-// t_error	tok_check_operator(char **s, t_token **tokis, int *i);
-// t_error	tok_check_quotes(char **s, t_token **tokis, int *i);
-// t_error	tok_check_regular(char **s, t_token **tokis, int *i);
-// t_token	*new_toki(char *word, t_token_type type);
-
-// tokens expansion
-void	expand_tok_mnsh(t_token **tokis, t_mnsh *mnsh);
-
-t_token	*strtok_toktok(char *s, t_mnsh *mnsh);
-int	tok_check_singlequote(char **s, t_token **tok, t_token **iter);
-int	tok_check_doublequote(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
-int	tok_check_noquote(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
-
-int	tok_check_env(char **s, t_token **toktok, t_token **iter, t_mnsh *mnsh);
-int	special_expand(char **s, t_token **tok, t_token **iter, t_mnsh *mnsh);
-char	*expanded_env(char *start, char *s, t_mnsh *mnsh);
-int	tok_check_dquote_noenv(char **s, t_token **tok, t_token **iter);
-int	tok_check_noquote_noenv(char **s, t_token **tok, t_token **iter);
-
-char	*tok_strcat(t_token *tok);
-size_t	tok_strcat_len(t_token *tok);
 void	ft_free_all_tok(t_token **tok);
 
 
@@ -271,6 +251,7 @@ int	exec_ast_cmd_external(char **args, t_mnsh *mnsh);
 bool	is_builtin(char *s);
 t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env);
 t_error	mnsh_echo(char **args, t_mnsh *mnsh);
+bool	is_echo_option_valid(char *arg);
 t_error	mnsh_env(t_mnsh *mnsh);
 t_error	mnsh_pwd(t_mnsh *mnsh);
 t_error	mnsh_cd(char **args, t_mnsh *mnsh);
@@ -304,6 +285,7 @@ void	ft_free_str(char **ptr);
 void	ft_free_strarray(char ***arr);
 t_error		ft_free_strarray_perror(char ***arr, t_error err);
 bool	ft_isspace(char c);
+bool	isquote(char c);
 bool	ft_isspecial(char c, const char *list_specials);
 bool	ft_str_contain(char *s, char c);
 void	ft_free_tokens(t_token **tokis);
@@ -316,6 +298,8 @@ int		ft_strarrlen(char **arr);
 char	*ft_strjoin_multi(int count, ...);
 size_t  ft_strjoin_multi_getlen(int count, va_list args);
 char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
+char	*ft_strappend_mnsh(char *s1, char *s2);
+
 
 // outfiles lst
 t_outfiles	*outfiles_new(char *outfile, t_outstyle style);

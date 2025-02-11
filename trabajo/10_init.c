@@ -18,15 +18,6 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->env_mnsh = NULL;
 	mnsh->paths = NULL;
 	mnsh->prompt = NULL;
-	// mnsh->tokens = ft_calloc(128, sizeof(char *));
-	// mnsh->tokis = ft_calloc(128, sizeof(t_token));
-	// i = -1;
-	// while (++i < 128)
-	// {
-	// 	mnsh->tokis[i].word = NULL;
-	// 	mnsh->tokis[i].type = 0;
-	// }
-	// mnsh->tokis[0].word = ft_strdup("bonjour");
 	mnsh->tokis = NULL;
 	mnsh->last_tokis = NULL;
 	mnsh->node = NULL;
@@ -95,7 +86,7 @@ char	*ft_get_env_var(char **env, char *var)
 	i = -1;
 	
 	if (!env || !env[0] || !var)
-		return (ft_strdup(""));
+		return (NULL);
 	len_var = ft_strlen(var);
 	(void)len_var;
 	while (env[++i])
@@ -108,7 +99,7 @@ char	*ft_get_env_var(char **env, char *var)
 			return (str);
 		}	
 	}
-	return (ft_strdup(""));
+	return (NULL);
 }
 
 /*
@@ -188,23 +179,6 @@ t_error	ft_new_env_var(char ***env, char *var, char *value)
 	ft_free_strarray(env);
 	*env = new_env;
 	return (ERR_NOERR);
-}
-
-void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *))
-{
-	ft_bzero(sa, sizeof(sa));
-	sa->sa_sigaction = action;
-	sigemptyset(&(sa->sa_mask));
-	sa->sa_flags = SA_SIGINFO | SA_RESTART;
-	sigaction(SIGQUIT, sa, NULL);
-}
-
-void	handle_signal(int signum, siginfo_t *info, void *other)
-{
-	(void)info;
-	(void)other;
-	if (signum == SIGQUIT)
-		ft_printf("Caught SIGQUIT\n");
 }
 
 void	print_minishell_header()

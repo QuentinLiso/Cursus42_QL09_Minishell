@@ -26,6 +26,11 @@ bool	ft_isspace(char c)
 			|| c == '\v' || c == ' ');
 }
 
+bool	isquote(char c)
+{
+	return (c == '\'' || c == '"');
+}
+
 bool	ft_isspecial(char c, const char *list_specials)
 {
 	char *specials;
@@ -76,18 +81,6 @@ t_error		ft_free_strarray_perror(char ***arr, t_error err)
 	ft_free_strarray(arr);
 	return (err);
 }
-
-// void	ft_free_tokens(t_token **tokis)
-// {
-// 	int	i;
-
-// 	i = -1;
-// 	if (!tokis)
-// 		return ;
-// 	while ((*tokis)[++i].word != NULL)
-// 		ft_free_str(&(*tokis)[i].word);
-// 	free(*tokis);
-// }
 
 int		is_operator(const char *s, const char *list_operators)
 {
@@ -228,3 +221,30 @@ char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args)
     dest[j] = '\0';
     return (dest);
 }
+
+char	*ft_strappend_mnsh(char *s1, char *s2)
+{
+	char	*d;
+	size_t	len1;
+	size_t	len2;
+
+	if (!s1 && s2)
+		return (ft_strdup(s2));
+	if (!s1 && !s2)
+		return (NULL);
+	if (s1 && !s2)
+		return (s1);
+	len1 = ft_strlen_gnl(s1);
+	len2 = ft_strlen_gnl(s2);
+	d = (char *)malloc(sizeof(char) * (len1 + len2 + 1));
+	if (!d)
+	{
+		free(s1);
+		return (NULL);
+	}
+	ft_memcpy(d, s1, len1);
+	free(s1);
+	ft_memcpy(d + len1, s2, len2 + 1);
+	return (d);
+}
+
