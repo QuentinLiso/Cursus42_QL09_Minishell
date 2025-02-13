@@ -1,17 +1,17 @@
 SRCS=$(addsuffix .c, \
-	30_ast \
-	41_builtins \
-	40_exec_ast \
-	60_free_management \
-	51_helpers \
-	10_init \
 	0_main \
-	31_inlst \
-	32_outlst \
 	01_rl \
 	02_signals \
+	10_init \
 	20_tokenize \
+	30_ast \
+	31_inlst \
+	32_outlst \
+	40_exec_ast \
+	41_builtins \
 	50_utils \
+	51_helpers \
+	60_free_management \
 	\
 	)
 
