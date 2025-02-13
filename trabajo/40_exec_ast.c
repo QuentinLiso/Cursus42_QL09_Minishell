@@ -2,12 +2,15 @@
 
 void	execute_ast(t_ast **node, t_mnsh *mnsh)
 {
-	if (!(*node))
+	if (!(*node) || !(*node)->args || !(*node)->args[0])
 		return ;
 	if ((*node)->node_type == NODE_CMD)
 		exec_ast_cmd(node, mnsh);
 	else if ((*node)->node_type == NODE_OP)
+	{
 		exec_ast_op(node, (*node)->op_type, mnsh);
+	}
+		
 }
 
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
@@ -82,35 +85,6 @@ void	set_cmd_path(char **cmd, char **paths)
 	}
 }
 
-void	exec_ast_cmd_out(t_ast **node, int *fd)
-{
-	t_outfiles	*iterator;
-
-	iterator = (*node)->outfiles;
-	if (!iterator || !iterator->outfile)
-		return ;
-	while (iterator != NULL)
-	{
-		if (iterator->outstyle == OUT_TRUNC)
-			exec_ast_cmd_outfile(iterator->outfile, fd, O_TRUNC);
-		else if (iterator->outstyle == OUT_APPEND)
-			exec_ast_cmd_outfile(iterator->outfile, fd, O_APPEND);
-		iterator = iterator->next;
-	}
-}
-
-void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag)
-{
-	*fd = open(outfile, O_WRONLY | O_CREAT | flag, 0644);
-	if (*fd < 0)
-	{
-		perror("open failed");
-		exit (errno);
-	}
-	dup2(*fd, STDOUT_FILENO);
-	close(*fd);
-}
-
 void	exec_ast_cmd_in(t_ast **node, int *fd)
 {
 	char	*last_infile;
@@ -182,6 +156,35 @@ void	exec_ast_cmd_heredoc(t_ast **node)
 	close(fd[1]);
 }
 
+void	exec_ast_cmd_out(t_ast **node, int *fd)
+{
+	t_outfiles	*iterator;
+
+	iterator = (*node)->outfiles;
+	if (!iterator || !iterator->outfile)
+		return ;
+	while (iterator != NULL)
+	{
+		if (iterator->outstyle == OUT_TRUNC)
+			exec_ast_cmd_outfile(iterator->outfile, fd, O_TRUNC);
+		else if (iterator->outstyle == OUT_APPEND)
+			exec_ast_cmd_outfile(iterator->outfile, fd, O_APPEND);
+		iterator = iterator->next;
+	}
+}
+
+void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag)
+{
+	*fd = open(outfile, O_WRONLY | O_CREAT | flag, 0644);
+	if (*fd < 0)
+	{
+		perror("open failed");
+		exit (errno);
+	}
+	dup2(*fd, STDOUT_FILENO);
+	close(*fd);
+}
+
 void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
 {
 	if (op == OP_AND)
@@ -196,7 +199,10 @@ void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh)
 {
 	execute_ast(&((*node)->left_node), mnsh);
 	if (mnsh->last_exit_status == 0)
+	{
 		execute_ast(&(*node)->right_node, mnsh);
+	}
+		
 }
 
 void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh)

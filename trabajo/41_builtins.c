@@ -334,8 +334,11 @@ t_error	mnsh_exit(char **args, t_mnsh *mnsh)
 	else
 		exit_code = 0;
 	ft_free_all_tok(&mnsh->tokis);
+	ft_free_ast(mnsh->node);
+	ft_free_str(&mnsh->prompt);
 	ft_free_strarray(&mnsh->env_mnsh);
 	ft_free_strarray(&mnsh->paths);
+	rl_clear_history();
 	exit(exit_code);
 	return (ERR_NOERR);
 }

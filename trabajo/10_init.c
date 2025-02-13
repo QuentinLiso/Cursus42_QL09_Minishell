@@ -74,9 +74,6 @@ t_error	set_mnsh_paths(char **env_mnsh, char ***paths)
 	return (ERR_NOERR);
 }
 
-/*
-Gets the value of an env var
-*/
 char	*ft_get_env_var(char **env, char *var)
 {
 	int	i;
@@ -102,9 +99,6 @@ char	*ft_get_env_var(char **env, char *var)
 	return (NULL);
 }
 
-/*
-Returns the index of the env var
-*/
 int		ft_get_env_var_index(char **env, char *var)
 {
 	int	i;

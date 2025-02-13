@@ -18,44 +18,10 @@ t_token	*ft_strtok_mnsh(char *s, t_mnsh *mnsh)
 		if (tok_check_regular(&s, &tokis, &iterator, mnsh) == CONTINUE)
 			continue;	
 	}
+	if (!tokis)
+		add_to_tok(NULL, &tokis, &iterator, TOKEN_WORD);	
 	mnsh->last_tokis = iterator;
 	return (tokis);
-}
-
-t_token	*new_toki(char *word, t_toktype type)
-{
-	t_token	*toki;
-
-	toki = ft_calloc(1, sizeof(t_token));
-	if (!toki)
-		return (NULL);
-	toki->word = word;
-	toki->type = type;
-	toki->next = NULL;
-	toki->prev = NULL;
-	return (toki);
-}
-
-t_error	add_to_tok(char *str, t_token **tok, t_token **iter, t_toktype t)
-{
-	if (*tok == NULL)
-	{
-		*tok = new_toki(str, t);
-		if (!*tok)
-			return (perror_malloc("add_to_tok"));
-		*iter = *tok;
-		(*iter)->next = NULL;
-	}
-	else
-	{
-		(*iter)->next = new_toki(str, t);
-		if (!(*iter)->next)
-			return (perror_malloc("add_to_tok"));
-		(*iter)->next->prev = (*iter);
-		(*iter) = (*iter)->next;
-		(*iter)->next = NULL;
-	}
-	return (ERR_NOERR);
 }
 
 bool	tok_check_spaces(char **s)
@@ -84,6 +50,29 @@ t_error	tok_check_operator(char **s, t_token **tokis, t_token **iter)
 	return (ERR_NOERR);
 }
 
+int		is_operator(const char *s, const char *list_operators)
+{
+	char	**operators;
+	int		i;
+	size_t	len;
+
+	operators = ft_split(list_operators, ' ');
+	i = -1;
+	if (!operators)
+		return (-1);
+	while (operators[++i])
+	{
+		len = ft_strlen(operators[i]);
+		if (ft_strncmp(s, operators[i], len) == 0)
+		{
+			ft_free_strarray(&operators);
+			return (len);
+		}
+	}
+	ft_free_strarray(&operators);	
+	return (0);
+}
+
 t_error	tok_check_indir(char **s, t_token **tokis, t_token **iter)
 {
 	int	len_operator;
@@ -100,6 +89,27 @@ t_error	tok_check_indir(char **s, t_token **tokis, t_token **iter)
 	return (ERR_NOERR);
 }
 
+int		is_indir(const char *s)
+{
+	char	**indir;
+	int		i;
+	size_t	len;
+
+	indir = ft_split(TOK_INDIR, ' ');
+	i = -1;
+	while (indir[++i])
+	{
+		len = ft_strlen(indir[i]);
+		if (ft_strncmp(s, indir[i], len) == 0)
+		{
+			ft_free_strarray(&indir);
+			return (len);
+		}
+	}
+	ft_free_strarray(&indir);	
+	return (0);
+}
+
 t_error tok_check_regular(char **s, t_token **t, t_token **i, t_mnsh *mnsh)
 {
 	char	*buffer;
@@ -114,9 +124,9 @@ t_error tok_check_regular(char **s, t_token **t, t_token **i, t_mnsh *mnsh)
 		split_noquote(s, &buffer, mnsh);
 	}
 	if (buffer)
-		add_to_tok(buffer, t, i, TOKEN_WORD);
-	if (*i == NULL)
-			return (perror_malloc("tok_check_regular"));
+		add_to_tok(buffer, t, i, TOKEN_WORD);	
+	// if (*i == NULL)
+	// 		return (perror_malloc("tok_check_regular"));
 	return (CONTINUE);
 }
 
@@ -245,7 +255,6 @@ int		split_noquote(char **s, char **buffer, t_mnsh *mnsh)
 {
 	char	*dup_buf;
 
-	// printf("split noquote called\n");
 	dup_buf = NULL;
 	while (**s && **s != '"' && **s != '\'' && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS))
 	{
@@ -322,18 +331,38 @@ int		split_noquote_noenv(char **s, char **dup_buf)
 	return (1);
 }
 
-void	ft_free_all_tok(t_token **tok)
+t_token	*new_toki(char *word, t_toktype type)
 {
-	t_token	*iterator;
+	t_token	*toki;
 
-	if (!tok)
-		return ;
-	while (*tok != NULL)
+	toki = ft_calloc(1, sizeof(t_token));
+	if (!toki)
+		return (NULL);
+	toki->word = word;
+	toki->type = type;
+	toki->next = NULL;
+	toki->prev = NULL;
+	return (toki);
+}
+
+t_error	add_to_tok(char *str, t_token **tok, t_token **iter, t_toktype t)
+{
+	if (*tok == NULL)
 	{
-		iterator = (*tok)->next;
-		if ((*tok)->word)
-			free((*tok)->word);
-		free((*tok));
-		*tok = iterator;
+		*tok = new_toki(str, t);
+		if (!*tok)
+			return (perror_malloc("add_to_tok"));
+		*iter = *tok;
+		(*iter)->next = NULL;
 	}
+	else
+	{
+		(*iter)->next = new_toki(str, t);
+		if (!(*iter)->next)
+			return (perror_malloc("add_to_tok"));
+		(*iter)->next->prev = (*iter);
+		(*iter) = (*iter)->next;
+		(*iter)->next = NULL;
+	}
+	return (ERR_NOERR);
 }

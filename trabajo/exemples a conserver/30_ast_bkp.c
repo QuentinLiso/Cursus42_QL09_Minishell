@@ -21,6 +21,7 @@ t_ast	*create_ast(t_token *start, t_token *end)
 	}
 	node = create_ast_opnode(split_token->word);
 	node->left_node = create_ast(start, split_token->prev);
+	if (!node->left_node && node->left_node->node_type)
 	node->right_node = create_ast(split_token->next, end);
 	return (node);
 }
@@ -103,18 +104,14 @@ t_ast   *create_ast_cmdnode(t_token	*start, t_token *end)
 	t_token	*iterator;
 	int		i;
 
-	node = init_cmd_node();
-	if (handle_indir(&node, start, end) == -1)
-		return (NULL);
-	node->args = ft_calloc(cmd_args_count(start, end) + 1, sizeof(char *));
-	if (!node->args)
-		return (NULL);
+	
+	node = init_cmd_node(start, end);
 	iterator = start;
 	i = 0;
 	while (iterator != end->next)
 	{
 		if (iterator->type == TOKEN_INDIR)
-			iterator = iterator->next;
+			set_indir(&iterator, &node);
 		else
 			node->args[i++] = ft_strdup(iterator->word);
 		iterator = iterator->next;
@@ -122,7 +119,7 @@ t_ast   *create_ast_cmdnode(t_token	*start, t_token *end)
 	return (node);
 }
 
-t_ast   *init_cmd_node(void)
+t_ast   *init_cmd_node(t_token *start, t_token *end)
 {
     t_ast   *node;
 
@@ -131,7 +128,9 @@ t_ast   *init_cmd_node(void)
 		return (NULL);
 	node->node_type = NODE_CMD;
 	node->op_type = OP_NULL;
-    node->args = NULL;
+    node->args = ft_calloc(final_args_count(start, end) + 2, sizeof(char *));
+    if (!node->args)
+        return (NULL);
     node->infiles = NULL;
     node->outfiles = NULL;
 	node->instyle = IN_NULL;
@@ -141,49 +140,7 @@ t_ast   *init_cmd_node(void)
     return (node);
 }
 
-int	handle_indir(t_ast **node, t_token *start, t_token *end)
-{
-	t_token	*iterator;
-
-	iterator = start;
-	while (iterator != end->next)
-	{
-		if (iterator->type == TOKEN_INDIR)
-		{
-			if (check_indir_error(&iterator, &end) < 0)
-			{
-				free(*node);
-				return (-1);
-			}
-			set_indir(node, &iterator);
-			iterator = iterator->next;
-		}
-		iterator = iterator->next;
-	}
-	return (0);
-}
-
-int		check_indir_error(t_token **iterator, t_token **end)
-{
-	if (*iterator == *end || (*iterator)->next == NULL)
-	{
-		printf("minishell: syntax error near unexpected token `newline'\n");
-		return (-1);
-	}
-	else if ((*iterator)->next->type == TOKEN_INDIR)
-	{
-		printf("minishell: syntax error near unexpected token `%s'\n", (*iterator)->word);
-		return (-1);
-	}
-	else if (*(*iterator)->next->word == '\0')
-	{
-		printf("minishell: : No such file or directory\n");
-		return (-1);
-	}
-	return (0);
-}
-
-int     cmd_args_count(t_token *start, t_token *end)
+int     final_args_count(t_token *start, t_token *end)
 {
 	t_token	*iterator;
     int		len;
@@ -203,14 +160,10 @@ int     cmd_args_count(t_token *start, t_token *end)
 	return (len);
 }
 
-void	set_indir(t_ast **node, t_token **iterator)
+void	set_indir(t_token **iterator, t_ast **node)
 {
-	if (!ft_strcmp((*iterator)->word, "<>"))
-	{
-		set_node_infile(iterator, node);
-		set_node_outfile(iterator, node, OUT_TRUNC);
-	}
-	else if (!ft_strcmp((*iterator)->word, ">>"))
+	printf("ici\n");
+	if (!ft_strcmp((*iterator)->word, ">>"))
 		set_node_outfile(iterator, node, OUT_APPEND);
 	else if (!ft_strcmp((*iterator)->word, ">"))
 		set_node_outfile(iterator, node, OUT_TRUNC);
@@ -224,7 +177,8 @@ void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style)
 {
 	t_outfiles	*outfile;
 
-	outfile = outfiles_new((*iterator)->next->word, style);
+	(*iterator) = (*iterator)->next;
+	outfile = outfiles_new((*iterator)->word, style);
 	if (!outfile)
 		return ;
 	outfiles_add_back(&(*node)->outfiles, outfile);
@@ -234,7 +188,8 @@ void    set_node_infile(t_token **iterator, t_ast **node)
 {
 	t_infiles	*infile;
 
-	infile = infiles_new((*iterator)->next->word);
+	(*iterator) = (*iterator)->next;
+	infile = infiles_new((*iterator)->word);
 	if (!infile)
 		return;
 	infiles_add_back(&(*node)->infiles, infile);
@@ -275,4 +230,22 @@ void    lst_to_arr(t_list *heredoc, t_ast **node)
         (*node)->heredoc[i++] = ft_strdup((char *)heredoc->content);
         heredoc = heredoc->next;
     }
+}
+
+void	free_ast(t_ast *root_node)
+{
+	int	i;
+
+	if (!root_node)
+		return ;
+	free_ast(root_node->left_node);
+	free_ast(root_node->right_node);
+	i = -1;
+	if (root_node->node_type == NODE_CMD && root_node->args)
+	{
+		while (root_node->args[++i])
+			free(root_node->args[i]);
+		free(root_node->args);
+	}
+	free(root_node);
 }

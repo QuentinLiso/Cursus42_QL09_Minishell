@@ -56,74 +56,6 @@ bool	ft_str_contain(char *s, char c)
 	return (false);
 }
 
-void	ft_free_str(char **ptr)
-{
-	if (*ptr == NULL)
-		return ;
-	free(*ptr);
-	*ptr = NULL;
-}
-
-void		ft_free_strarray(char ***arr)
-{
-	int		i;
-
-	i = -1;
-	if ((*arr) == NULL)
-		return ;
-	while ((*arr)[++i])
-		ft_free_str(&(*arr)[i]);
-	free(*arr);
-}
-
-t_error		ft_free_strarray_perror(char ***arr, t_error err)
-{
-	ft_free_strarray(arr);
-	return (err);
-}
-
-int		is_operator(const char *s, const char *list_operators)
-{
-	char	**operators;
-	int		i;
-	size_t	len;
-
-	operators = ft_split(list_operators, ' ');
-	i = -1;
-	while (operators[++i])
-	{
-		len = ft_strlen(operators[i]);
-		if (ft_strncmp(s, operators[i], len) == 0)
-		{
-			ft_free_strarray(&operators);
-			return (len);
-		}
-	}
-	ft_free_strarray(&operators);	
-	return (0);
-}
-
-int		is_indir(const char *s)
-{
-	char	**indir;
-	int		i;
-	size_t	len;
-
-	indir = ft_split(TOK_INDIR, ' ');
-	i = -1;
-	while (indir[++i])
-	{
-		len = ft_strlen(indir[i]);
-		if (ft_strncmp(s, indir[i], len) == 0)
-		{
-			ft_free_strarray(&indir);
-			return (len);
-		}
-	}
-	ft_free_strarray(&indir);	
-	return (0);
-}
-
 size_t	ft_strlenchar(char *s, char c)
 {
 	size_t	len;
@@ -247,4 +179,3 @@ char	*ft_strappend_mnsh(char *s1, char *s2)
 	ft_memcpy(d + len1, s2, len2 + 1);
 	return (d);
 }
-

@@ -122,7 +122,6 @@ void	print_outfiles(t_outfiles *outfiles)
 	printf("\n");
 }
 
-
 void	print_tokis(t_token *tokis)
 {
 	t_token *iter;
