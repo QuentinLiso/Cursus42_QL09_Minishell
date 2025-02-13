@@ -210,24 +210,14 @@ void	set_indir(t_ast **node, t_token **iterator)
 		set_node_infile(iterator, node);
 		set_node_outfile(iterator, node, OUT_TRUNC);
 	}
-	else if (!ft_strcmp((*iterator)->word, ">>"))
-		set_node_outfile(iterator, node, OUT_APPEND);
-	else if (!ft_strcmp((*iterator)->word, ">"))
-		set_node_outfile(iterator, node, OUT_TRUNC);
 	else if (!ft_strcmp((*iterator)->word, "<<"))
 		set_node_heredoc(iterator, node);
 	else if (!ft_strcmp((*iterator)->word, "<"))
 		set_node_infile(iterator, node);
-}
-
-void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style)
-{
-	t_outfiles	*outfile;
-
-	outfile = outfiles_new((*iterator)->next->word, style);
-	if (!outfile)
-		return ;
-	outfiles_add_back(&(*node)->outfiles, outfile);
+	else if (!ft_strcmp((*iterator)->word, ">>"))
+		set_node_outfile(iterator, node, OUT_APPEND);
+	else if (!ft_strcmp((*iterator)->word, ">"))
+		set_node_outfile(iterator, node, OUT_TRUNC);
 }
 
 void    set_node_infile(t_token **iterator, t_ast **node)
@@ -275,4 +265,14 @@ void    lst_to_arr(t_list *heredoc, t_ast **node)
         (*node)->heredoc[i++] = ft_strdup((char *)heredoc->content);
         heredoc = heredoc->next;
     }
+}
+
+void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style)
+{
+	t_outfiles	*outfile;
+
+	outfile = outfiles_new((*iterator)->next->word, style);
+	if (!outfile)
+		return ;
+	outfiles_add_back(&(*node)->outfiles, outfile);
 }

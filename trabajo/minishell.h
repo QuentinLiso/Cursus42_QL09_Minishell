@@ -208,10 +208,10 @@ int		handle_indir(t_ast **node, t_token *start, t_token *end);
 int		check_indir_error(t_token **iterator, t_token **end);
 int     cmd_args_count(t_token *start, t_token *end);
 void	set_indir(t_ast **node, t_token **iterator);
-void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
 void    set_node_infile(t_token **iterator, t_ast **node);
 void    set_node_heredoc(t_token **iterator, t_ast **node);
 void    lst_to_arr(t_list *heredoc, t_ast **node);
+void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
 
 // infiles lst
 t_infiles	*infiles_new(char *infile);
