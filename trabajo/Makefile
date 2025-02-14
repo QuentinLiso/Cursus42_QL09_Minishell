@@ -1,5 +1,5 @@
 SRCS=$(addsuffix .c, \
-	0_main \
+	00_main \
 	01_rl \
 	02_signals \
 	10_init \
