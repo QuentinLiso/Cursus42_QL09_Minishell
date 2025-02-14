@@ -105,6 +105,8 @@ char	*get_cmd_path(char *cmd, char **paths)
 			continue ;
 		if (stat(buf, &st) == 0 && (st.st_mode & S_IXUSR))
 			return (buf);
+		else
+			ft_free_str(&buf);
 	}
 	return (NULL);
 }
