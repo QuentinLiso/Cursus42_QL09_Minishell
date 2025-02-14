@@ -230,7 +230,8 @@ void	execute_ast(t_ast **node, t_mnsh *mnsh);
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
 int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh);
-void	set_cmd_path(char **cmd, char **paths);
+void	check_and_execute_cmd(char **args, t_mnsh *mnsh);
+char	*get_cmd_path(char *cmd, char **paths);
 void	exec_ast_cmd_in(t_ast **node, int *fd);
 char	*check_infiles(t_ast **node);
 void	exec_ast_cmd_infile(char *last_infile, int *fd);
@@ -279,6 +280,8 @@ char	*ft_strjoin_multi(int count, ...);
 size_t  ft_strjoin_multi_getlen(int count, va_list args);
 char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
 char	*ft_strappend_mnsh(char *s1, char *s2);
+void	ft_perror_mnsh(char *cmd, char *errmsg);
+void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe);
 
 // helpers
 void	print_node(t_ast *node);

@@ -53,8 +53,11 @@ int	exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 	}
 	else if (pid == 0)
 	{
-		check_and_execute_cmd(args, mnsh);
-		return (1);
+		check_cmd_directory(args[0]);
+		set_cmd_path(&args[0], mnsh->paths);
+		execve(args[0], args, mnsh->env_mnsh);
+		ft_perror_mnsh(args[0], errno);
+		exit (127);
 	}
 	else
 	{
@@ -63,35 +66,20 @@ int	exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 	}
 }
 
-void	check_and_execute_cmd(char **args, t_mnsh *mnsh)
+void		check_cmd_directory(char *cmd)
 {
 	struct stat	st;
-	char		*exec_file;
 
-	if (!args || !args[0])
+	if (!cmd)
 		return ;
-	if (!ft_strchr(args[0], '/'))
-		exec_file = get_cmd_path(args[0], mnsh->paths);
-	else
-		exec_file = ft_strdup(args[0]);
-	if (!exec_file)
-		ft_perror_exit_mnsh(args[0], "command not found", 127, &exec_file);
-	if (stat(exec_file, &st) == -1)
-		ft_perror_exit_mnsh(args[0], strerror(ENOENT), 127, &exec_file);
-	if (S_ISDIR(st.st_mode))
-		ft_perror_exit_mnsh(args[0], strerror(EISDIR), 126, &exec_file);
-	if (!(S_IXUSR & st.st_mode))
-		ft_perror_exit_mnsh(args[0], strerror(EACCES), 126, &exec_file);
-	execve(exec_file, args, mnsh->env_mnsh);
-	if (errno == ENOENT)
-		ft_perror_exit_mnsh(args[0], strerror(ENOENT), 127, &exec_file);
-	else if (errno == EACCES)
-		ft_perror_exit_mnsh(args[0], strerror(EACCES), 126, &exec_file);
-	else
-		ft_perror_exit_mnsh(args[0], strerror(errno), 1, &exec_file);
+	if (stat(cmd, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		ft_perror_mnsh(cmd, EISDIR);
+		exit(126);
+	}
 }
 
-char	*get_cmd_path(char *cmd, char **paths)
+void	set_cmd_path(char **cmd, char **paths)
 {
 	int		i;
 	char 	*buf;
@@ -100,13 +88,17 @@ char	*get_cmd_path(char *cmd, char **paths)
 	i = -1;
 	while (paths[++i])
 	{
-		buf = ft_strjoin(paths[i], cmd);
+		buf = ft_strjoin(paths[i], *cmd);
 		if (!buf)
-			continue ;
+			return ;
 		if (stat(buf, &st) == 0 && (st.st_mode & S_IXUSR))
-			return (buf);
+		{
+			ft_free_str(cmd);
+			*cmd = buf;
+			return ;	
+		}
+		ft_free_str(&buf);
 	}
-	return (NULL);
 }
 
 void	exec_ast_cmd_in(t_ast **node, int *fd)

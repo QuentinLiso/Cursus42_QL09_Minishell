@@ -21,5 +21,5 @@ all :
 	-L/usr/local/lib -lreadline -L./libft/ -lft
 
 make ess : essayage.c
-	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c 50_utils.c 51_helpers.c -o ess \
+	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c 50_utils.c 51_helpers.c 60_free_management.c -o ess \
 	-L/usr/local/lib -lreadline -L./libft/ -lft

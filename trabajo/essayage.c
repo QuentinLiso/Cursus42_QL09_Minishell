@@ -1,11 +1,9 @@
 #include "minishell.h"
 
-int main()
+int main(int ac, char **av, char **env)
 {
-	char	*str;
-
-	str = readline("coucou > ");
-	free(str);
-	rl_clear_history();
+	(void)ac;(void)av;
+	char *args[] = {"ls", "-l", NULL};
+	execve("ls", args, env);
 	return (0);
 }

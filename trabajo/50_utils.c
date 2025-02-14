@@ -179,3 +179,22 @@ char	*ft_strappend_mnsh(char *s1, char *s2)
 	ft_memcpy(d + len1, s2, len2 + 1);
 	return (d);
 }
+
+void	ft_perror_mnsh(char *cmd, char *errmsg)
+{
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	ft_putstr_fd(cmd, STDERR_FILENO);
+	ft_putstr_fd(": ", STDERR_FILENO);
+	ft_putendl_fd(errmsg, STDERR_FILENO);
+}
+
+void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe)
+{
+	int	exit_code;
+
+	exit_code = errexit;
+	ft_perror_mnsh(cmd, errmsg);
+	if (exe && *exe)
+		ft_free_str(exe);
+	exit(exit_code);
+}
