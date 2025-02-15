@@ -3,141 +3,99 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
+/*   By: qzoli <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/21 20:23:53 by qliso             #+#    #+#             */
-/*   Updated: 2024/11/21 20:23:56 by qliso            ###   ########.fr       */
+/*   Created: 2025/01/16 22:27:08 by qzoli             #+#    #+#             */
+/*   Updated: 2025/01/16 22:27:10 by qzoli            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdio.h>
 
 char	*get_next_line(int fd)
 {
-	char		*buf_read;
-	static char	*buf_line[FD_MAX];
+	static char	buffer[BUFFER_SIZE + 1];
 	char		*line;
+	int			endl;
 
-	line = NULL;
-	buf_read = malloc((BUFFER_SIZE + 1) * sizeof(char));
-	if (BUFFER_SIZE <= 0 || fd < 0 || read(fd, 0, 0) < 0)
-	{
-		free(buf_line[fd]);
-		free(buf_read);
-		buf_line[fd] = NULL;
-		buf_read = NULL;
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	}
-	if (!buf_read)
-		return (NULL);
-	buf_line[fd] = set_buf_line(fd, buf_line[fd], buf_read);
-	if (*buf_line[fd] == 0)
-	{
-		free (buf_line[fd]);
-		return (buf_line[fd] = 0);
-	}
-	line = set_line(buf_line[fd], line);
-	buf_line[fd] = offset_buf_line(buf_line[fd]);
-	return (line);
-}
-
-char	*set_buf_line(int fd, char *buf_line, char *buf_read)
-{
-	ssize_t	nbytes;
-
-	nbytes = 1;
-	if (!buf_line)
-		buf_line = ft_strdup_gnl("");
-	while (nbytes > 0)
-	{
-		nbytes = read(fd, buf_read, BUFFER_SIZE);
-		if (nbytes == -1)
-		{
-			free (buf_read);
-			return (NULL);
-		}
-		buf_read[nbytes] = '\0';
-		buf_line = ft_strjoin_gnl(buf_line, buf_read);
-		if ((ft_strchr_gnl(buf_read, '\n')))
-			break ;
-	}
-	free (buf_read);
-	return (buf_line);
-}
-
-char	*set_line(char *buf_line, char *line)
-{
-	int	start;
-	int	i;
-
-	start = 0;
-	i = 0;
-	if (!buf_line)
-		return (NULL);
-	while (buf_line[start] != '\n' && buf_line[start])
-		start++;
-	if (buf_line[start] == '\n')
-		start++;
-	line = malloc((start + 1) * sizeof(char));
+	endl = -1;
+	line = init_line_from_buffer(buffer, &endl);
 	if (!line)
 		return (NULL);
-	while (i < start)
+	ft_strlcpy_gnl(buffer, &buffer[endl + 1], BUFFER_SIZE + 1);
+	line = fill_line_from_reader(line, buffer, &endl, fd);
+	if (!line || line[0] == '\0')
 	{
-		line[i] = buf_line[i];
-		i++;
+		free(line);
+		return (NULL);
 	}
-	line[i] = '\0';
+	printf("%s\n", line);
 	return (line);
 }
 
-char	*offset_buf_line(char	*buf_line)
+char	*init_line_from_buffer(char *buffer, int *endl)
 {
-	char	*new_bline;
-	int		start;
-	int		i;
+	size_t	len;
+	char	*line;
 
-	start = 0;
-	i = 0;
-	if (!buf_line)
+	len = 0;
+	while (buffer[len] && buffer[len] != '\n')
+		len++;
+	len++;
+	line = malloc(sizeof(char) * (len + 1));
+	if (!line)
 		return (NULL);
-	while (buf_line[start] != '\n' && buf_line[start])
-		start++;
-	if (buf_line[start] == '\n')
-		start++;
-	new_bline = malloc((ft_strlen_gnl(buf_line) - start + 1) * sizeof(char));
-	if (!new_bline)
-		return (NULL);
-	while (buf_line[start + i])
+	ft_memcpy_gnl(line, buffer, len);
+	line[len] = '\0';
+	if (len > 0 && line[len - 1] == '\n')
+		*endl = len - 1;
+	return (line);
+}
+
+char	*fill_line_from_reader(char *line, char *buffer, int *endl, int fd)
+{
+	char	reader[BUFFER_SIZE + 1];
+	ssize_t	read_check;
+	size_t	line_size;
+
+	while (*endl == -1)
 	{
-		new_bline[i] = buf_line[start + i];
+		ft_bzero_gnl(reader, (BUFFER_SIZE + 1));
+		read_check = read(fd, reader, BUFFER_SIZE);
+		if (read_check == -1)
+		{
+			free(line);
+			ft_bzero_gnl(buffer, (BUFFER_SIZE + 1));
+			return (NULL);
+		}
+		line_size = find_newline(reader);
+		ft_strlcpy_gnl(buffer, &reader[line_size], (BUFFER_SIZE + 1));
+		reader[line_size] = '\0';
+		line = ft_strappend_gnl(line, reader, endl);
+		if (read_check == 0)
+		{
+			ft_bzero_gnl(buffer, BUFFER_SIZE + 1);
+			break ;
+		}
+	}
+	return (line);
+}
+
+size_t	find_newline(char *reader)
+{
+	size_t	i;
+
+	i = 0;
+	if (!reader)
+		return (-1);
+	while (i < BUFFER_SIZE)
+	{
+		if (reader[i] == '\n' || reader[i] == '\0')
+			return (i + 1);
 		i++;
 	}
-	free (buf_line);
-	new_bline[i] = '\0';
-	return (new_bline);
+	return (i);
 }
-
-/*
-#include <stdio.h>
-int main()
-{
-	int	fda = open("text.txt", O_RDONLY);
-	int	fdb = open("text.txt", O_RDONLY);
-	int	fdc = open("text.txt", O_RDONLY);
-
-	printf("1 A: %s", get_next_line(fda));
-	printf("2 A: %s", get_next_line(fda));
-	printf("3 A: %s", get_next_line(fda));
-	printf("1 B: %s", get_next_line(fdb));
-	printf("2 B: %s", get_next_line(fdb));
-	printf("4 A: %s", get_next_line(fda));
-	printf("1 C: %s", get_next_line(fdc));
-	printf("2 C: %s", get_next_line(fdc));
-	printf("3 C: %s", get_next_line(fdc));
-	printf("5 A: %s", get_next_line(fda));
-	printf("6 A: %s", get_next_line(fda));
-	close(fda);
-	close(fdb);
-	close(fdc);
-}
-*/

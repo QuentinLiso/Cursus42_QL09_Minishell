@@ -198,3 +198,28 @@ void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe)
 		ft_free_str(exe);
 	exit(exit_code);
 }
+
+int	load_message(int size, char *msg, int speed)
+{
+	int	i;
+	int	j;
+
+	i = -1;
+	while (++i <= size)
+	{
+		j = -1;
+		ft_putstr_fd("   [", STDOUT_FILENO);
+		while (++j < i)
+			ft_putchar_fd('#', STDOUT_FILENO);
+		while (++j <= size)
+		ft_putchar_fd('.', STDOUT_FILENO);
+		ft_putstr_fd("] ", STDOUT_FILENO);
+		ft_putnbr_fd(((float)i / (float)size) * 100, STDOUT_FILENO);
+		ft_putstr_fd("%\t", STDOUT_FILENO);
+		if (i < size)
+			ft_putchar_fd('\r', STDOUT_FILENO);
+		usleep(speed);
+	}
+	ft_putendl_fd(msg, STDOUT_FILENO);
+	return (0);
+}

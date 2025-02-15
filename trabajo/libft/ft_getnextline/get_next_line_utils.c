@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
+/*   By: qzoli <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/21 20:22:50 by qliso             #+#    #+#             */
-/*   Updated: 2024/11/21 20:22:54 by qliso            ###   ########.fr       */
+/*   Created: 2025/01/16 22:28:41 by qzoli             #+#    #+#             */
+/*   Updated: 2025/01/16 22:28:42 by qzoli            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 size_t	ft_strlen_gnl(const char *s)
 {
-	int	len;
+	size_t	len;
 
 	len = 0;
 	while (s[len])
@@ -22,59 +22,62 @@ size_t	ft_strlen_gnl(const char *s)
 	return (len);
 }
 
-char	*ft_strdup_gnl(const char *s)
+void	ft_bzero_gnl(void *s, size_t n)
 {
-	char	*dest;
-	int		i;
-
-	i = 0;
-	dest = malloc(sizeof(char) * (ft_strlen_gnl(s) + 1));
-	if (!dest)
-		return (NULL);
-	while (s[i])
-	{
-		dest[i] = s[i];
-		i++;
-	}
-	dest[i] = '\0';
-	return (dest);
+	while (n--)
+		*(char *)s++ = 0;
 }
 
-char	*ft_strjoin_gnl(char const *s1, char const *s2)
+void	*ft_memcpy_gnl(void *dst, const void *src, size_t n)
 {
-	int		i;
-	int		j;
-	char	*dest;
+	unsigned char	*d;
+	unsigned char	*s;
 
-	i = 0;
-	j = 0;
-	dest = malloc((ft_strlen_gnl(s1) + ft_strlen_gnl(s2) + 1) * sizeof(char));
-	if (!dest)
+	if (!dst && !src)
 		return (NULL);
-	while (s1[i])
-		dest[j++] = s1[i++];
-	i = 0;
-	while (s2[i])
-		dest[j++] = s2[i++];
-	dest[j] = 0;
-	free ((void *)(s1));
-	return (dest);
+	d = (unsigned char *)dst;
+	s = (unsigned char *)src;
+	while (n--)
+		*d++ = *s++;
+	return (dst);
 }
 
-char	*ft_strchr_gnl(const char *s, int c)
+char	*ft_strappend_gnl(char *s1, char *s2, int *endl)
 {
-	unsigned int	i;
-	char			c_char;
+	char	*d;
+	size_t	len1;
+	size_t	len2;
+
+	if (!s1 || !s2)
+		return (NULL);
+	len1 = ft_strlen_gnl(s1);
+	len2 = ft_strlen_gnl(s2);
+	d = (char *)malloc(sizeof(char) * (len1 + len2 + 1));
+	if (!d)
+	{
+		free(s1);
+		return (NULL);
+	}
+	ft_memcpy_gnl(d, s1, len1);
+	free(s1);
+	ft_memcpy_gnl(d + len1, s2, len2 + 1);
+	if (len1 + len2 > 0 && *(d + len1 + len2 - 1) == '\n')
+		*endl = 0;
+	return (d);
+}
+
+void	ft_strlcpy_gnl(char *dst, const char *src, size_t dstsize)
+{
+	size_t	i;
 
 	i = 0;
-	c_char = (char) c;
-	while (s[i])
+	if (dstsize > 0)
 	{
-		if (s[i] == c_char)
-			return ((char *) &s[i]);
-		i++;
+		while (src[i] && i < dstsize - 1)
+		{
+			dst[i] = src[i];
+			i++;
+		}
+		dst[i] = '\0';
 	}
-	if (s[i] == c_char)
-		return ((char *) &s[i]);
-	return (NULL);
 }

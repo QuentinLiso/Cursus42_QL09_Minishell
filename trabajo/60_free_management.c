@@ -30,7 +30,7 @@ void	ft_free_all_tok(t_token **tok)
 {
 	t_token	*iterator;
 
-	if (!tok)
+	if (!tok && !*tok)
 		return ;
 	while (*tok != NULL)
 	{

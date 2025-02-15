@@ -10,6 +10,7 @@
 # include <errno.h>
 # include <stdbool.h>
 # include <limits.h>
+# include <termios.h>
 
 # include <sys/types.h>
 # include <sys/wait.h>
@@ -46,8 +47,8 @@
 ========================================\
 ===================================\n\n"RST
 
-// # define MAX_TOKENS 128
-// # define MAX_TOKEN_LEN 128
+# define MINISHELL_PROMPT B"🐚 Minishell 🐚 > "RST
+// # define MINISHELL_PROMPT "Minishell > "
 # define TOK_OPERATORS "&& || | &"
 # define TOK_INDIR "<> >> > << <"
 # define TOK_SPECIALS "&|<>"
@@ -168,6 +169,7 @@ void	handle_signal(int signum, siginfo_t *info, void *other);
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
 void	init_mnsh_struct(t_mnsh *mnsh);
 t_error	duplicate_env(char **env_src, int len, char ***env_dst);
+t_error	set_mnsh_shlvl(char ***env);
 t_error	set_mnsh_paths(char **env_mnsh, char ***paths);
 char	*ft_get_env_var(char **env, char *var);
 int		ft_get_env_var_index(char **env, char *var);
@@ -282,6 +284,7 @@ char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
 char	*ft_strappend_mnsh(char *s1, char *s2);
 void	ft_perror_mnsh(char *cmd, char *errmsg);
 void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe);
+int		load_message(int size, char *msg, int speed);
 
 // helpers
 void	print_node(t_ast *node);

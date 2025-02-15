@@ -2,10 +2,13 @@
 
 t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh)
 {
-	if (ac > 1 || av[1] || !env || !*env)
-		return (mnsh_perror(ERR_ARGS)); 
 	init_mnsh_struct(mnsh);
+	if (ac > 1 || av[1] || !env || !*env)
+		return (mnsh_perror(ERR_ARGS));
+	
 	if (duplicate_env(env, ft_strarrlen(env), &mnsh->env_mnsh))
+		return (mnsh_perror(ERR_ENV));
+	if (set_mnsh_shlvl(&mnsh->env_mnsh))
 		return (mnsh_perror(ERR_ENV));
 	if (set_mnsh_paths(mnsh->env_mnsh, &mnsh->paths))
 		return (mnsh_perror(ERR_ENV));
@@ -42,6 +45,27 @@ t_error	duplicate_env(char **env_src, int len, char ***env_dst)
 		}
 	}
 	(*env_dst)[i] = NULL;
+	return (ERR_NOERR);
+}
+
+t_error	set_mnsh_shlvl(char ***env)
+{
+	char	*shlvl;
+	int		shlvl_val;
+	t_error	status;
+
+	shlvl = ft_get_env_var(*env, "SHLVL");
+	if (!shlvl)
+		return (ERR_ENV);
+	shlvl_val = ft_atoi(shlvl) + 1;
+	ft_free_str(&shlvl);
+	shlvl = ft_itoa(shlvl_val);
+	if (!shlvl)
+		return (ERR_MALLOC);
+	status = ft_reset_env_var(env, "SHLVL", shlvl);
+	ft_free_str(&shlvl);
+	if (status)
+		return (status);
 	return (ERR_NOERR);
 }
 
@@ -85,7 +109,6 @@ char	*ft_get_env_var(char **env, char *var)
 	if (!env || !env[0] || !var)
 		return (NULL);
 	len_var = ft_strlen(var);
-	(void)len_var;
 	while (env[++i])
 	{
 		if (ft_strncmp(env[i], var, len_var) == 0 && env[i][len_var] == '=')

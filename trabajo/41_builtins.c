@@ -103,7 +103,8 @@ t_error	mnsh_pwd(t_mnsh *mnsh)
 {
 	char	*pwd;
 
-	pwd = ft_get_env_var(mnsh->env_mnsh, "PWD");
+	pwd = NULL;
+	pwd = getcwd(pwd, 0);
 	if (pwd)
 	{
 		ft_putendl_fd(pwd, STDOUT_FILENO);
@@ -339,6 +340,7 @@ t_error	mnsh_exit(char **args, t_mnsh *mnsh)
 	ft_free_strarray(&mnsh->env_mnsh);
 	ft_free_strarray(&mnsh->paths);
 	rl_clear_history();
+	load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
 	exit(exit_code);
 	return (ERR_NOERR);
 }

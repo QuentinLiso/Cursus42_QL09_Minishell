@@ -16,9 +16,20 @@ SRCS=$(addsuffix .c, \
 	)
 
 all :
+	@make -C ./libft/ all
 	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell \
 	-L/usr/local/lib -lreadline -L./libft/ -lft
 
-make ess : essayage.c
+ess : essayage.c
 	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c 50_utils.c 51_helpers.c 60_free_management.c -o ess \
+	-L/usr/local/lib -lreadline -L./libft/ -lft
+
+mnsh1	:
+	@make -C ./libft/ all
+	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell1 \
+	-L/usr/local/lib -lreadline -L./libft/ -lft
+
+mnsh2	:
+	@make -C ./libft/ all
+	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell2 \
 	-L/usr/local/lib -lreadline -L./libft/ -lft

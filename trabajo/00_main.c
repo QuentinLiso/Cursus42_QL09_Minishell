@@ -6,7 +6,10 @@ int main(int ac, char **av, char **env)
 	int		status;
 
 	if (mnsh_initialization(ac, av, env, &mnsh))
-		return (ERR_ARGS);
+	{
+		ft_free_all_mnsh(&mnsh);
+		exit(127);
+	}
 /*
 	char	*str[] = {
 		"echo aaa && echo bbbb", 
@@ -36,6 +39,8 @@ int main(int ac, char **av, char **env)
 	}
 	ft_free_all_mnsh(&mnsh);
 */
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+		print_minishell_header();
 	while (1)
 	{
 		ft_free_reset_mnsh(&mnsh);
