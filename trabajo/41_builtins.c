@@ -326,21 +326,56 @@ bool	str_is_in_arr(char *s, char **arr)
 
 t_error	mnsh_exit(char **args, t_mnsh *mnsh)
 {
-	unsigned int	exit_code;
+	long long		exit_code;
+	bool			is_llong_num;
 
-	if (ft_strarrlen(args) > 2)
-		return (mnsh_perror(ERR_ARGS));
-	if (args[1])
-		exit_code = ft_atoi(args[1]);
-	else
+	if (args[1] == NULL)
 		exit_code = 0;
-	ft_free_all_tok(&mnsh->tokis);
-	ft_free_ast(mnsh->node);
-	ft_free_str(&mnsh->prompt);
-	ft_free_strarray(&mnsh->env_mnsh);
-	ft_free_strarray(&mnsh->paths);
-	rl_clear_history();
+	else 
+	{
+		is_llong_num = ft_strtoll_isnum_mnsh(args[1], &exit_code);
+		if (!is_llong_num)
+		{
+			ft_perror_v_mnsh(3, "exit", args[1], "numeric argument required");
+			exit_code = 1;
+		}						
+		else if (is_llong_num && args[2])
+		{
+			ft_perror_mnsh("exit", strerror(E2BIG));
+			return (ERR_ARGS);
+		}		
+	}
+	ft_free_all_mnsh(mnsh);
 	load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
+	mnsh->last_exit_status = exit_code;
 	exit(exit_code);
 	return (ERR_NOERR);
 }
+
+bool	ft_strtoll_isnum_mnsh(char *str, long long *n)
+{
+	int	sign;
+	int	digit;
+
+	*n = 0;
+	sign = 1;
+	while ((*str >= 9 && *str <= 13) || *str == ' ')
+		str++;
+	if (*str == '+' || *str == '-')
+		sign = ',' - *str++;
+	if (!*str)
+		return (false);
+	while (*str >= '0' && *str <= '9')
+	{
+		digit = *str++ - '0';
+		if ((sign == 1 && (*n > (LLONG_MAX - digit) / 10)) ||
+			(sign == -1 && (*n * sign < (LLONG_MIN + digit) / 10)))
+			return (false);
+		*n = *n * 10 + digit;
+	}
+	if (*str)
+		return (false);
+	*n *= sign;
+	return (true);
+}
+

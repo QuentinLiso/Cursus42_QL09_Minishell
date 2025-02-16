@@ -188,6 +188,21 @@ void	ft_perror_mnsh(char *cmd, char *errmsg)
 	ft_putendl_fd(errmsg, STDERR_FILENO);
 }
 
+void	ft_perror_v_mnsh(int count, ...)
+{
+	va_list	args;
+
+	va_start(args, count);
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	while (--count)
+	{
+		ft_putstr_fd(va_arg(args, char *), STDERR_FILENO);
+		ft_putstr_fd(": ", STDERR_FILENO);
+	}
+	ft_putendl_fd(va_arg(args, char *), STDERR_FILENO);
+	va_end(args);
+}
+
 void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe)
 {
 	int	exit_code;
@@ -208,7 +223,7 @@ int	load_message(int size, char *msg, int speed)
 	while (++i <= size)
 	{
 		j = -1;
-		ft_putstr_fd("   [", STDOUT_FILENO);
+		ft_putstr_fd("\033[32m   [", STDOUT_FILENO);
 		while (++j < i)
 			ft_putchar_fd('#', STDOUT_FILENO);
 		while (++j <= size)
@@ -220,6 +235,8 @@ int	load_message(int size, char *msg, int speed)
 			ft_putchar_fd('\r', STDOUT_FILENO);
 		usleep(speed);
 	}
+	ft_putstr_fd("\033[0m\033[0;35m  ", STDOUT_FILENO);
 	ft_putendl_fd(msg, STDOUT_FILENO);
+	ft_putstr_fd("\033[0m", STDOUT_FILENO);
 	return (0);
 }

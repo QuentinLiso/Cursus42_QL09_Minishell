@@ -266,6 +266,7 @@ size_t	unset_newenvlen(char ***env, char **args);
 bool	env_var_is_in_args(char *var, char **args);
 bool	str_is_in_arr(char *s, char **arr);
 t_error	mnsh_exit(char **args, t_mnsh *mnsh);
+bool	ft_strtoll_isnum_mnsh(char *str, long long *n);
 
 // Utils
 t_error	mnsh_perror(t_error	error);
@@ -283,6 +284,7 @@ size_t  ft_strjoin_multi_getlen(int count, va_list args);
 char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
 char	*ft_strappend_mnsh(char *s1, char *s2);
 void	ft_perror_mnsh(char *cmd, char *errmsg);
+void	ft_perror_v_mnsh(int count, ...);
 void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe);
 int		load_message(int size, char *msg, int speed);
 
