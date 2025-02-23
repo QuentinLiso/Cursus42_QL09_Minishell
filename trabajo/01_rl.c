@@ -1,5 +1,10 @@
 #include "minishell.h"
 
+void	print_minishell_header()
+{
+	ft_printf(MINISHELL);
+}
+
 int		mnsh_prompt(char **prompt)
 {
 	*prompt = NULL;

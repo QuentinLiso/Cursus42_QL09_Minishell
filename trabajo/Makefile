@@ -3,20 +3,26 @@ SRCS=$(addsuffix .c, \
 	01_rl \
 	02_signals \
 	10_init \
+	11_env \
 	20_tokenize \
 	30_ast \
-	31_inlst \
 	32_outlst \
-	40_exec_ast \
-	41_builtins \
 	50_utils \
 	51_helpers \
 	60_free_management \
 	\
 	)
 
+#	30_ast \
+	31_inlst \
+	32_outlst \
+	40_exec_ast \
+	41_builtins \
+	
+
+
 all :
-	@make -C ./libft/ all
+#	@make -C ./libft/ all
 	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell \
 	-L/usr/local/lib -lreadline -L./libft/ -lft
 

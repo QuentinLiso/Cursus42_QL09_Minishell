@@ -8,6 +8,17 @@ void	ft_free_str(char **ptr)
 	*ptr = NULL;
 }
 
+void	safe_free_str(void *ptr)
+{
+	char	*str;
+
+	str = (char *)ptr;
+	if (str == NULL)
+		return ;
+	free(str);
+	str = NULL;
+}
+
 void		ft_free_strarray(char ***arr)
 {
 	int		i;
@@ -35,8 +46,7 @@ void	ft_free_all_tok(t_token **tok)
 	while (*tok != NULL)
 	{
 		iterator = (*tok)->next;
-		if ((*tok)->word)
-			free((*tok)->word);
+		ft_free_str(&(*tok)->word);
 		free((*tok));
 		*tok = iterator;
 	}
@@ -62,24 +72,16 @@ void	ft_free_infiles(t_infiles *infiles)
 	}
 }
 
-void	ft_free_outfiles(t_outfiles *outfiles)
+void	free_outfile(void *ptr)
 {
-	t_outfiles	*iterator;
-	t_outfiles	*buffer;
+	t_outfile	*outfile;
 
-	if (!outfiles)
-		return ;
-	iterator = outfiles;
-	while (iterator)
+	outfile = (t_outfile *)ptr;
+	if (outfile)
 	{
-		buffer = iterator;
-		iterator = iterator->next;
-		if (buffer && buffer->outfile)
-		{
-			ft_free_str(&buffer->outfile);
-			free(buffer);
-		}
-	}
+		ft_free_str(&outfile->file);
+		free(outfile);
+	}	
 }
 
 void	ft_free_ast(t_ast *root_node)
@@ -88,18 +90,24 @@ void	ft_free_ast(t_ast *root_node)
 		return ;
 	ft_free_ast(root_node->left_node);
 	ft_free_ast(root_node->right_node);
-	ft_free_infiles(root_node->infiles);
-	ft_free_outfiles(root_node->outfiles);
+	ft_lstclear(&root_node->infiles, &safe_free_str);
+	ft_lstclear(&root_node->outfiles, &free_outfile);
 	ft_free_strarray(&root_node->heredoc);
 	ft_free_strarray(&root_node->args);
 	free(root_node);
+}
+
+int		free_ast_ret(t_ast *root_node, int errnum)
+{
+	ft_free_ast(root_node);
+	return (errnum);
 }
 
 void	ft_free_reset_mnsh(t_mnsh *mnsh)
 {
 	ft_free_str(&mnsh->prompt);
 	ft_free_all_tok(&mnsh->tokis);
-	ft_free_ast(mnsh->node);
+	// ft_free_ast(mnsh->node);
 }
 
 void	ft_free_all_mnsh(t_mnsh *mnsh)
@@ -107,6 +115,5 @@ void	ft_free_all_mnsh(t_mnsh *mnsh)
 	rl_clear_history();
 	ft_free_str(&mnsh->prompt);
 	ft_free_all_tok(&mnsh->tokis);
-	ft_free_strarray(&mnsh->env_mnsh);
 	ft_free_strarray(&mnsh->paths);
 }

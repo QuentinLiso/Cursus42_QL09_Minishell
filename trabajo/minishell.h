@@ -109,6 +109,12 @@ typedef enum	e_outstyle
 	OUT_APPEND
 }	t_outstyle;
 
+typedef struct	s_var
+{
+	char			*key;
+	char			*value;
+}	t_var;
+
 typedef struct s_token
 {
 	char			*word;
@@ -130,16 +136,24 @@ typedef struct s_outfiles
 	struct s_outfiles	*next;
 }	t_outfiles;
 
+typedef struct s_outfile
+{
+	char			*file;
+	t_outstyle		outstyle;
+}	t_outfile;
+
 typedef struct s_ast
 {
 	t_nodetype	node_type;
 	t_optype	op_type;
 	char		**args;
-	t_infiles	*infiles;
+	// t_infiles	*infiles;
+	t_list		*infiles;
 	char		**heredoc;
 	char		*heredoc_end;
 	t_instyle	instyle;
-	t_outfiles		*outfiles;
+	// t_outfiles		*outfiles;
+	t_list		*outfiles;
 	struct s_ast	*left_node;
 	struct s_ast	*right_node;
 }	t_ast;
@@ -147,12 +161,14 @@ typedef struct s_ast
 typedef struct s_minishell
 {
 	// t_error	status;
-	char	**env_mnsh;
+	t_list	*env_mnsh_lst;
+	// char	**env_mnsh;
 	char	**paths;
 	t_token	*tokis;
 	t_token	*last_tokis;
 	char	*prompt;
 	int		last_exit_status;
+	char	*last_cmd_arg;
 	t_sa	sa;
 	t_ast	*node;
 }	t_mnsh;
@@ -166,54 +182,76 @@ void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
 void	handle_signal(int signum, siginfo_t *info, void *other);
 
 // init
-t_error	mnsh_initialization(int ac, char **av, char **env, t_mnsh *mnsh);
+int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env);
 void	init_mnsh_struct(t_mnsh *mnsh);
-t_error	duplicate_env(char **env_src, int len, char ***env_dst);
+t_error	duplicate_env(char **env_src, int len, char ***env_dst, t_mnsh *mnsh);
 t_error	set_mnsh_shlvl(char ***env);
-t_error	set_mnsh_paths(char **env_mnsh, char ***paths);
-char	*ft_get_env_var(char **env, char *var);
-int		ft_get_env_var_index(char **env, char *var);
-t_error	ft_reset_env_var(char ***env, char *var, char *value);
-t_error	ft_reset_env_var_index(char ***env, char *var, char *value, int i);
-t_error	ft_new_env_var(char ***env, char *var, char *value);
 void	print_minishell_header();
 
+// env
+t_var	*alloc_env_var(char *key_eq_val);
+int		free_env_var_ret(t_var *var, int ret);
+void	free_env_var(void *ptr);
+char	*get_env_var(t_list *env_lst, char *key);
+int		add_env_var(t_list **env_lst, char *key, char *value);
+int		edit_env_var(t_list **env_lst, char *key, char *value);
+int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env);
+int		set_mnsh_empty_env(t_list **env_lst);
+int		set_mnsh_env_shlvl(t_list **env_lst);
+void	display_env_var(void *ptr);
+int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths);
+char	*strjoin_free_s1(char *s1, char *s2);
+
 // tokens
-t_token	*ft_strtok_mnsh(char *s, t_mnsh *mnsh);
-bool	tok_check_spaces(char **s);
-t_error	tok_check_operator(char **s, t_token **t, t_token **i);
-int		is_operator(const char *s, const char *list_operators);
-t_error	tok_check_indir(char **s, t_token **t, t_token **i);
-int		is_indir(const char *s);
-t_error	tok_check_regular(char **s, t_token **t, t_token **i, t_mnsh *mnsh);
-int		split_quote(char **s, char **buffer);
-int		split_dquote(char **s, char **buffer, t_mnsh *mnsh);
-int		split_dquote_env(char **s, char **dup_buf, t_mnsh *mnsh);
-int		split_dquote_env_spec(char **s, char **dup_buf, t_mnsh *mnsh);
-int		split_dquote_noenv(char **s, char **dup_buf);
-int		split_noquote(char **s, char **buffer, t_mnsh *mnsh);
-int		split_noquote_env(char **s, char **dup_buf, t_mnsh *mnsh);
-int		split_noquote_env_spec(char **s, char **dup_buf, t_mnsh *mnsh);
-int		split_noquote_noenv(char **s, char **dup_buf);
 t_token	*new_toki(char *word, t_toktype type);
-t_error	add_to_tok(char *str, t_token **tok, t_token **iter, t_toktype t);
+int		add_toki_mnsh(t_mnsh *mnsh, char *word, t_toktype t);
+int		strtok_mnsh(t_mnsh *mnsh, char *s);
+int		tok_check(t_mnsh *mnsh, char **s);
+int		tok_check_spaces(char **s);
+int		tok_check_ope_ind(t_mnsh *mnsh, char **s, char *spec, t_toktype type);
+int		is_operator(const char *s, const char *list_operators);
+int		tok_check_regular(t_mnsh *mnsh, char **s);
+int		tok_check_regular_split(t_mnsh *mnsh, char **s, char **word, bool *q);
+int		split_quote(char **s, char **word);
+int		split_dquote(t_mnsh *mnsh, char **s, char **word);
+int		check_split_dquote(t_mnsh *mnsh, char **s, char **buffer);
+int		split_dquote_env(t_mnsh *mnsh, char **s, char **buffer);
+int		split_dquote_env_spec(t_mnsh *mnsh, char **s, char **buffer);
+int		get_last_exit(t_mnsh *mnsh, char **s, char **buffer);
+int		split_dquote_noenv(char **s, char **buffer);
+void	append_dquote(char **word, char **buffer);
+int		split_noquote(t_mnsh *mnsh, char **s, char **word);
+int		check_split_noquote(t_mnsh *mnsh, char **s, char **buffer);
+int		split_noquote_env(t_mnsh *mnsh, char **s, char **buffer);
+int		split_noquote_env_spec(t_mnsh *mnsh, char **s, char **buffer);
+int		split_noquote_noenv(char **s, char **buffer);
+
 
 // ast
-t_ast	*create_ast(t_token *start, t_token *end);
-t_token	*set_split_token(t_token *start, t_token *end);
-int		get_operator_precedence(char *op);
-t_ast	*create_ast_opnode(char *op);
+int			create_ast_mnsh(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end);
+
+t_token		*set_split_token(t_token *start, t_token *end);
+int			get_operator_precedence(char *op);
+
+int		ast_op_node(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *split_token, t_token *end);
+bool	is_syntax_error(t_token *split_token, t_token *start, t_token *end);
+int		init_ast_op_node(t_ast **node, char *op);
 t_optype	set_op_type(char *op);
-t_ast   *create_ast_cmdnode(t_token	*start, t_token *end);
-t_ast   *init_cmd_node(void);
+
+int   	ast_cmd_node(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end);
+int		init_cmd_node(t_ast **node);
+int		set_cmd_args(t_ast **node, t_token *start, t_token *end);
+int     cmd_args_count(t_token *start, t_token *end);
+
 int		handle_indir(t_ast **node, t_token *start, t_token *end);
 int		check_indir_error(t_token **iterator, t_token **end);
-int     cmd_args_count(t_token *start, t_token *end);
-void	set_indir(t_ast **node, t_token **iterator);
-void    set_node_infile(t_token **iterator, t_ast **node);
-void    set_node_heredoc(t_token **iterator, t_ast **node);
-void    lst_to_arr(t_list *heredoc, t_ast **node);
-void    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
+int		set_indir(t_ast **node, t_token **iterator);
+int    	set_node_infile(t_token **iterator, t_ast **node);
+int    	set_node_heredoc(t_token **iterator, t_ast **node);
+int    lst_to_arr(t_list *heredoc, t_ast **node);
+int    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
+
+
 
 // infiles lst
 t_infiles	*infiles_new(char *infile);
@@ -276,17 +314,28 @@ bool	isquote(char c);
 bool	ft_isspecial(char c, const char *list_specials);
 bool	ft_str_contain(char *s, char c);
 size_t	ft_strlenchar(char *s, char c);
-char	*ft_strndup(const char *s, int n);
 int		ft_strcmp(const char *s1, const char *s2);
 int		ft_strarrlen(char **arr);
-char	*ft_strjoin_multi(int count, ...);
-size_t  ft_strjoin_multi_getlen(int count, va_list args);
-char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
+
 char	*ft_strappend_mnsh(char *s1, char *s2);
 void	ft_perror_mnsh(char *cmd, char *errmsg);
 void	ft_perror_v_mnsh(int count, ...);
 void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe);
 int		load_message(int size, char *msg, int speed);
+int		errno_to_exit(int errnum);
+int		perror_mnsh(int errnum, int count, ...);
+
+
+void	*safe_calloc(t_mnsh *mnsh, size_t nmemb, size_t size, char *func);
+char	*safe_strdup(char *s, t_mnsh *mnsh, char *func);
+char	*safe_strndup(const char *s, int n, t_mnsh *mnsh, char *func);
+char	*safe_itoa(int n, t_mnsh *mnsh, char *func);
+char	**safe_split(char *s, char c, t_mnsh *mnsh, char *func);
+char	*safe_strjoin_multi(t_mnsh *mnsh, char *func, int count, ...);
+size_t  ft_strjoin_multi_getlen(int count, va_list args);
+char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
+void	safe_strarr_add(t_mnsh *mnsh, char ***arr, int i, char *s, char *fun);
+
 
 // helpers
 void	print_node(t_ast *node);
@@ -295,18 +344,20 @@ void	print_strarray(char *name, char **arr);
 void	print_strarray_raw(char **arr, char sep);
 void	print_strarray_endl(char *name, char **arr);
 void	print_env(char **env);
-void	print_infiles(t_infiles *infiles);
-void	print_outfiles(t_outfiles *outfiles);
+void	print_infiles(t_list *infiles);
+void	print_outfiles(t_list *outfiles);
 void	print_tokis(t_token	*tokis);
 
 // Free management
 void	ft_free_str(char **ptr);
+void	safe_free_str(void *ptr);
 void	ft_free_strarray(char ***arr);
 t_error	ft_free_strarray_perror(char ***arr, t_error err);
 void	ft_free_all_tok(t_token **tok);
 void	ft_free_infiles(t_infiles *infiles);
-void	ft_free_outfiles(t_outfiles *outfiles);
+void	free_outfile(void *ptr);
 void	ft_free_ast(t_ast *root_node);
+int		free_ast_ret(t_ast *root_node, int errnum);
 void	ft_free_reset_mnsh(t_mnsh *mnsh);
 void	ft_free_all_mnsh(t_mnsh *mnsh);
 

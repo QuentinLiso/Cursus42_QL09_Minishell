@@ -58,10 +58,10 @@ BUFFER_SIZE = 1024
 all: $(NAME)
 
 $(NAME): $(OBJS) $(HEADERS)
-		ar rcs $(NAME) $(OBJS)
+		@ar rcs $(NAME) $(OBJS)
 
 %.o: %.c $(HEADERS)
-		$(CC) $(CPPFLAGS) -D BUFFER_SIZE=$(BUFFER_SIZE) $(CCFLAGS) -o $@ -c $<
+		@$(CC) $(CPPFLAGS) -D BUFFER_SIZE=$(BUFFER_SIZE) $(CCFLAGS) -o $@ -c $<
 
 clean:
 		rm -f $(OBJS)

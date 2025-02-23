@@ -9,8 +9,7 @@ void	execute_ast(t_ast **node, t_mnsh *mnsh)
 	else if ((*node)->node_type == NODE_OP)
 	{
 		exec_ast_op(node, (*node)->op_type, mnsh);
-	}
-		
+	}	
 }
 
 void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
@@ -70,11 +69,11 @@ void	check_and_execute_cmd(char **args, t_mnsh *mnsh)
 
 	if (!args || !args[0])
 		return ;
-	if (!ft_strchr(args[0], '/'))
+	if (*args[0] && !ft_strchr(args[0], '/'))
 		exec_file = get_cmd_path(args[0], mnsh->paths);
 	else
 		exec_file = ft_strdup(args[0]);
-	if (!exec_file)
+	if (!exec_file || *exec_file == '\0')
 		ft_perror_exit_mnsh(args[0], "command not found", 127, &exec_file);
 	if (stat(exec_file, &st) == -1)
 		ft_perror_exit_mnsh(args[0], strerror(ENOENT), 127, &exec_file);

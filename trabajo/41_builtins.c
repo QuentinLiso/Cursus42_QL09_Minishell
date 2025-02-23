@@ -228,7 +228,7 @@ t_error	export_check_specials(char *s, int *j)
 	return (ERR_NOERR);
 }
 
-t_error	handle_export_var(char ***env, char *arg, int *j)
+t_error	handle_export_var(char ***env, char *arg, int *j, t_mnsh *mnsh)
 {
 	char	*value;
 	char	*var;
@@ -245,7 +245,7 @@ t_error	handle_export_var(char ***env, char *arg, int *j)
 	i = ft_get_env_var_index(*env, var);
 	if (i == -1)
 	{
-		status = ft_new_env_var(env, var, value);
+		status = ft_new_env_var(env, var, value, mnsh);
 	}
 	else
 		status = ft_reset_env_var_index(env, var, value, i);
