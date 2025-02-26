@@ -17,9 +17,7 @@ t_ast		*create_ast(t_token *start, t_token *end, t_mnsh *mnsh)
 		return (NULL);
 	split_token = set_split_token(start, end);
 	if (split_token == NULL)
-	{
 		return (create_ast_cmdnode(start, end, mnsh));
-	}
 	else if (is_syntax_error(split_token, start, end))
 	{
 		mnsh->last_exit_status = 2;

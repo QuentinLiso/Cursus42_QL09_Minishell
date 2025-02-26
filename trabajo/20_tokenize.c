@@ -39,6 +39,8 @@ int		add_toki_mnsh(t_mnsh *mnsh, char *word, t_toktype t)
 	}
 }
 
+// ==========================================
+
 int		strtok_mnsh(t_mnsh *mnsh, char *s)
 {
 	int		status;
@@ -217,7 +219,9 @@ int		split_dquote(t_mnsh *mnsh, char **s, char **word)
 
 	if (**s != '"')
 		return (0);
-	buffer = NULL;
+	buffer = ft_strdup("");
+	if (!buffer)
+		return (perror_mnsh(-12, 1, "Err malloc in split dquote"));
 	(*s)++;
 	while (**s && **s != '"')
 	{
@@ -280,7 +284,7 @@ int		split_dquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
 		return (get_last_exit(mnsh, s, buffer));
 	else if (ft_isspecial(**s, ENV_SPECIALS))
 	{
-		*buffer = strjoin_free_s1(*buffer, "");
+		*buffer = ft_strappend_mnsh(*buffer, "");
 		if (!*buffer)
 			return (-12);
 		(*s)++;

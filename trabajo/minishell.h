@@ -149,6 +149,7 @@ typedef struct s_ast
 	char		**args;
 	// t_infiles	*infiles;
 	t_list		*infiles;
+	t_list		*heredocs;
 	char		**heredoc;
 	char		*heredoc_end;
 	t_instyle	instyle;
@@ -175,6 +176,7 @@ typedef struct s_minishell
 
 
 // readline
+void	print_minishell_header();
 int		mnsh_prompt(char **prompt);
 
 // signals
@@ -184,23 +186,21 @@ void	handle_signal(int signum, siginfo_t *info, void *other);
 // init
 int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env);
 void	init_mnsh_struct(t_mnsh *mnsh);
-t_error	duplicate_env(char **env_src, int len, char ***env_dst, t_mnsh *mnsh);
-t_error	set_mnsh_shlvl(char ***env);
-void	print_minishell_header();
+int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env);
+int		set_mnsh_empty_env(t_list **env_lst);
+int		set_mnsh_env_shlvl(t_list **env_lst);
+int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths);
 
 // env
 t_var	*alloc_env_var(char *key_eq_val);
 int		free_env_var_ret(t_var *var, int ret);
 void	free_env_var(void *ptr);
 char	*get_env_var(t_list *env_lst, char *key);
+t_list	*get_env_var_prev(t_list *env_lst, char *key);
 int		add_env_var(t_list **env_lst, char *key, char *value);
 int		edit_env_var(t_list **env_lst, char *key, char *value);
-int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env);
-int		set_mnsh_empty_env(t_list **env_lst);
-int		set_mnsh_env_shlvl(t_list **env_lst);
 void	display_env_var(void *ptr);
-int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths);
-char	*strjoin_free_s1(char *s1, char *s2);
+
 
 // tokens
 t_token	*new_toki(char *word, t_toktype type);
@@ -226,32 +226,27 @@ int		split_noquote_env(t_mnsh *mnsh, char **s, char **buffer);
 int		split_noquote_env_spec(t_mnsh *mnsh, char **s, char **buffer);
 int		split_noquote_noenv(char **s, char **buffer);
 
-
 // ast
-int			create_ast_mnsh(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end);
-
+int			ast_mnsh(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh);
+int			create_ast(t_ast **node, t_token *start, t_token *end);
 t_token		*set_split_token(t_token *start, t_token *end);
 int			get_operator_precedence(char *op);
-
-int		ast_op_node(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *split_token, t_token *end);
-bool	is_syntax_error(t_token *split_token, t_token *start, t_token *end);
-int		init_ast_op_node(t_ast **node, char *op);
+bool		is_syntax_error(t_token *start, t_token *end, t_token *split_token);
+int			ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end);
+int 		create_ast_opnode(t_ast **node, char *op);
 t_optype	set_op_type(char *op);
-
-int   	ast_cmd_node(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end);
-int		init_cmd_node(t_ast **node);
-int		set_cmd_args(t_ast **node, t_token *start, t_token *end);
-int     cmd_args_count(t_token *start, t_token *end);
-
-int		handle_indir(t_ast **node, t_token *start, t_token *end);
-int		check_indir_error(t_token **iterator, t_token **end);
-int		set_indir(t_ast **node, t_token **iterator);
-int    	set_node_infile(t_token **iterator, t_ast **node);
-int    	set_node_heredoc(t_token **iterator, t_ast **node);
-int    lst_to_arr(t_list *heredoc, t_ast **node);
-int    set_node_outfile(t_token **iterator, t_ast **node, t_outstyle style);
-
-
+int			ast_cmdnode(t_ast **node, t_token *start, t_token *end);
+int			create_cmd_node(t_ast **node);
+int			handle_indir(t_ast **node, t_token *start, t_token *end);
+int			is_indir_error(t_token *iterator, t_token *end);
+int			set_indir(t_ast **node, t_token *iterator);
+int   	 	set_node_infile(t_ast **node, t_token *iterator);
+int  		set_node_heredoc(t_ast **node, t_token *iterator);
+char		*set_heredoc_name();
+int			create_heredoc(char *heredoc, char *heredoc_end);
+int  	 	set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style);
+int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
+int     	cmd_args_count(t_token *start, t_token *end);
 
 // infiles lst
 t_infiles	*infiles_new(char *infile);
@@ -266,76 +261,87 @@ t_outfiles	*outfiles_last(t_outfiles *outfiles);
 int			outfiles_size(t_outfiles *outfiles);
 
 // exec
-void	execute_ast(t_ast **node, t_mnsh *mnsh);
-void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
-int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
+int		execute_ast(t_ast **node, t_mnsh *mnsh);
+int		set_mnsh_last_arg(t_ast **node, t_mnsh *mnsh);
+int		exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh);
-void	check_and_execute_cmd(char **args, t_mnsh *mnsh);
-char	*get_cmd_path(char *cmd, char **paths);
-void	exec_ast_cmd_in(t_ast **node, int *fd);
-char	*check_infiles(t_ast **node);
-void	exec_ast_cmd_infile(char *last_infile, int *fd);
-void	exec_ast_cmd_heredoc(t_ast **node);
-void	exec_ast_cmd_out(t_ast **node, int *fd);
-void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
-void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
-void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
-void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
-void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
-void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
-void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
+int		check_and_execute_cmd(char **args, t_mnsh *mnsh);
+int		set_execfile(char **execfile, char **args, t_mnsh *mnsh);
+int		check_execfile(char *execfile, char **args);
+int		get_cmd_path(char **execfile, char *cmd, char **paths);
+int		ft_execve(char **execfile, char **args, t_mnsh *mnsh);
+
+int	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
+int	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
+int	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
+int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
+int	left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
+int	right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
+
+int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out);
+int		exec_ast_cmd_in(t_ast **node, int *fd);
+int		set_last_infile(t_list *infiles, t_list **last_infile);
+int		exec_ast_cmd_infile(char *last_infile, int *fd);
+int		exec_ast_cmd_out(t_ast **node, int *fd);
+int		exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
+
+// void	execute_ast(t_ast **node, t_mnsh *mnsh);
+// void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
+// int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
+// int		exec_ast_cmd_external(char **args, t_mnsh *mnsh);
+// void	check_and_execute_cmd(char **args, t_mnsh *mnsh);
+// char	*get_cmd_path(char *cmd, char **paths);
+// void	exec_ast_cmd_in(t_ast **node, int *fd);
+// char	*check_infiles(t_ast **node);
+// void	exec_ast_cmd_infile(char *last_infile, int *fd);
+// void	exec_ast_cmd_heredoc(t_ast **node);
+// void	exec_ast_cmd_out(t_ast **node, int *fd);
+// void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
+// void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
+// void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
+// void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
+// void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
+// void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
+// void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 
 // builtins
 bool	is_builtin(char *s);
-t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env);
-t_error	mnsh_echo(char **args, t_mnsh *mnsh);
+int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
+
+int		mnsh_echo(char **args);
 bool	is_echo_option_valid(char *arg);
-t_error	mnsh_env(t_mnsh *mnsh);
-t_error	mnsh_pwd(t_mnsh *mnsh);
-t_error	mnsh_cd(char **args, t_mnsh *mnsh);
-t_error	mnsh_export(char **args, t_mnsh *mnsh);
-t_error	ft_print_export_var(char **env);
-void	ft_print_substr_before_char(char *s, char c, int *j);
-void	ft_print_substr_after_char(char *s, int *j);
-t_error	export_check_specials(char *s, int *j);
-t_error	handle_export_var(char ***env, char *arg, int *j);
-t_error	mnsh_unset(char **args, t_mnsh *mnsh, char ***env);
-size_t	unset_newenvlen(char ***env, char **args);
-bool	env_var_is_in_args(char *var, char **args);
-bool	str_is_in_arr(char *s, char **arr);
-t_error	mnsh_exit(char **args, t_mnsh *mnsh);
-bool	ft_strtoll_isnum_mnsh(char *str, long long *n);
+int		mnsh_env(t_mnsh *mnsh);
+int		mnsh_pwd(void);
+
+int	mnsh_cd(char **args, t_mnsh *mnsh);
+int	set_target(char **args, char **target, t_mnsh *mnsh);
+int	set_cwd(char **cwd);
+int	update_pwd_oldpwd(char *cwd, t_mnsh *mnsh);
+
+int	mnsh_export(char **args, t_mnsh *mnsh);
+int	print_export_var(t_list *env);
+int	handle_export_var(char *arg, t_mnsh *mnsh);
+int	set_export_key_value(char *arg, int i, char **key, char **value);
+int	update_export_var(char *key, char *value, t_mnsh *mnsh);
+
+int	mnsh_unset(char **args, t_mnsh *mnsh);
+void	del_node(t_list **list, char *key);
+
+int	mnsh_exit(char **args, t_mnsh *mnsh);
+bool	strtoll_isnum(char *str, long long *n);
 
 // Utils
-t_error	mnsh_perror(t_error	error);
-t_error	perror_malloc(char *func_name);
 bool	ft_isspace(char c);
 bool	isquote(char c);
 bool	ft_isspecial(char c, const char *list_specials);
-bool	ft_str_contain(char *s, char c);
-size_t	ft_strlenchar(char *s, char c);
 int		ft_strcmp(const char *s1, const char *s2);
 int		ft_strarrlen(char **arr);
-
 char	*ft_strappend_mnsh(char *s1, char *s2);
-void	ft_perror_mnsh(char *cmd, char *errmsg);
-void	ft_perror_v_mnsh(int count, ...);
-void	ft_perror_exit_mnsh(char *cmd, char *errmsg, int errexit, char **exe);
 int		load_message(int size, char *msg, int speed);
 int		errno_to_exit(int errnum);
 int		perror_mnsh(int errnum, int count, ...);
-
-
-void	*safe_calloc(t_mnsh *mnsh, size_t nmemb, size_t size, char *func);
-char	*safe_strdup(char *s, t_mnsh *mnsh, char *func);
-char	*safe_strndup(const char *s, int n, t_mnsh *mnsh, char *func);
-char	*safe_itoa(int n, t_mnsh *mnsh, char *func);
-char	**safe_split(char *s, char c, t_mnsh *mnsh, char *func);
-char	*safe_strjoin_multi(t_mnsh *mnsh, char *func, int count, ...);
-size_t  ft_strjoin_multi_getlen(int count, va_list args);
-char    *ft_strjoin_multi_setstr(size_t len, int count, va_list args);
-void	safe_strarr_add(t_mnsh *mnsh, char ***arr, int i, char *s, char *fun);
-
+int		perror2_mnsh(int errnum, int count, ...);
+char    **lst_to_arr(t_list *list);
 
 // helpers
 void	print_node(t_ast *node);

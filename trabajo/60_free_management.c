@@ -19,7 +19,7 @@ void	safe_free_str(void *ptr)
 	str = NULL;
 }
 
-void		ft_free_strarray(char ***arr)
+void	ft_free_strarray(char ***arr)
 {
 	int		i;
 
@@ -81,7 +81,8 @@ void	free_outfile(void *ptr)
 	{
 		ft_free_str(&outfile->file);
 		free(outfile);
-	}	
+	}
+	outfile = NULL;
 }
 
 void	ft_free_ast(t_ast *root_node)
@@ -91,8 +92,8 @@ void	ft_free_ast(t_ast *root_node)
 	ft_free_ast(root_node->left_node);
 	ft_free_ast(root_node->right_node);
 	ft_lstclear(&root_node->infiles, &safe_free_str);
+	ft_lstclear(&root_node->heredocs, &safe_free_str);
 	ft_lstclear(&root_node->outfiles, &free_outfile);
-	ft_free_strarray(&root_node->heredoc);
 	ft_free_strarray(&root_node->args);
 	free(root_node);
 }
@@ -107,7 +108,7 @@ void	ft_free_reset_mnsh(t_mnsh *mnsh)
 {
 	ft_free_str(&mnsh->prompt);
 	ft_free_all_tok(&mnsh->tokis);
-	// ft_free_ast(mnsh->node);
+	ft_free_ast(mnsh->node);
 }
 
 void	ft_free_all_mnsh(t_mnsh *mnsh)

@@ -57,7 +57,23 @@ char	*get_env_var(t_list *env_lst, char *key)
 			return (var->value);
 		env_lst = env_lst->next;
 	}
-	return ("");
+	return (NULL);
+}
+
+t_list	*get_env_var_prev(t_list *env_lst, char *key)
+{
+	t_var	*var;
+
+	if (!env_lst)
+		return (NULL);
+	while (env_lst->next)
+	{
+		var = (t_var *)env_lst->content;
+		if (ft_strcmp(var->key, key) == 0)
+			return (env_lst);
+		env_lst = env_lst->next;
+	}
+	return (NULL);
 }
 
 int		add_env_var(t_list **env_lst, char *key, char *value)
@@ -117,29 +133,3 @@ void	display_env_var(void *ptr)
 	ft_putendl_fd(env_var->value, STDOUT_FILENO);
 }
 
-int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths)
-{
-	char	*path;
-	int		i;
-
-	path = get_env_var(env_mnsh_list, "PATH");
-	if (!path)
-		return (1);
-	*paths = ft_split(path, ':');
-	if (!*paths)
-		return (ENOMEM);
-	i = -1;
-	while ((*paths)[++i])
-	{
-		if ((*paths)[i][ft_strlen((*paths)[i]) - 1] != '/')
-		{
-			(*paths)[i] = strjoin_free_s1((*paths)[i], "/");
-			if (!(*paths)[i])
-			{
-				ft_free_strarray(paths);
-				return (ENOMEM);
-			}
-		}
-	}           
-	return (0);
-}

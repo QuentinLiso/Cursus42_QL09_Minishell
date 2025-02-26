@@ -76,9 +76,10 @@ void	print_ast(t_ast *node, int depth)
 		ft_printf("OPERATOR : %s (type : %d)\n", node->args[0], node->op_type);
 	else
 	{
-		ft_printf("COMMAND : %s ", node->args[0]);
+		ft_printf("COMMAND : ");
 		if (node->args)
 		{
+			ft_printf("%s ", node->args[0]);
 			ft_printf("[");
 			while (node->args[++i])
 				ft_printf("%s ", node->args[i]);
@@ -86,9 +87,9 @@ void	print_ast(t_ast *node, int depth)
 		}
 		ft_printf("\n");
 		print_infiles(node->infiles);
+		print_infiles(node->heredocs);
 		printf("Instyle : %d\n", node->instyle);
 		print_outfiles(node->outfiles);
-		print_strarray("Heredoc", node->heredoc);
 	}
 	print_ast(node->left_node, depth + 1);
 	print_ast(node->right_node, depth + 1);
@@ -129,14 +130,15 @@ void	print_tokis(t_token *tokis)
 	t_token *iter;
 
 	iter = tokis;
-	printf("Tokis : \n");
+	printf("Tokis : \n[");
 	while (iter)
 	{
 		if (!iter->word)
 			printf("(null)[%d]", iter->type);
 		else
 			printf("%s[%d]", iter->word, iter->type);			
-		printf("\n");
+		printf(", ");
 		iter = iter->next;
 	}
+	printf("]\n");
 }

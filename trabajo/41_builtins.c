@@ -2,7 +2,9 @@
 
 bool	is_builtin(char *s)
 {
-	if (ft_strcmp(s, "echo") == 0)
+	if (!s)
+		return (false);
+	else if (ft_strcmp(s, "echo") == 0)
 		return (true);
 	else if (ft_strcmp(s, "cd") == 0)
 		return (true);
@@ -19,28 +21,29 @@ bool	is_builtin(char *s)
 	return (false);	
 }
 
-t_error	b_in(char *s, char **args, t_mnsh *mnsh, char ***env)
+int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh)
 {
-	if (ft_strcmp(s, "echo") == 0)
-		return (mnsh_echo(args, mnsh));
-	else if (ft_strcmp(s, "cd") == 0)
+	if (ft_strcmp(args[0], "echo") == 0)
+		return (mnsh_echo(args));
+	else if (ft_strcmp(args[0], "cd") == 0)
 		return (mnsh_cd(args, mnsh));
-	else if (ft_strcmp(s, "pwd") == 0)
-		return (mnsh_pwd(mnsh));
-	else if (ft_strcmp(s, "export") == 0)
+	else if (ft_strcmp(args[0], "pwd") == 0)
+		return (mnsh_pwd());
+	else if (ft_strcmp(args[0], "export") == 0)
 		return (mnsh_export(args, mnsh));
-	else if (ft_strcmp(s, "unset") == 0)
-		return (mnsh_unset(args, mnsh, env));
-	else if (ft_strcmp(s, "env") == 0)
+	else if (ft_strcmp(args[0], "unset") == 0)
+		return (mnsh_unset(args, mnsh));
+	else if (ft_strcmp(args[0], "env") == 0)
 		return (mnsh_env(mnsh));
-	else if (ft_strcmp(s, "exit") == 0)
+	else if (ft_strcmp(args[0], "exit") == 0)
 		return (mnsh_exit(args, mnsh));
 	return (false);	
 }
 
 //============================================================================
 
-t_error	mnsh_echo(char **args, t_mnsh *mnsh)
+
+int	mnsh_echo(char **args)
 {
 	int		i;
 	bool	option;
@@ -60,8 +63,7 @@ t_error	mnsh_echo(char **args, t_mnsh *mnsh)
 		if (!option)
 			ft_putchar_fd('\n', STDOUT_FILENO);
 	}
-	mnsh->last_exit_status = 0;
-	return (ERR_NOERR);
+	return (0);
 }
 
 bool	is_echo_option_valid(char *arg)
@@ -81,278 +83,283 @@ bool	is_echo_option_valid(char *arg)
 
 //============================================================================
 
-t_error	mnsh_env(t_mnsh *mnsh)
+int	mnsh_env(t_mnsh *mnsh)
 {
-	char	**env;
-	int		i;
+	t_list	*iterator;
+	t_var	*var;
 
-	env = mnsh->env_mnsh;
-	if (!env || !env[0])
-		return (mnsh_perror(ERR_ENV));
-	i = -1;
-	while (env[++i])
-		if (ft_str_contain(env[i], '='))
-			ft_putendl_fd(env[i], STDOUT_FILENO);
-	mnsh->last_exit_status = 0;
-	return (ERR_NOERR);
+	iterator = mnsh->env_mnsh_lst;
+	while (iterator)
+	{
+		var = (t_var *)iterator->content;
+		if (var->value)
+		{
+			ft_putstr_fd(var->key, STDOUT_FILENO);
+			ft_putchar_fd('=', STDOUT_FILENO);
+			ft_putendl_fd(var->value, STDOUT_FILENO);
+		}
+		iterator = iterator->next;
+	}
+	return (0);
 }
 
 //============================================================================
 
-t_error	mnsh_pwd(t_mnsh *mnsh)
+int	mnsh_pwd(void)
 {
 	char	*pwd;
 
-	pwd = NULL;
-	pwd = getcwd(pwd, 0);
+	pwd = getcwd(NULL, 0);
 	if (pwd)
 	{
 		ft_putendl_fd(pwd, STDOUT_FILENO);
-		mnsh->last_exit_status = 0;
-		free(pwd);
-		return (ERR_NOERR);
+		ft_free_str(&pwd);
+		return (0);
 	}
 	else
-	{
-		mnsh->last_exit_status = 1;
-		return (mnsh_perror(ERR_ENV));
-	}
+		return (perror_mnsh(errno_to_exit(errno), 1, strerror(errno)));
 }
 
 //============================================================================
 
-t_error	mnsh_cd(char **args, t_mnsh *mnsh)
+int	mnsh_cd(char **args, t_mnsh *mnsh)
 {
-	char	*oldpwd;
-	char	cwd[512];
+	int		status;
+	char	*cwd;
+	char	*target;
 
 	if (ft_strarrlen(args) > 2)
-		return (ERR_ARGS);
-	if (args[1] == NULL)
+		return (perror_mnsh(errno_to_exit(E2BIG), 1, strerror(E2BIG)));
+	if (set_target(args, &target, mnsh))
+		return (1);
+	status = set_cwd(&cwd);
+	if (chdir(target))
 	{
-		args[1] = ft_get_env_var(mnsh->env_mnsh, "HOME");
-		if (!args[1])
-			return (mnsh_perror(ERR_ENV));
+		ft_free_str(&cwd);
+		return (perror_mnsh(errno_to_exit(errno), 1, strerror(errno)));
 	}
-	if (chdir(args[1]) != 0)
-		return (mnsh_perror(ERR_CD));
-	if (getcwd(cwd, sizeof(cwd)) == NULL)
-		return (mnsh_perror(ERR_CD));
-	oldpwd = ft_get_env_var(mnsh->env_mnsh, "PWD");
-	if (!oldpwd)
-			return (mnsh_perror(ERR_ENV));
+	if (status)
+		return (status);
+	status = update_pwd_oldpwd(cwd, mnsh);
+	ft_free_str(&cwd);
+	if (status)
+		return (status);
+	return (0);
+}
+
+int	set_target(char **args, char **target, t_mnsh *mnsh)
+{
+	if (!args[1])
+	{
+		*target = get_env_var(mnsh->env_mnsh_lst, "HOME");
+		if (!*target)
+			return (perror_mnsh(1, 1, "HOME env var not set"));
+	}
 	else
-		ft_reset_env_var(&mnsh->env_mnsh, "OLDPWD", oldpwd);
-	ft_reset_env_var(&mnsh->env_mnsh, "PWD", cwd);
-	free(oldpwd);
-	return (ERR_NOERR);
+		*target = args[1];
+	return (0);
+}
+
+int	set_cwd(char **cwd)
+{
+	*cwd = getcwd(NULL, 0);
+	if (!*cwd)
+		return (perror_mnsh(errno_to_exit(errno), 1, strerror(errno)));
+	return (0);
+}
+
+int	update_pwd_oldpwd(char *cwd, t_mnsh *mnsh)
+{
+	char	*newwd;
+	int		status_cwd;
+	int		status_newwd;
+
+	newwd = getcwd(NULL, 0);
+	if (!newwd)
+		return (perror_mnsh(errno_to_exit(errno), 1, strerror(errno)));
+	status_newwd = edit_env_var(&mnsh->env_mnsh_lst, "PWD", newwd);
+	status_cwd = edit_env_var(&mnsh->env_mnsh_lst, "OLDPWD", cwd);
+	if (status_newwd)
+		perror_mnsh(errno_to_exit(status_newwd), 1, "Could not update PWD");
+	if (status_cwd)
+		perror_mnsh(errno_to_exit(status_cwd), 1, "Could not update OLDPWD");
+	ft_free_str(&newwd);
+	if (status_newwd)
+		return (errno_to_exit(status_newwd));
+	if (status_cwd)
+		return (errno_to_exit(status_cwd));
+	return (0);
 }
 
 //============================================================================
 
-t_error	mnsh_export(char **args, t_mnsh *mnsh)
+int	mnsh_export(char **args, t_mnsh *mnsh)
 {
 	int	i;
-	int	j;
+	int	status;
 
-	mnsh->last_exit_status = 0;
+	status = 0;
 	if (args[1] == NULL)
-		return (ft_print_export_var(mnsh->env_mnsh));
+		return (print_export_var(mnsh->env_mnsh_lst));
 	else
 	{
 		i = 0;
 		while (args[++i])
-		{
-			j = 0;
-			if (export_check_specials(args[i], &j) == ERR_NOERR)
-				handle_export_var(&mnsh->env_mnsh, args[i], &j);
-			else
-			{
-				mnsh_perror(ERR_ARGS);
-				mnsh->last_exit_status = 1;
-			}
-		}
+			status = handle_export_var(args[i], mnsh);
 	}
-	return (ERR_NOERR);
-}
-
-t_error	ft_print_export_var(char **env)
-{
-	int	i;
-	int	j;
-
-	i = 0;
-	if (!env || !env[0])
-		return (ERR_ENV);
-	while (env[i])
-	{
-		j = 0;
-		ft_putstr_fd("export ", STDOUT_FILENO);
-		ft_print_substr_before_char(env[i], '=', &j);
-		if (env[i][j] == '=')
-		{
-			ft_putstr_fd("=\"", STDOUT_FILENO);
-			ft_print_substr_after_char(env[i], &j);
-			ft_putstr_fd("\"", STDOUT_FILENO);	
-		}
-		ft_putchar_fd('\n', STDOUT_FILENO);
-		i++;
-	}
-	return (ERR_NOERR);
-}
-
-void	ft_print_substr_before_char(char *s, char c, int *j)
-{
-	if (!s || !s[*j])
-		return ;
-	while (s[*j] && s[*j] != c)
-		ft_putchar_fd(s[(*j)++], STDOUT_FILENO);
-}
-
-void	ft_print_substr_after_char(char *s, int *j)
-{
-	if (!s || !s[*j])
-		return ;
-	while (s[++(*j)])
-		ft_putchar_fd(s[*j], STDOUT_FILENO);
-}
-
-t_error	export_check_specials(char *s, int *j)
-{
-	if (!s || !s[0])
-		return (mnsh_perror(ERR_ARGS));
-	while (s[*j] && (ft_isalnum(s[*j]) || s[*j] == '_'))
-		(*j)++;
-	if (s[*j] && s[*j] != '=')
-		return (ERR_ARGS);
-	return (ERR_NOERR);
-}
-
-t_error	handle_export_var(char ***env, char *arg, int *j, t_mnsh *mnsh)
-{
-	char	*value;
-	char	*var;
-	int		i;
-	t_error	status;
-
-	if (arg[*j] == '=')
-		value = &arg[*j + 1];
-	else
-		value = NULL;
-	var = ft_strndup(arg, *j);
-	if (!var)
-		return (perror_malloc("handle_export_var"));
-	i = ft_get_env_var_index(*env, var);
-	if (i == -1)
-	{
-		status = ft_new_env_var(env, var, value, mnsh);
-	}
-	else
-		status = ft_reset_env_var_index(env, var, value, i);
-	free(var);
 	return (status);
 }
 
-//============================================================================
-
-t_error	mnsh_unset(char **args, t_mnsh *mnsh, char ***env)
+int	print_export_var(t_list *env)
 {
-	char	**new_env;
-	int		i;
-	int		j;
+	t_var	*var;
 
-	if (!args[1])
-		return (ERR_NOERR);
-	new_env = ft_calloc(unset_newenvlen(env, args) + 1, sizeof(char *));
-	if (!new_env)
-		return (perror_malloc("mnsh_unset"));
-	i = -1;
-	j = 0;
-	while ((*env)[++i])
+	if (!env)
+		return (perror_mnsh(1, 1, "ENV not available"));
+	while (env)
 	{
-		if (!env_var_is_in_args((*env)[i], &args[1]))
+		var = (t_var *)env->content;
+		ft_putstr_fd("export ", STDOUT_FILENO);
+		ft_putstr_fd(var->key, STDOUT_FILENO);
+		if (var->value)
 		{
-			new_env[j++] = ft_strdup((*env)[i]);
-				if (!new_env[j - 1])
-					return (perror_malloc("mnsh_unset"));
+			ft_putstr_fd("=\"", STDOUT_FILENO);
+			ft_putstr_fd(var->value, STDOUT_FILENO);
+			ft_putchar_fd('"', STDOUT_FILENO);
+		}
+		ft_putchar_fd('\n', STDOUT_FILENO);
+		env = env->next;
+	}
+	return (0);
+}
+
+int	handle_export_var(char *arg, t_mnsh *mnsh)
+{
+	size_t	i;
+	char	*key;
+	char	*value;
+	int		status;
+
+	if (!ft_isalpha(arg[0]) && arg[0] != '_')
+		return (perror_mnsh(1, 3, "export", arg, "not a valid identifier"));
+	i = 0;
+	while(arg[i] && arg[i] != '=')
+	{
+		if (!ft_isalnum(arg[i]) && arg[i] != '_')
+			return (perror_mnsh(1, 3, "export", arg, "not a valid identifier"));
+		i++;
+	}
+	status = set_export_key_value(arg, i, &key, &value);
+	if (status)
+		return (status);
+	status = update_export_var(key, value, mnsh);
+	ft_free_str(&key);
+	ft_free_str(&value);
+	return (status);
+}
+
+int	set_export_key_value(char *arg, int i, char **key, char **value)
+{
+	*key = ft_substr(arg, 0, i);
+	if (!*key)
+		return (perror_mnsh(ENOMEM, 1, "malloc err in set export key val"));
+	if (!arg[i])
+		*value = NULL;
+	else
+	{
+		*value = ft_strdup(&arg[i + 1]);
+		if (!*value)
+		{
+			ft_free_str(key);
+			return (perror_mnsh(ENOMEM, 1, "malloc err in set export key val"));
 		}
 	}
-	new_env[j] =  NULL;
-	ft_free_strarray(env);
-	*env = new_env;
-	mnsh->last_exit_status = 0;
-	return (ERR_NOERR);
+	return (0);
 }
 
-size_t	unset_newenvlen(char ***env, char **args)
+int	update_export_var(char *key, char *value, t_mnsh *mnsh)
 {
-	size_t	len;
-	int		i;
+	char	*env_var_val;
 
-	len = 0;
-	i = -1;
-	while ((*env)[++i])
-		if (!env_var_is_in_args((*env)[i], args))
-			len++;
-	return (len);
-}
-
-bool	env_var_is_in_args(char *var, char **args)
-{
-	char	*buffer;
-
-	buffer = ft_strndup(var, ft_strlenchar(var, '='));
-	if (str_is_in_arr(buffer, args))
+	env_var_val = get_env_var(mnsh->env_mnsh_lst, key);
+	if (!value)
 	{
-		free(buffer);
-		return (true);
+		if (!env_var_val)
+			return (add_env_var(&mnsh->env_mnsh_lst, key, value));
+		return (0);
 	}
-	free(buffer);
-	return (false);
-}
-
-bool	str_is_in_arr(char *s, char **arr)
-{
-	int	i;
-
-	i = -1;
-	while (arr[++i])
-		if (ft_strcmp(s, arr[i]) == 0)
-			return (true);
-	return (false);
+	else
+		return (edit_env_var(&mnsh->env_mnsh_lst, key, value));
 }
 
 //============================================================================
 
-t_error	mnsh_exit(char **args, t_mnsh *mnsh)
+int	mnsh_unset(char **args, t_mnsh *mnsh)
+{
+	int		i;
+
+	i = 0;
+	while (args[++i])
+		del_node(&mnsh->env_mnsh_lst, args[i]);
+	return (0);
+}
+
+void	del_node(t_list **list, char *key)
+{
+	t_list	*iter;
+	t_list	*prev;
+	t_var	*var;
+
+	if (!list || !*list || !key)
+		return ;
+	iter = *list;
+	prev = NULL;
+	while (iter)
+	{
+		var = (t_var *)iter->content;
+		if (!ft_strcmp(var->key, key))
+			break;
+		prev = iter;
+		iter = iter->next;
+	}
+	if (!iter)
+		return ;
+	if (!prev)
+		*list = iter->next;
+	else
+		prev->next = iter->next;
+	ft_lstdelone(iter, &free_env_var);
+}
+
+
+// //============================================================================
+
+int	mnsh_exit(char **args, t_mnsh *mnsh)
 {
 	long long		exit_code;
 	bool			is_llong_num;
 
+	ft_putendl_fd("exit", STDERR_FILENO);
 	if (args[1] == NULL)
-		exit_code = 0;
+		exit_code = mnsh->last_exit_status;
 	else 
 	{
-		is_llong_num = ft_strtoll_isnum_mnsh(args[1], &exit_code);
+		is_llong_num = strtoll_isnum(args[1], &exit_code);
 		if (!is_llong_num)
-		{
-			ft_perror_v_mnsh(3, "exit", args[1], "numeric argument required");
-			exit_code = 1;
-		}						
+			exit_code = perror_mnsh(1, 3, "exit", args[1],
+				"numeric argument required");				
 		else if (is_llong_num && args[2])
-		{
-			ft_perror_mnsh("exit", strerror(E2BIG));
-			return (ERR_ARGS);
-		}		
+			return (perror_mnsh(errno_to_exit(E2BIG), 2, "exit",
+				strerror(E2BIG)));
 	}
 	ft_free_all_mnsh(mnsh);
 	load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
-	mnsh->last_exit_status = exit_code;
-	exit(exit_code);
-	return (ERR_NOERR);
+	mnsh->last_exit_status = exit_code % 256;
+	exit(exit_code % 256);
+	return (0);
 }
 
-bool	ft_strtoll_isnum_mnsh(char *str, long long *n)
+bool	strtoll_isnum(char *str, long long *n)
 {
 	int	sign;
 	int	digit;

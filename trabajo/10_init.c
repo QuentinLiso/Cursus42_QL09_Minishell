@@ -96,3 +96,30 @@ int		set_mnsh_env_shlvl(t_list **env_lst)
 	}
 	return (0);
 }
+
+int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths)
+{
+	char	*path;
+	int		i;
+
+	path = get_env_var(env_mnsh_list, "PATH");
+	if (!path)
+		return (1);
+	*paths = ft_split(path, ':');
+	if (!*paths)
+		return (ENOMEM);
+	i = -1;
+	while ((*paths)[++i])
+	{
+		if ((*paths)[i][ft_strlen((*paths)[i]) - 1] != '/')
+		{
+			(*paths)[i] = ft_strappend_mnsh((*paths)[i], "/");
+			if (!(*paths)[i])
+			{
+				ft_free_strarray(paths);
+				return (ENOMEM);
+			}
+		}
+	}           
+	return (0);
+}

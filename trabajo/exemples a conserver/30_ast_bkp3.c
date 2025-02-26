@@ -1,32 +1,44 @@
 #include "minishell.h"
 
-int		ast_mnsh(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
-{
-	int	status;
+// int	ast_mnsh(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end)
+// {
+// 	int	status;
+// 	status = create_ast(mnsh, node, start, end);
+// 	if (status)
+// 	{
+// 		ft_free_ast(mnsh->node);
+// 		return (status);
+// 	}
+// 	return (0);
+// }
 
-	if (!start || !end)
-		return (0);
-	status = create_ast(node, start, end);
-	if (status)
-	{
-		mnsh->last_exit_status = status;
-		return (status);
-	}
-	return (0);
-}
-
-int		create_ast(t_ast **node, t_token *start, t_token *end)
+int		create_ast(t_mnsh *mnsh, t_ast **node, t_token *start, t_token *end)
 {
 	t_token	*split_token;
-
+	int		status;
 	if (start == end->next)
 		return (0);
 	split_token = set_split_token(start, end);
 	if (split_token == NULL)
-		return (ast_cmdnode(node, start, end));
+	{
+		*node = create_ast_cmdnode(start, end);
+		if (!*node)
+			return (ENOMEM);
+		return (0);
+	}
 	else if (is_syntax_error(start, end, split_token))
-		return (errno_to_exit(2));
-	return (ast_opnode(node, start, split_token, end));
+		return (perror_mnsh(2, 4, "", "syntax error near unexpected token `",
+			split_token->word, "'"));
+	*node = create_ast_opnode(split_token->word);
+	if (!*node)
+		return (ENOMEM);
+	status = create_ast(mnsh, &(*node)->left_node, start, split_token->prev);
+	if (status)
+		return (status);
+	status = create_ast(mnsh, &(*node)->right_node, split_token->next, end);
+	if (status)
+		return (status);
+	return (0);
 }
 
 t_token		*set_split_token(t_token *start, t_token *end)
@@ -65,60 +77,41 @@ int			get_operator_precedence(char *op)
 	return (0);
 }
 
-bool		is_syntax_error(t_token *start, t_token *end, t_token *split_token)
+bool	is_syntax_error(t_token *start, t_token *end, t_token *split_token)
 {
-	if	(split_token == start || split_token == end || 
+	return (split_token == start || split_token == end || 
 		split_token->next == NULL || split_token->next->type != TOKEN_WORD ||
-		split_token->prev == NULL || split_token->prev->type != TOKEN_WORD)
-	{
-		perror2_mnsh(2, 4, ": ", "syntax error near unexpected token `",
-			split_token->word, "'");
-		return (true);
-	}
-	else
-	{
-		return (false);
-	}
+		split_token->prev == NULL || split_token->prev->type != TOKEN_WORD);
 }
 
 // ============================================
 
-int		ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end)
+int create_ast_opnode(t_ast **node, char *op)
 {
-	int		status;
-
-	status = create_ast_opnode(node, split_tok->word);
-	if (status)
-		return (status);
-	status = create_ast(&(*node)->left_node, start, split_tok->prev);
-	if (status)
-		return (status);
-	status = create_ast(&(*node)->right_node, split_tok->next, end);
-	if (status)
-		return (status);
-	return (0);
-}
-
-int 	create_ast_opnode(t_ast **node, char *op)
-{
-	(*node) = ft_calloc(1, sizeof(t_ast));
+	node = ft_calloc(1, sizeof(t_ast));
 	if (!node)
-		return (ENOMEM);
-	(*node)->node_type = NODE_OP;
-	(*node)->op_type = set_op_type(op);
-	(*node)->args = ft_calloc(2, sizeof(char *));
-	if (!(*node)->args)
-		return (ENOMEM);
-	(*node)->args[0] = ft_strdup(op);
-	if (!(*node)->args[0])
-		return (ENOMEM);
-	(*node)->args[1] = NULL;
-    (*node)->infiles = NULL;
-    (*node)->outfiles = NULL;
-    (*node)->heredocs = NULL;
-    (*node)->left_node = NULL;
-    (*node)->right_node = NULL;
-	return (0);
+		return (NULL);
+	node->node_type = NODE_OP;
+	node->op_type = set_op_type(op);
+	node->args = ft_calloc(2, sizeof(char *));
+	if (!node->args)
+	{
+		free(node);
+		return (NULL);
+	}
+	node->args[0] = ft_strdup(op);
+	if (!node->args[0])
+	{
+		free(node);
+		return (NULL);
+	}
+	node->args[1] = NULL;
+    node->infiles = NULL;
+    node->outfiles = NULL;
+    node->heredoc = NULL;
+    node->left_node = NULL;
+    node->right_node = NULL;
+	return (node);
 }
 
 t_optype	set_op_type(char *op)
@@ -137,37 +130,37 @@ t_optype	set_op_type(char *op)
 
 // ========================================
 
-int		ast_cmdnode(t_ast **node, t_token *start, t_token *end)
+t_ast	*create_ast_cmdnode(t_token *start, t_token *end)
 {
-	int		status;
+	t_ast	*node;
 
-	status = create_cmd_node(node);
-	if (status)
-		return (status);
-	status = handle_indir(node, start, end);
-	if (status)
-		return (status);	
-	status = set_cmdnode_args(node, start, end);
-	if (status)
-		return (status);	
-	return (0);
+	node = init_cmd_node();
+	if (!node)
+		return (NULL);
+	if (handle_indir(&node, start, end))
+		return (NULL);
+	if (set_cmdnode_args(&node, start, end))
+		return (NULL);
+	return (node);
 }
 
-int		create_cmd_node(t_ast **node)
+t_ast	*init_cmd_node(void)
 {
-	(*node) = ft_calloc(1, sizeof(t_ast));
-    if ((*node) == NULL)
-		return (ENOMEM);
-	(*node)->node_type = NODE_CMD;
-	(*node)->op_type = OP_NULL;
-    (*node)->args = NULL;
-    (*node)->infiles = NULL;
-    (*node)->outfiles = NULL;
-	(*node)->instyle = IN_NULL;
-    (*node)->heredocs = NULL;
-    (*node)->left_node = NULL;
-    (*node)->right_node = NULL;
-    return (0);
+	t_ast	*node;
+
+	node = ft_calloc(1, sizeof(t_ast));
+    if (node == NULL)
+		return (NULL);
+	node->node_type = NODE_CMD;
+	node->op_type = OP_NULL;
+    node->args = NULL;
+    node->infiles = NULL;
+    node->outfiles = NULL;
+	node->instyle = IN_NULL;
+    node->heredoc = NULL;
+    node->left_node = NULL;
+    node->right_node = NULL;
+    return (node);
 }
 
 // ==================================
@@ -198,11 +191,11 @@ int		handle_indir(t_ast **node, t_token *start, t_token *end)
 int		is_indir_error(t_token *iterator, t_token *end)
 {
 	if (iterator == end || !iterator->next)
-		return (perror2_mnsh(2, 3, ": ", "syntax error near unexpected token",
-			" `newline'"));
+		return (perror_mnsh(2, 1, "syntax error near unexpected token`\
+				newline'"));
 	else if (iterator->next->type == TOKEN_INDIR)
-		return (perror2_mnsh(2, 5, ": ", "syntax error near unexpected token",
-			" `", iterator->word, "'"));
+		return (perror_mnsh(2, 3, "syntax error near unexpected token`",
+				iterator->word, "'"));
 	else if (iterator->next->word && !*iterator->next->word)
 		return (perror_mnsh(126, 2, "", "No such file or directory"));
 	return (0);
@@ -210,38 +203,34 @@ int		is_indir_error(t_token *iterator, t_token *end)
 
 int		set_indir(t_ast **node, t_token *iterator)
 {
+	int	status;
+
+	status = 0;
 	if (!ft_strcmp(iterator->word, "<>"))
 	{
 		if (set_node_infile(node, iterator))
-			return (ENOMEM);
+			return (-12);
 		if (set_node_outfile(node, iterator, OUT_TRUNC))
-			return (ENOMEM);
+			return (-12);
 	}
 	else if (!ft_strcmp(iterator->word, "<<"))
-		return (set_node_heredoc(node, iterator));
+		status = set_node_heredoc(node, iterator);
 	else if (!ft_strcmp(iterator->word, "<"))
-		return (set_node_infile(node, iterator));
+		status = set_node_infile(node, iterator);
 	else if (!ft_strcmp(iterator->word, ">>"))
-		return (set_node_outfile(node, iterator, OUT_APPEND));
+		status = set_node_outfile(node, iterator, OUT_APPEND);
 	else if (!ft_strcmp(iterator->word, ">"))
-		return (set_node_outfile(node, iterator, OUT_TRUNC));
-	return (0);
+		status = set_node_outfile(node, iterator, OUT_TRUNC);
+	return (status);
 }
 
 int		set_node_infile(t_ast **node, t_token *iterator)
 {
 	t_list	*inlist_elem;
-	char	*filename;
 
-	filename = ft_strdup(iterator->next->word);
-	if (!filename)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
-	inlist_elem = ft_lstnew(filename);
+	inlist_elem = ft_lstnew(ft_strdup(iterator->next->word));
 	if (!inlist_elem)
-	{
-		ft_free_str(&filename);
 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
-	}
 	ft_lstadd_back(&(*node)->infiles, inlist_elem);
 	(*node)->instyle = IN_FILE;
 	return (0);
@@ -249,66 +238,39 @@ int		set_node_infile(t_ast **node, t_token *iterator)
 
 int		set_node_heredoc(t_ast **node, t_token *iterator)
 {
-	t_list	*heredocs_elem;
-	char	*filename;
-	int		status;
+    t_list  *heredoc;
+    t_list  *lst_iter;
 
-	filename = set_heredoc_name();
-	if (!filename)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
-	heredocs_elem = ft_lstnew(filename);
-	if (!heredocs_elem)
-	{
-		ft_free_str(&filename);
-		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
-	}
-	ft_lstadd_back(&(*node)->heredocs, heredocs_elem);
+	iterator = iterator->next;
+    ft_free_str(&(*node)->heredoc_end);
+    ft_free_strarray(&(*node)->heredoc);
 	(*node)->instyle = IN_HEREDOC;
-	status = create_heredoc(filename, iterator->next->word);
-	if (status)
-		return (status);
+    (*node)->heredoc_end = ft_strdup(iterator->word);
+    heredoc = ft_lstnew(readline("heredoc> "));
+    lst_iter = heredoc;
+    while (ft_strcmp(lst_iter->content, (*node)->heredoc_end) != 0)
+    {
+        lst_iter->next = ft_lstnew(readline("heredoc> "));
+        lst_iter = lst_iter->next;
+    }
+    lst_to_arr(node, heredoc);
+    ft_lstclear(&heredoc, &free);
 	return (0);
 }
 
-char	*set_heredoc_name()
+int		lst_to_arr(t_ast **node, t_list *heredoc)
 {
-	static int count = 1;
-	char	*count_itoa;
-	char	*heredoc_name;
+    int len;
+    int i;
 
-	if (count < 0)
-		count = 1;
-	count_itoa = ft_itoa(count);
-		(count)++;
-	if (count < 0)
-		count = 1;
-	if (!count_itoa)
-		return (NULL);
-	heredoc_name = ft_strjoin("mnsh-hdoc-tmp-", count_itoa);
-	ft_free_str(&count_itoa);
-	if (!heredoc_name)
-		return (NULL);
-	return (heredoc_name);
-}
-
-int		create_heredoc(char *heredoc, char *heredoc_end)
-{
-	char	*prompt;
-	int		fd;
-
-	fd = open(heredoc, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
-		return (-fd);
-	while (1)
-	{
-		prompt = readline("heredoc> ");
-		if (!prompt || !ft_strcmp(prompt, heredoc_end))
-			break ;
-		ft_putendl_fd(prompt, fd);
-		ft_free_str(&prompt);
-	}
-	ft_free_str(&prompt);
-	close (fd);
+    len = ft_lstsize(heredoc);
+    (*node)->heredoc = ft_calloc(len + 1, sizeof(char *));
+    i = 0;
+    while (heredoc->next)
+    {
+        (*node)->heredoc[i++] = ft_strdup((char *)heredoc->content);
+        heredoc = heredoc->next;
+    }
 	return (0);
 }
 
@@ -318,7 +280,7 @@ int		set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style)
 	t_outfile	*outfile;
 
 	outlist_elem = NULL;
-	outfile = ft_calloc(1, sizeof(t_outfile));
+	outfile = ft_calloc(1, sizeof(t_outfile *));
 	if (!outfile)
 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
 	outfile->file = ft_strdup(iterator->next->word);
@@ -327,10 +289,7 @@ int		set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style)
 	outfile->outstyle = style;
 	outlist_elem = ft_lstnew(outfile);
 	if (!outlist_elem)
-	{
-		free_outfile(outfile);
 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-	}
 	ft_lstadd_back(&(*node)->outfiles, outlist_elem);
 	return (0);
 }
@@ -381,3 +340,4 @@ int     	cmd_args_count(t_token *start, t_token *end)
 	}
 	return (len);
 }
+
