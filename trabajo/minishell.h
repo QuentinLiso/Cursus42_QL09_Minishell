@@ -341,7 +341,8 @@ int		load_message(int size, char *msg, int speed);
 int		errno_to_exit(int errnum);
 int		perror_mnsh(int errnum, int count, ...);
 int		perror2_mnsh(int errnum, int count, ...);
-char    **lst_to_arr(t_list *list);
+char    **env_lst_to_arr(t_list *env_list);
+char	*env_var_to_char(t_var *var);
 
 // helpers
 void	print_node(t_ast *node);

@@ -147,7 +147,7 @@ int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
 {
 	char	**env;
 
-	env = lst_to_arr(mnsh->env_mnsh_lst);
+	env = env_lst_to_arr(mnsh->env_mnsh_lst);
 	if (!env)
 		return (perror_mnsh(12, 1, "err malloc env for exec"));
 	execve(*execfile, args, env);
@@ -346,18 +346,3 @@ int	right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 	}
 	return (0);
 }
-
-
-/*
-
-
-}
-
-
-// =======================================
-
-// ========================================
-
-// =====================================
-
-*/
