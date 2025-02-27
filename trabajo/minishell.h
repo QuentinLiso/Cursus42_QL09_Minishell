@@ -255,6 +255,7 @@ int		set_last_infile(t_list *infiles, t_list **last_infile);
 int		exec_ast_cmd_infile(char *last_infile, int *fd);
 int		exec_ast_cmd_out(t_ast **node, int *fd);
 int		set_last_outfile(t_list *outfiles, t_list **last_outfile);
+int		create_outfile(t_outfile *outfile);
 int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd);
 
 

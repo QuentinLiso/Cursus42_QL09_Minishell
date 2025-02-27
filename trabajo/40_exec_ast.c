@@ -237,9 +237,6 @@ int		exec_ast_cmd_out(t_ast **node, int *fd)
 	if (status)
 		return (status);
 	if (last_outfile)
-	{
-		
-	}
 		return (exec_ast_cmd_outfile(last_outfile->content, fd));
 	return (0);
 }
@@ -249,6 +246,7 @@ int		set_last_outfile(t_list *outfiles, t_list **last_outfile)
 	int			check_access;
 	t_outfile 	*outfile;
 	struct stat	st;
+	int			status;
 
 	if (!outfiles || !outfiles->content)
 		return (0);
@@ -261,10 +259,29 @@ int		set_last_outfile(t_list *outfiles, t_list **last_outfile)
 			if (check_access < 0)
 				return (perror_mnsh(1, 2, outfile->file, strerror(errno)));
 		}
+		status = create_outfile(outfile);
+		if (status)
+			return (status);
 		if (!outfiles->next)
 			(*last_outfile) = outfiles;
 		outfiles = outfiles->next;
 	}
+	return (0);
+}
+
+int		create_outfile(t_outfile *outfile)
+{
+	int	flag;
+	int	fd;
+
+	if (outfile->outstyle == OUT_APPEND)
+		flag = O_APPEND;
+	else
+		flag = O_TRUNC;
+	fd = open(outfile->file, O_WRONLY | O_CREAT | flag, 0644);
+	if (fd < 0)
+		return (perror_mnsh(errno_to_exit(errno), 2, outfile->file, strerror(errno)));
+	close(fd);
 	return (0);
 }
 
