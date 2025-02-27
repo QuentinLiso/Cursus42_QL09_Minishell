@@ -22,8 +22,8 @@ int main(int ac, char **av, char **env)
 {
 	t_mnsh	mnsh;
 
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		print_minishell_header();
+	// if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+	// 	print_minishell_header();
 	if (mnsh_initialization(&mnsh, ac, env))
 	{
 		ft_free_all_mnsh(&mnsh);

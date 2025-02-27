@@ -29,12 +29,7 @@ void	ft_free_strarray(char ***arr)
 	while ((*arr)[++i])
 		ft_free_str(&(*arr)[i]);
 	free(*arr);
-}
-
-t_error		ft_free_strarray_perror(char ***arr, t_error err)
-{
-	ft_free_strarray(arr);
-	return (err);
+	(*arr) = NULL;
 }
 
 void	ft_free_all_tok(t_token **tok)
@@ -52,26 +47,6 @@ void	ft_free_all_tok(t_token **tok)
 	}
 }
 
-void	ft_free_infiles(t_infiles *infiles)
-{
-	t_infiles	*iterator;
-	t_infiles	*buffer;
-
-	if (!infiles)
-		return ;
-	iterator = infiles;
-	while (iterator)
-	{
-		buffer = iterator;
-		iterator = iterator->next;
-		if (buffer && buffer->infile)
-		{
-			ft_free_str(&buffer->infile);
-			free(buffer);
-		}
-	}
-}
-
 void	free_outfile(void *ptr)
 {
 	t_outfile	*outfile;
@@ -85,20 +60,24 @@ void	free_outfile(void *ptr)
 	outfile = NULL;
 }
 
-void	ft_free_ast(t_ast *root_node)
+void	ft_free_ast(t_ast **root_node)
 {
 	if (!root_node)
 		return ;
-	ft_free_ast(root_node->left_node);
-	ft_free_ast(root_node->right_node);
-	ft_lstclear(&root_node->infiles, &safe_free_str);
-	ft_lstclear(&root_node->heredocs, &safe_free_str);
-	ft_lstclear(&root_node->outfiles, &free_outfile);
-	ft_free_strarray(&root_node->args);
-	free(root_node);
+	ft_free_ast(&(*root_node)->left_node);
+	ft_free_ast(&(*root_node)->right_node);
+	ft_lstclear(&(*root_node)->infiles, &safe_free_str);
+	ft_lstclear(&(*root_node)->heredocs, &safe_free_str);
+	ft_lstclear(&(*root_node)->outfiles, &free_outfile);
+	printf("F\n");
+	if ((*root_node)->args)
+		ft_free_strarray(&(*root_node)->args);
+	printf("G\n");
+	free((*root_node));
+	*root_node = NULL;
 }
 
-int		free_ast_ret(t_ast *root_node, int errnum)
+int		free_ast_ret(t_ast **root_node, int errnum)
 {
 	ft_free_ast(root_node);
 	return (errnum);
@@ -106,9 +85,11 @@ int		free_ast_ret(t_ast *root_node, int errnum)
 
 void	ft_free_reset_mnsh(t_mnsh *mnsh)
 {
+
 	ft_free_str(&mnsh->prompt);
 	ft_free_all_tok(&mnsh->tokis);
-	ft_free_ast(mnsh->node);
+	// if (mnsh->node)
+	// 	ft_free_ast(&mnsh->node);
 }
 
 void	ft_free_all_mnsh(t_mnsh *mnsh)

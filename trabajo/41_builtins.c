@@ -219,7 +219,7 @@ int	print_export_var(t_list *env)
 	while (env)
 	{
 		var = (t_var *)env->content;
-		ft_putstr_fd("export ", STDOUT_FILENO);
+		ft_putstr_fd("declare -x ", STDOUT_FILENO);
 		ft_putstr_fd(var->key, STDOUT_FILENO);
 		if (var->value)
 		{
@@ -353,7 +353,7 @@ int	mnsh_exit(char **args, t_mnsh *mnsh)
 				strerror(E2BIG)));
 	}
 	ft_free_all_mnsh(mnsh);
-	load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
+	// load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
 	mnsh->last_exit_status = exit_code % 256;
 	exit(exit_code % 256);
 	return (0);

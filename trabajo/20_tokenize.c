@@ -55,7 +55,7 @@ int		strtok_mnsh(t_mnsh *mnsh, char *s)
 	}
 	if (status < 0)
 	{
-		ft_free_all_tok(&mnsh->tokis);
+		// ft_free_all_tok(&mnsh->tokis);
 		mnsh->last_exit_status = -status;
 		return (status);
 	}
@@ -350,7 +350,9 @@ int		split_noquote(t_mnsh *mnsh, char **s, char **word)
 	char	*buffer;
 	int		status;
 
-	buffer = NULL;
+	buffer = ft_strdup("");
+	if (!buffer)
+		return (perror_mnsh(-12, 1, "Err malloc in split noquote"));
 	while (**s && **s != '"' && **s != '\'' && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS))
 	{
 		status = check_split_noquote(mnsh, s, &buffer);

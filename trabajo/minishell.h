@@ -123,19 +123,6 @@ typedef struct s_token
 	struct s_token	*prev;
 }	t_token;
 
-typedef struct s_infiles
-{
-	char				*infile;
-	struct s_infiles	*next;
-}	t_infiles;
-
-typedef struct s_outfiles
-{
-	char				*outfile;
-	t_outstyle			outstyle;
-	struct s_outfiles	*next;
-}	t_outfiles;
-
 typedef struct s_outfile
 {
 	char			*file;
@@ -147,13 +134,11 @@ typedef struct s_ast
 	t_nodetype	node_type;
 	t_optype	op_type;
 	char		**args;
-	// t_infiles	*infiles;
 	t_list		*infiles;
 	t_list		*heredocs;
 	char		**heredoc;
 	char		*heredoc_end;
 	t_instyle	instyle;
-	// t_outfiles		*outfiles;
 	t_list		*outfiles;
 	struct s_ast	*left_node;
 	struct s_ast	*right_node;
@@ -161,9 +146,7 @@ typedef struct s_ast
 
 typedef struct s_minishell
 {
-	// t_error	status;
 	t_list	*env_mnsh_lst;
-	// char	**env_mnsh;
 	char	**paths;
 	t_token	*tokis;
 	t_token	*last_tokis;
@@ -248,18 +231,6 @@ int  	 	set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style);
 int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
 int     	cmd_args_count(t_token *start, t_token *end);
 
-// infiles lst
-t_infiles	*infiles_new(char *infile);
-void		infiles_add_back(t_infiles **infiles, t_infiles *new);
-t_infiles	*infiles_last(t_infiles *infiles);
-int			infiles_size(t_infiles *infiles);
-
-// outfiles lst
-t_outfiles	*outfiles_new(char *outfile, t_outstyle style);
-void		outfiles_add_back(t_outfiles **outfiles, t_outfiles *new);
-t_outfiles	*outfiles_last(t_outfiles *outfiles);
-int			outfiles_size(t_outfiles *outfiles);
-
 // exec
 int		execute_ast(t_ast **node, t_mnsh *mnsh);
 int		set_mnsh_last_arg(t_ast **node, t_mnsh *mnsh);
@@ -271,12 +242,12 @@ int		check_execfile(char *execfile, char **args);
 int		get_cmd_path(char **execfile, char *cmd, char **paths);
 int		ft_execve(char **execfile, char **args, t_mnsh *mnsh);
 
-int	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
-int	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
-int	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
-int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
-int	left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
-int	right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
+int		exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
+int		exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
+int		exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
+int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
+int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
+int		right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
 
 int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out);
 int		exec_ast_cmd_in(t_ast **node, int *fd);
@@ -285,24 +256,6 @@ int		exec_ast_cmd_infile(char *last_infile, int *fd);
 int		exec_ast_cmd_out(t_ast **node, int *fd);
 int		exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
 
-// void	execute_ast(t_ast **node, t_mnsh *mnsh);
-// void	exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
-// int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
-// int		exec_ast_cmd_external(char **args, t_mnsh *mnsh);
-// void	check_and_execute_cmd(char **args, t_mnsh *mnsh);
-// char	*get_cmd_path(char *cmd, char **paths);
-// void	exec_ast_cmd_in(t_ast **node, int *fd);
-// char	*check_infiles(t_ast **node);
-// void	exec_ast_cmd_infile(char *last_infile, int *fd);
-// void	exec_ast_cmd_heredoc(t_ast **node);
-// void	exec_ast_cmd_out(t_ast **node, int *fd);
-// void	exec_ast_cmd_outfile(char *outfile, int *fd, int flag);
-// void	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh);
-// void	exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
-// void	exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
-// void	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
-// void	left_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
-// void	right_pipe(t_ast **node, int (*fd)[2], t_mnsh *mnsh);
 
 // builtins
 bool	is_builtin(char *s);
@@ -313,21 +266,21 @@ bool	is_echo_option_valid(char *arg);
 int		mnsh_env(t_mnsh *mnsh);
 int		mnsh_pwd(void);
 
-int	mnsh_cd(char **args, t_mnsh *mnsh);
-int	set_target(char **args, char **target, t_mnsh *mnsh);
-int	set_cwd(char **cwd);
-int	update_pwd_oldpwd(char *cwd, t_mnsh *mnsh);
+int		mnsh_cd(char **args, t_mnsh *mnsh);
+int		set_target(char **args, char **target, t_mnsh *mnsh);
+int		set_cwd(char **cwd);
+int		update_pwd_oldpwd(char *cwd, t_mnsh *mnsh);
 
-int	mnsh_export(char **args, t_mnsh *mnsh);
-int	print_export_var(t_list *env);
-int	handle_export_var(char *arg, t_mnsh *mnsh);
-int	set_export_key_value(char *arg, int i, char **key, char **value);
-int	update_export_var(char *key, char *value, t_mnsh *mnsh);
+int		mnsh_export(char **args, t_mnsh *mnsh);
+int		print_export_var(t_list *env);
+int		handle_export_var(char *arg, t_mnsh *mnsh);
+int		set_export_key_value(char *arg, int i, char **key, char **value);
+int		update_export_var(char *key, char *value, t_mnsh *mnsh);
 
-int	mnsh_unset(char **args, t_mnsh *mnsh);
+int		mnsh_unset(char **args, t_mnsh *mnsh);
 void	del_node(t_list **list, char *key);
 
-int	mnsh_exit(char **args, t_mnsh *mnsh);
+int		mnsh_exit(char **args, t_mnsh *mnsh);
 bool	strtoll_isnum(char *str, long long *n);
 
 // Utils
@@ -359,12 +312,10 @@ void	print_tokis(t_token	*tokis);
 void	ft_free_str(char **ptr);
 void	safe_free_str(void *ptr);
 void	ft_free_strarray(char ***arr);
-t_error	ft_free_strarray_perror(char ***arr, t_error err);
 void	ft_free_all_tok(t_token **tok);
-void	ft_free_infiles(t_infiles *infiles);
 void	free_outfile(void *ptr);
-void	ft_free_ast(t_ast *root_node);
-int		free_ast_ret(t_ast *root_node, int errnum);
+void	ft_free_ast(t_ast **root_node);
+int		free_ast_ret(t_ast **root_node, int errnum);
 void	ft_free_reset_mnsh(t_mnsh *mnsh);
 void	ft_free_all_mnsh(t_mnsh *mnsh);
 
