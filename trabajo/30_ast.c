@@ -204,7 +204,7 @@ int		is_indir_error(t_token *iterator, t_token *end)
 		return (perror2_mnsh(2, 5, ": ", "syntax error near unexpected token",
 			" `", iterator->word, "'"));
 	else if (iterator->next->word && !*iterator->next->word)
-		return (perror_mnsh(126, 2, "", "No such file or directory"));
+		return (perror_mnsh(1, 2, "", "No such file or directory"));
 	return (0);
 }
 

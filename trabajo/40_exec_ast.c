@@ -51,8 +51,7 @@ int		exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 	dup2(default_inout[1], STDOUT_FILENO);
 	close(default_inout[0]);
 	close(default_inout[1]);
-	(void)mnsh;
-	return (0);
+	return (status);
 }
 
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
@@ -146,11 +145,13 @@ int		get_cmd_path(char **execfile, char *cmd, char **paths)
 int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
 {
 	char	**env;
+	int		status;
 
 	env = env_lst_to_arr(mnsh->env_mnsh_lst);
 	if (!env)
 		return (perror_mnsh(12, 1, "err malloc env for exec"));
-	execve(*execfile, args, env);
+	status = execve(*execfile, args, env);
+	printf("Exec : %d\n", status);
 	ft_free_strarray(&env);
 	ft_free_str(execfile);	
 	if (errno == ENOENT)
@@ -173,6 +174,7 @@ int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out)
 		return (status);
 	return (0);
 }
+
 
 int		exec_ast_cmd_in(t_ast **node, int *fd)
 {
@@ -205,7 +207,7 @@ int		set_last_infile(t_list *infiles, t_list **last_infile)
 	{
 		check_access = access(infiles->content, O_RDONLY);
 		if (check_access < 0)
-			return (perror_mnsh(errno_to_exit(errno), 2, infiles->content, strerror(errno)));
+			return (perror_mnsh(1, 2, infiles->content, strerror(errno)));
 		if (!infiles->next)
 			(*last_infile) = infiles;
 		infiles = infiles->next;
@@ -218,49 +220,71 @@ int		exec_ast_cmd_infile(char *last_infile, int *fd)
 	*fd = open(last_infile, O_RDONLY);
 	if (*fd < 0)
 		return (perror_mnsh(126, 1, strerror(EACCES)));
-	dup2(*fd, STDIN_FILENO);
+	if (dup2(*fd, STDIN_FILENO) < 0)
+		return (perror_mnsh(errno_to_exit(errno), 2, last_infile, strerror(errno)));
 	close(*fd);
 	return (0);
 }
 
+
 int		exec_ast_cmd_out(t_ast **node, int *fd)
 {
-	t_list		*iterator;
-	t_outfile	*outfile;
-	int			status;
+	t_list	*last_outfile;
+	int	status;
 
-	iterator = (*node)->outfiles;
-	if (!iterator || !iterator->content)
-		return (0);
-	while (iterator)
+	last_outfile = NULL;
+	status = set_last_outfile((*node)->outfiles, &last_outfile);
+	if (status)
+		return (status);
+	if (last_outfile)
 	{
-		outfile = (t_outfile *)iterator->content;
-		if (outfile->outstyle == OUT_TRUNC)
+		
+	}
+		return (exec_ast_cmd_outfile(last_outfile->content, fd));
+	return (0);
+}
+
+int		set_last_outfile(t_list *outfiles, t_list **last_outfile)
+{
+	int			check_access;
+	t_outfile 	*outfile;
+	struct stat	st;
+
+	if (!outfiles || !outfiles->content)
+		return (0);
+	while (outfiles)
+	{
+		outfile = (t_outfile *)outfiles->content;
+		if (!stat(outfile->file, &st))
 		{
-			status = exec_ast_cmd_outfile(outfile->file, fd, O_TRUNC);
-			if (status)
-				return (status);
+			check_access = access(outfile->file, W_OK);
+			if (check_access < 0)
+				return (perror_mnsh(1, 2, outfile->file, strerror(errno)));
 		}
-		else if (outfile->outstyle == OUT_APPEND)
-		{
-			status = exec_ast_cmd_outfile(outfile->file, fd, O_APPEND);
-			if (status)
-				return (status);
-		}
-		iterator = iterator->next;
+		if (!outfiles->next)
+			(*last_outfile) = outfiles;
+		outfiles = outfiles->next;
 	}
 	return (0);
 }
 
-int		exec_ast_cmd_outfile(char *outfile, int *fd, int flag)
+int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd)
 {
-	*fd = open(outfile, O_WRONLY | O_CREAT | flag, 0644);
+	int	flag;
+
+	if (outfile->outstyle == OUT_APPEND)
+		flag = O_APPEND;
+	else
+		flag = O_TRUNC;
+	*fd = open(outfile->file, O_WRONLY | O_CREAT | flag, 0644);
 	if (*fd < 0)
-		return (perror_mnsh(errno_to_exit(errno), 2, outfile, strerror(errno)));
-	dup2(*fd, STDOUT_FILENO);
+		return (perror_mnsh(errno_to_exit(errno), 2, outfile->file, strerror(errno)));
+	if (dup2(*fd, STDOUT_FILENO) < 0)
+		return (perror_mnsh(errno_to_exit(errno), 2, outfile->file, strerror(errno)));
 	close(*fd);
 	return (0);
 }
+
 
 
 

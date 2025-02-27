@@ -295,7 +295,6 @@ int		split_dquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
 		*buffer = ft_strappend_mnsh(*buffer, "$");
 		if (!*buffer)
 			return (-12);
-		(*s)++;
 		return (1);
 	}
 	return (0);

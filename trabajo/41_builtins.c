@@ -37,7 +37,7 @@ int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh)
 		return (mnsh_env(mnsh));
 	else if (ft_strcmp(args[0], "exit") == 0)
 		return (mnsh_exit(args, mnsh));
-	return (false);	
+	return (0);	
 }
 
 //============================================================================
@@ -129,14 +129,14 @@ int	mnsh_cd(char **args, t_mnsh *mnsh)
 	char	*target;
 
 	if (ft_strarrlen(args) > 2)
-		return (perror_mnsh(errno_to_exit(E2BIG), 1, strerror(E2BIG)));
+		return (perror_mnsh(1, 1, "too many arguments"));
 	if (set_target(args, &target, mnsh))
 		return (1);
 	status = set_cwd(&cwd);
 	if (chdir(target))
 	{
 		ft_free_str(&cwd);
-		return (perror_mnsh(errno_to_exit(errno), 1, strerror(errno)));
+		return (perror_mnsh(1, 1, strerror(errno)));
 	}
 	if (status)
 		return (status);
@@ -339,18 +339,17 @@ int	mnsh_exit(char **args, t_mnsh *mnsh)
 	long long		exit_code;
 	bool			is_llong_num;
 
-	ft_putendl_fd("exit", STDERR_FILENO);
 	if (args[1] == NULL)
 		exit_code = mnsh->last_exit_status;
 	else 
 	{
 		is_llong_num = strtoll_isnum(args[1], &exit_code);
 		if (!is_llong_num)
-			exit_code = perror_mnsh(1, 3, "exit", args[1],
+			exit_code = perror_mnsh(2, 3, "exit", args[1],
 				"numeric argument required");				
 		else if (is_llong_num && args[2])
 			return (perror_mnsh(errno_to_exit(E2BIG), 2, "exit",
-				strerror(E2BIG)));
+				"too many arguments"));
 	}
 	ft_free_all_mnsh(mnsh);
 	// load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
