@@ -1,40 +1,107 @@
-SRCS=$(addsuffix .c, \
-	00_main \
-	01_rl \
-	02_signals \
-	03_env \
-	10_init \
-	20_tokenize \
-	30_ast \
-	40_exec_ast \
-	41_builtins \
-	50_utils \
-	51_helpers \
-	60_free_management \
-	\
-	)
-
-#	\
-	31_inlst \
-	32_outlst \
-	
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2025/02/27 14:14:33 by nefadli           #+#    #+#              #
+#    Updated: 2025/02/27 14:29:17 by nefadli          ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
 
-all :
-#	@make -C ./libft/ all
-	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell \
-	-L/usr/local/lib -lreadline -L./libft/ -lft
+# ################ #
+#*    COULEURS    *#
+# ################ #
 
-ess : essayage.c
-	@cc -Wall -Werror -Wextra -I./libft/includes essayage.c 03_env.c 50_utils.c 51_helpers.c 60_free_management.c -o ess \
-	-L/usr/local/lib -lreadline -L./libft/ -lft
+CLASSIC	= \e[0m
+WHITE	= \e[38;2;238;232;213m
+BOLD	= \e[1m
+RED   	= \e[31m
+GREEN  	= \e[32m
+YELLOW 	= \e[38;2;250;189;0m
+CYAN   	= \e[36m
 
-mnsh1	:
+# ################### #
+#*    VARIABLES      *#
+# ################### #
+
+NAME        =   minishell
+
+# Source files
+SRCS_FILES  =   main.c \
+
+# Object files generated in the .objs/ directory
+OBJS_PATH   =   .objs/
+OBJS        =   $(SRCS_FILES:%.c=$(OBJS_PATH)%.o)
+
+# Include and libft paths
+INC_PATH    =   include/
+LIBFT_PATH  =   ./libft
+CFLAGS += -I./libft/includes
+LIBFT_LIB   =   $(LIBFT_PATH)libft.a
+
+# Compilation settings
+CC          =   cc
+CFLAGS      =   -Wall -Werror -Wextra -I$(INC_PATH) -I$(LIBFT_PATH) -g3
+CFLAGS      +=  -I/opt/homebrew/opt/readline/include
+LFLAGS      =   -L$(LIBFT_PATH) -lft -lreadline
+LFLAGS      +=  -L/opt/homebrew/opt/readline/lib -lreadline
+RM          =   rm -rf
+
+# Source files list
+SRCS        =   $(addsuffix .c, \
+    00_main \
+    01_rl \
+    02_signals \
+    03_env \
+    10_init \
+    20_tokenize \
+    30_ast \
+    40_exec_ast \
+    41_builtins \
+    50_utils \
+    51_helpers \
+    60_free_management \
+)
+
+# ################### #
+#*    REGLES         *#
+# ################### #
+
+all:
 	@make -C ./libft/ all
-	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell1 \
-	-L/usr/local/lib -lreadline -L./libft/ -lft
+	@$(CC) $(CFLAGS) $(SRCS) -o $(NAME) $(LFLAGS)
+	@echo "$(BOLD)$(GREEN)[DONE] Minishell created!$(CLASSIC)"
 
-mnsh2	:
+ess: essayage.c
+	@$(CC) $(CFLAGS) essayage.c 03_env.c 50_utils.c 51_helpers.c 60_free_management.c -o ess $(LFLAGS)
+	@echo "$(BOLD)$(GREEN)[DONE] Ess created!$(CLASSIC)"
+
+mnsh1:
 	@make -C ./libft/ all
-	@cc -Wall -Werror -Wextra -I./libft/includes $(SRCS) -o minishell2 \
-	-L/usr/local/lib -lreadline -L./libft/ -lft
+	@$(CC) $(CFLAGS) $(SRCS) -o minishell1 $(LFLAGS)
+	@echo "$(BOLD)$(GREEN)[DONE] Minishell1 created!$(CLASSIC)"
+
+mnsh2:
+	@make -C ./libft/ all
+	@$(CC) $(CFLAGS) $(SRCS) -o minishell2 $(LFLAGS)
+	@echo "$(BOLD)$(GREEN)[DONE] Minishell2 created!$(CLASSIC)"
+
+clean:
+	$(RM) $(OBJS_PATH)
+	@make clean -C $(LIBFT_PATH)
+	@echo "$(BOLD)$(RED)[DONE] Object files deleted...$(CLASSIC)"
+
+# Full cleanup
+fclean: clean
+	$(RM) $(NAME)
+	@make fclean -C $(LIBFT_PATH)
+	@echo "$(BOLD)$(RED)[DONE] Minishell deleted...$(CLASSIC)"
+
+# Complete recompilation
+re: fclean all
+	@echo "$(BOLD)$(GREEN)[DONE] Minishell recompiled!$(CLASSIC)"
+
+.PHONY: all clean fclean re ess mnsh1 mnsh2

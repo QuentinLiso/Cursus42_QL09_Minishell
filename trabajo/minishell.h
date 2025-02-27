@@ -20,7 +20,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 
-# include "libft.h"
+# include "libft/includes/libft.h"
 
 # define BK "\033[30m"
 # define R "\033[31m"
