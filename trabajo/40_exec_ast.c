@@ -384,14 +384,16 @@ int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 
 	if (pipe(fd) < 0)
 		return (perror_mnsh(1, 1, strerror(errno)));
-	if (left_pipe(node, &fd, &pid[0], mnsh) < 0)
+	if (left_pipe(node, &fd, &pid[0], mnsh))
 		return (1);
-	if (right_pipe(node, &fd, &pid[1], mnsh) < 0)
+	if (right_pipe(node, &fd, &pid[1], mnsh))
 		return (1);
 	close(fd[0]);
 	close(fd[1]);
 	waitpid(pid[0], &status[0], 0);
 	waitpid(pid[1], &status[1], 0);
+	if (status[1])
+		return (1);
 	return (0);
 }
 
