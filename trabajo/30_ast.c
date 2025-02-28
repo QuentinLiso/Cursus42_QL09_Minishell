@@ -68,8 +68,8 @@ int			get_operator_precedence(char *op)
 bool		is_syntax_error(t_token *start, t_token *end, t_token *split_token)
 {
 	if	(split_token == start || split_token == end || 
-		split_token->next == NULL || split_token->next->type != TOKEN_WORD ||
-		split_token->prev == NULL || split_token->prev->type != TOKEN_WORD)
+		split_token->next == NULL || split_token->next->type == TOKEN_OPERATOR ||
+		split_token->prev == NULL || split_token->prev->type == TOKEN_OPERATOR)
 	{
 		perror2_mnsh(2, 4, ": ", "syntax error near unexpected token `",
 			split_token->word, "'");
@@ -325,63 +325,6 @@ int		create_heredoc(char *heredoc, char *heredoc_end)
 	close (fd);
 	return (0);
 }
-
-
-// int		set_node_infile(t_ast **node, t_token *iterator)
-// {
-// 	t_list	*inlist_elem;
-// 	char	*filename;
-// 	t_redir	*redir;
-
-
-// 	filename = ft_strdup(iterator->next->word);
-// 	if (!filename)
-// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
-// 	inlist_elem = ft_lstnew(filename);
-// 	if (!inlist_elem)
-// 	{
-// 		ft_free_str(&filename);
-// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
-// 	}
-// 	ft_lstadd_back(&(*node)->infiles, inlist_elem);
-// 	(*node)->instyle = IN_FILE;
-// 	return (0);
-// }
-
-
-// int		set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style)
-// {
-// 	t_list		*outlist_elem;
-// 	t_outfile	*outfile;
-
-// 	outlist_elem = NULL;
-// 	outfile = ft_calloc(1, sizeof(t_outfile));
-// 	if (!outfile)
-// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-// 	outfile->file = ft_strdup(iterator->next->word);
-// 	if (!outfile->file)
-// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-// 	outfile->outstyle = style;
-// 	outlist_elem = ft_lstnew(outfile);
-// 	if (!outlist_elem)
-// 	{
-// 		free_outfile(outfile);
-// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-// 	}
-// 	ft_lstadd_back(&(*node)->outfiles, outlist_elem);
-// 	return (0);
-// }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
