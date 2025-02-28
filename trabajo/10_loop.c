@@ -11,6 +11,7 @@ int	loop_mnsh(t_mnsh *mnsh)
 			mnsh->prompt = readline(MINISHELL_PROMPT);
 		else
 			mnsh->prompt = readline(MINISHELL_PROMPT);
+		mnsh->line_count++;
 		if (!mnsh->prompt && isatty(STDIN_FILENO))
 			continue ;
 		else if (!mnsh->prompt && !isatty(STDIN_FILENO))

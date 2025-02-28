@@ -6,7 +6,7 @@ int		ast_mnsh(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 
 	if (!start || !end)
 		return (0);
-	status = create_ast(node, start, end);
+	status = create_ast(node, start, end, mnsh);
 	if (status)
 	{
 		mnsh->last_exit_status = status;
@@ -15,7 +15,7 @@ int		ast_mnsh(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 	return (0);
 }
 
-int		create_ast(t_ast **node, t_token *start, t_token *end)
+int		create_ast(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 {
 	t_token	*split_token;
 
@@ -23,10 +23,10 @@ int		create_ast(t_ast **node, t_token *start, t_token *end)
 		return (0);
 	split_token = set_split_token(start, end);
 	if (split_token == NULL)
-		return (ast_cmdnode(node, start, end));
+		return (ast_cmdnode(node, start, end, mnsh));
 	else if (is_syntax_error(start, end, split_token))
 		return (errno_to_exit(2));
-	return (ast_opnode(node, start, split_token, end));
+	return (ast_opnode(node, start, split_token, end, mnsh));
 }
 
 t_token		*set_split_token(t_token *start, t_token *end)
@@ -83,17 +83,17 @@ bool		is_syntax_error(t_token *start, t_token *end, t_token *split_token)
 
 // ============================================
 
-int		ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end)
+int		ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end, t_mnsh *mnsh)
 {
 	int		status;
 
 	status = create_ast_opnode(node, split_tok->word);
 	if (status)
 		return (status);
-	status = create_ast(&(*node)->left_node, start, split_tok->prev);
+	status = create_ast(&(*node)->left_node, start, split_tok->prev, mnsh);
 	if (status)
 		return (status);
-	status = create_ast(&(*node)->right_node, split_tok->next, end);
+	status = create_ast(&(*node)->right_node, split_tok->next, end, mnsh);
 	if (status)
 		return (status);
 	return (0);
@@ -135,14 +135,14 @@ t_optype	set_op_type(char *op)
 
 // ========================================
 
-int		ast_cmdnode(t_ast **node, t_token *start, t_token *end)
+int		ast_cmdnode(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 {
 	int		status;
 
 	status = create_cmd_node(node);
 	if (status)
 		return (status);
-	status = handle_indir(node, start, end);
+	status = handle_indir(node, start, end, mnsh);
 	if (status)
 		return (status);	
 	status = set_cmdnode_args(node, start, end);
@@ -167,7 +167,7 @@ int		create_cmd_node(t_ast **node)
 
 // ==================================
 
-int		handle_indir(t_ast **node, t_token *start, t_token *end)
+int		handle_indir(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 {
 	t_token	*iterator;
 	int		status;
@@ -180,7 +180,7 @@ int		handle_indir(t_ast **node, t_token *start, t_token *end)
 			status = is_indir_error(iterator, end);
 			if (status)
 				return (status);
-			status = set_indir(node, iterator);
+			status = set_indir(node, iterator, mnsh);
 			if (status)
 				return (status);
 			iterator = iterator->next;
@@ -203,7 +203,7 @@ int		is_indir_error(t_token *iterator, t_token *end)
 	return (0);
 }
 
-int		set_indir(t_ast **node, t_token *iterator)
+int		set_indir(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 {
 	if (!ft_strcmp(iterator->word, "<>"))
 	{
@@ -213,7 +213,7 @@ int		set_indir(t_ast **node, t_token *iterator)
 			return (ENOMEM);
 	}
 	else if (!ft_strcmp(iterator->word, "<<"))
-		return (set_node_heredoc(node, iterator));
+		return (set_node_heredoc(node, iterator, mnsh));
 	else if (!ft_strcmp(iterator->word, "<"))
 		return (set_node_redir(node, iterator, REDIR_IN));
 	else if (!ft_strcmp(iterator->word, ">>"))
@@ -251,7 +251,7 @@ int		set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style)
 	return (0);
 }
 
-int		set_node_heredoc(t_ast **node, t_token *iterator)
+int		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 {
 	t_list	*redir_elem;
 	t_redir	*redir_file;
@@ -274,7 +274,7 @@ int		set_node_heredoc(t_ast **node, t_token *iterator)
 		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
 	}
 	ft_lstadd_back(&(*node)->redir, redir_elem);
-	return (create_heredoc(redir_file->file, iterator->next->word));
+	return (create_heredoc(redir_file->file, iterator->next->word, mnsh));
 }
 
 char	*set_heredoc_name()
@@ -298,28 +298,50 @@ char	*set_heredoc_name()
 	return (heredoc_name);
 }
 
-int		create_heredoc(char *heredoc, char *heredoc_end)
+int		create_heredoc(char *heredoc, char *heredoc_end, t_mnsh *mnsh)
 {
-	char	*prompt;
 	int		fd;
 
 	fd = open(heredoc, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
-		return (-fd);
+		return (perror_mnsh(1, 1, strerror(errno)));
+	fill_heredoc(fd, heredoc_end, mnsh);
+	close (fd);
+	return (0);
+}
+
+void	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh)
+{
+	char	*prompt;
+	int		count;
+
+	count = 0;
 	while (1)
 	{
 		prompt = readline("heredoc> ");
-		if (!prompt || !ft_strcmp(prompt, heredoc_end))
+		if (!prompt)
+		{
+			warn_heredoc(mnsh->line_count, heredoc_end);
+			break;
+		}
+		count++;
+		if (!ft_strcmp(prompt, heredoc_end))
 			break ;
 		ft_putendl_fd(prompt, fd);
 		free_str(&prompt);
 	}
 	free_str(&prompt);
-	close (fd);
-	return (0);
+	mnsh->line_count += count;
 }
 
-
+void	warn_heredoc(int line, char *heredoc_end)
+{
+	ft_putstr_fd("minishell: warning: here-document at line ", STDERR_FILENO);
+	ft_putnbr_fd(line, STDERR_FILENO);
+	ft_putstr_fd(" delimited by end-of-file (wanted `", STDERR_FILENO);
+	ft_putstr_fd(heredoc_end, STDERR_FILENO);
+	ft_putendl_fd("')", STDERR_FILENO);
+}
 
 
 // ====================================

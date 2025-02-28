@@ -2,7 +2,6 @@
 
 int		execute_ast(t_ast **node, t_mnsh *mnsh)
 {
-	
 	if (!(*node) || !(*node)->args || !(*node)->args[0])
 	{
 		mnsh->last_exit_status = 0;

@@ -127,13 +127,14 @@ typedef struct s_ast
 typedef struct s_minishell
 {
 	t_list	*env_mnsh_lst;
+	t_sa	sa;
+	char	*prompt;
 	t_token	*tokis;
 	t_token	*last_tokis;
-	char	*prompt;
+	t_ast	*node;
 	int		last_exit_status;
 	char	*last_cmd_arg;
-	t_sa	sa;
-	t_ast	*node;
+	int		line_count;
 }	t_mnsh;
 
 
@@ -186,22 +187,24 @@ int		split_noquote_noenv(char **s, char **buffer);
 
 // ast
 int			ast_mnsh(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh);
-int			create_ast(t_ast **node, t_token *start, t_token *end);
+int			create_ast(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh);
 t_token		*set_split_token(t_token *start, t_token *end);
 int			get_operator_precedence(char *op);
 bool		is_syntax_error(t_token *start, t_token *end, t_token *split_token);
-int			ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end);
+int			ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end, t_mnsh *mnsh);
 int 		create_ast_opnode(t_ast **node, char *op);
 t_optype	set_op_type(char *op);
-int			ast_cmdnode(t_ast **node, t_token *start, t_token *end);
+int			ast_cmdnode(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh);
 int			create_cmd_node(t_ast **node);
-int			handle_indir(t_ast **node, t_token *start, t_token *end);
+int			handle_indir(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh);
 int			is_indir_error(t_token *iterator, t_token *end);
-int			set_indir(t_ast **node, t_token *iterator);
+int			set_indir(t_ast **node, t_token *iterator, t_mnsh *mnsh);
 int			set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style);
-int  		set_node_heredoc(t_ast **node, t_token *iterator);
+int  		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh);
 char		*set_heredoc_name();
-int			create_heredoc(char *heredoc, char *heredoc_end);
+int			create_heredoc(char *heredoc, char *heredoc_end, t_mnsh *mnsh);
+void	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh);
+void	warn_heredoc(int line, char *heredoc_end);
 int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
 int     	cmd_args_count(t_token *start, t_token *end);
 
