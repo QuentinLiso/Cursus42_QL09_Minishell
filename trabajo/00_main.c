@@ -13,7 +13,7 @@ int	loop_mnsh(t_mnsh *mnsh)
 		return (mnsh->last_exit_status);
 	if (ast_mnsh(&mnsh->node, mnsh->tokis, mnsh->last_tokis, mnsh))
 		return (mnsh->last_exit_status);
-	print_ast(mnsh->node, 0);
+	// print_ast(mnsh->node, 0);
 	if (execute_ast(&mnsh->node, mnsh))
 		return (mnsh->last_exit_status);
 	return (0);

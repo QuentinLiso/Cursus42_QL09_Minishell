@@ -277,20 +277,17 @@ int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
 int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
 int		right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
 
+int		init_default_fd(int (*default_inout)[2]);
+int		clean_default_fd(int (*default_inout)[2]);
+
 int		exec_ast_cmd_indir(t_list *redir);
 int		check_access_indir_lst(t_list *redir);
 int		check_access_indir_elem(t_redir *elem);
 int		create_outfile(t_redir *redir_file);
-
-// int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out);
-// int		exec_ast_cmd_in(t_ast **node, int *fd);
-// int		set_last_infile(t_list *infiles, t_list **last_infile);
-// int		exec_ast_cmd_infile(char *last_infile, int *fd);
-// int		exec_ast_cmd_out(t_ast **node, int *fd);
-// int		set_last_outfile(t_list *outfiles, t_list **last_outfile);
-// int		create_outfile(t_outfile *outfile);
-// int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd);
-
+int		dup_indir_lst(t_list *redir);
+int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out);
+int		dup_indir_elem_in(char *file, int *fd_in);
+int		dup_indir_elem_out(char *file, int *fd_out, int flag);
 
 // builtins
 bool	is_builtin(char *s);

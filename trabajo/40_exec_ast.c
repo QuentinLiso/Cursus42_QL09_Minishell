@@ -34,26 +34,207 @@ int		set_mnsh_last_arg(t_ast **node, t_mnsh *mnsh)
 
 int		exec_ast_cmd(t_ast **node, t_mnsh *mnsh)
 {
-	// int		fd_inout[2];
 	int		default_inout[2];
 	int		status;
 
-	default_inout[0] = dup(STDIN_FILENO);
-	default_inout[1] = dup(STDOUT_FILENO);
-	// status = set_exec_indir(node, &fd_inout[0], &fd_inout[1]);
-	status = exec_ast_cmd_indir((*node)->redir);
+	status = init_default_fd(&default_inout);
 	if (status)
 		return (status);
+	status = exec_ast_cmd_indir((*node)->redir);
+	if (status)
+	{
+		clean_default_fd(&default_inout);
+		return (status);
+	}
 	if (is_builtin((*node)->args[0]))
 		status = exec_ast_cmd_builtin((*node)->args, mnsh);
 	else
 		status = exec_ast_cmd_external((*node)->args, mnsh);
-	dup2(default_inout[0], STDIN_FILENO);
-	dup2(default_inout[1], STDOUT_FILENO);
-	close(default_inout[0]);
-	close(default_inout[1]);
+	if (status)
+	{
+		clean_default_fd(&default_inout);
+		return (status);
+	}
+	return (clean_default_fd(&default_inout));
+}
+
+int		init_default_fd(int (*default_inout)[2])
+{
+	(*default_inout)[0] = dup(STDIN_FILENO);
+	if ((*default_inout)[0] < 0)
+		return (perror_mnsh(1, 1, strerror(errno)));
+	(*default_inout)[1] = dup(STDOUT_FILENO);
+	if ((*default_inout)[1] < 0)
+	{
+		close((*default_inout)[0]);
+		return (perror_mnsh(1,1, strerror(errno)));
+	}
+	return (0);
+}
+
+int		clean_default_fd(int (*default_inout)[2])
+{
+	int	status;
+
+	status = 0;
+	if (dup2((*default_inout)[0], STDIN_FILENO) < 0)
+	{
+		perror_mnsh(1, 1, strerror(errno));
+		status = 1;
+	}
+	close((*default_inout)[0]);
+	(*default_inout)[0] = -1;
+	if (dup2((*default_inout)[1], STDOUT_FILENO) < 0)
+	{
+		perror_mnsh(1,1, strerror(errno));
+		status = 1;
+	}
+	close((*default_inout)[1]);
+	(*default_inout)[1] = -1;
 	return (status);
 }
+
+
+int		exec_ast_cmd_indir(t_list *redir)
+{
+	int	status;
+
+	status = check_access_indir_lst(redir);
+	if (status)
+		return (status);
+	status = dup_indir_lst(redir);
+	if (status)
+		return (status);
+	return (0);
+}
+
+int		check_access_indir_lst(t_list *redir)
+{
+	t_redir	*elem;
+	int		status;
+
+	while (redir)
+	{
+		elem = (t_redir *)redir->content;
+		status = check_access_indir_elem(elem);
+		if (status)
+			return (status);
+		redir = redir->next;
+	}
+	return (0);
+}
+
+int		check_access_indir_elem(t_redir *elem)
+{
+	struct stat	st;
+
+	if (elem && elem->file &&
+		((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC)))
+	{
+		if (access(elem->file, R_OK) < 0)
+			return (perror_mnsh(1, 2, elem->file, strerror(errno)));
+	}
+	else if (elem && elem->file &&
+			((elem->style == REDIR_OUT) || (elem->style == REDIR_APPEND)))
+	{
+		if (!stat(elem->file, &st))
+		{
+			if (access(elem->file, W_OK) < 0)
+				return (perror_mnsh(1, 2, elem->file, strerror(errno)));
+			return (0);
+		}
+		return (create_outfile(elem));
+	}
+	return (0);
+}
+
+int		create_outfile(t_redir *redir_file)
+{
+	int	flag;
+	int	fd;
+
+	if (redir_file->style == REDIR_APPEND)
+		flag = O_APPEND;
+	else
+		flag = O_TRUNC;
+	fd = open(redir_file->file, O_WRONLY | O_CREAT | flag, 0644);
+	if (fd < 0)
+		return (perror_mnsh(errno_to_exit(errno), 2, redir_file->file,
+			strerror(errno)));
+	close(fd);
+	return (0);
+}
+
+int		dup_indir_lst(t_list *redir)
+{
+	t_redir	*elem;
+	int		status;
+	int		fd_in;
+	int		fd_out;
+
+	fd_in = -1;
+	fd_out = -1;
+	while (redir)
+	{
+		elem = (t_redir *)redir->content;
+		status = dup_indir_elem(elem, &fd_in, &fd_out);
+		if (status)
+		{
+			if (fd_in > -1)
+				close(fd_in);
+			if (fd_out > -1)
+				close(fd_out);
+			return (status);
+		}
+		redir = redir->next;
+	}
+	return (0);
+}
+
+int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
+{
+	if (!elem || !elem->file)
+		return (0);
+	if	((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC))
+		return (dup_indir_elem_in(elem->file, fd_in));
+	else if (elem->style == REDIR_OUT)
+		return (dup_indir_elem_out(elem->file, fd_out, O_TRUNC));
+	else if (elem->style == REDIR_APPEND)
+		return (dup_indir_elem_out(elem->file, fd_out, O_APPEND));
+	return (0);
+}
+
+int		dup_indir_elem_in(char *file, int *fd_in)
+{
+	*fd_in = open(file, O_RDONLY);
+	if (*fd_in < 0)
+		return (perror_mnsh(1, 1, strerror(errno)));
+	if (dup2(*fd_in, STDIN_FILENO) < 0)
+	{
+		close(*fd_in);
+		return (perror_mnsh(1, 1, strerror(errno)));
+	}
+	if (*fd_in != STDIN_FILENO)
+		close(*fd_in);
+	*fd_in = -1;
+	return (0);
+}
+
+int		dup_indir_elem_out(char *file, int *fd_out, int flag)
+{
+	*fd_out = open(file, O_WRONLY | O_CREAT | flag, 0644);
+	if (*fd_out < 0)
+		return (perror_mnsh(1, 1, strerror(errno)));
+	if (dup2(*fd_out, STDOUT_FILENO) < 0)
+	{
+		close(*fd_out);
+		return (perror_mnsh(1, 1, strerror(errno)));
+	}
+	close(*fd_out);
+	*fd_out = -1;
+	return (0);
+}
+
 
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 {
@@ -162,221 +343,6 @@ int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
 	else
 		return (perror_mnsh(1, 2, args[0], strerror(errno)));
 }
-
-int		exec_ast_cmd_indir(t_list *redir)
-{
-	int	status;
-
-	status = check_access_indir_lst(redir);
-	if (status)
-		return (status);
-	
-	return (0);
-}
-
-int		check_access_indir_lst(t_list *redir)
-{
-	t_redir	*elem;
-	int		status;
-
-	while (redir)
-	{
-		elem = (t_redir *)redir->content;
-		status = check_access_indir_elem(elem);
-		if (status)
-			return (status);
-		redir = redir->next;
-	}
-	return (0);
-}
-
-int		check_access_indir_elem(t_redir *elem)
-{
-	struct stat	st;
-
-	if (elem && elem->file &&
-		((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC)))
-	{
-		if (access(elem->file, R_OK) < 0)
-			return (perror_mnsh(1, 2, elem->file, strerror(errno)));
-	}
-	else if (elem && elem->file &&
-			((elem->style == REDIR_OUT) || (elem->style == REDIR_APPEND)))
-	{
-		if (!stat(elem->file, &st))
-		{
-			if (access(elem->file, W_OK) < 0)
-				return (perror_mnsh(1, 2, elem->file, strerror(errno)));
-			return (0);
-		}
-		return (create_outfile(elem));
-	}
-	return (0);
-}
-
-int		create_outfile(t_redir *redir_file)
-{
-	int	flag;
-	int	fd;
-
-	if (redir_file->style == REDIR_APPEND)
-		flag = O_APPEND;
-	else
-		flag = O_TRUNC;
-	fd = open(redir_file->file, O_WRONLY | O_CREAT | flag, 0644);
-	if (fd < 0)
-		return (perror_mnsh(errno_to_exit(errno), 2, redir_file->file,
-			strerror(errno)));
-	close(fd);
-	return (0);
-}
-
-
-
-
-
-// int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out)
-// {
-// 	int	status_in;
-// 	int	status_out;
-// 	// int	status;
-
-// 	status_in = exec_ast_cmd_in(node, fd_in);
-// 	status_out = exec_ast_cmd_out(node, fd_out);
-// 	if (status_in)
-// 	{
-// 		close(*fd_in);
-// 		close(*fd_out);
-// 		return (status_in);
-// 	}
-// 	if (status_out)
-// 	{
-// 		close(*fd_in);
-// 		close(*fd_out);
-// 		return (status_out);
-// 	}
-// 	return (0);
-// }
-
-
-// int		exec_ast_cmd_in(t_ast **node, int *fd)
-// {
-// 	t_list	*last_infile;
-// 	t_list	*last_heredoc;
-// 	// t_list	*last_outfile;
-// 	int	status;
-
-// 	last_infile = NULL;
-// 	last_heredoc = NULL;
-// 	// last_outfile = NULL;
-// 	status = set_last_infile((*node)->infiles, &last_infile);
-// 	if (status)
-// 		return (status);
-// 	status = set_last_infile((*node)->heredocs, &last_heredoc);
-// 	if (status)
-// 		return (status);
-// 	if ((*node)->instyle == IN_FILE && last_infile)
-// 		return (exec_ast_cmd_infile(last_infile->content, fd));
-// 	else if ((*node)->instyle == IN_HEREDOC && last_heredoc)
-// 		return (exec_ast_cmd_infile(last_heredoc->content, fd));
-// 	return (0);
-// }
-
-// int		set_last_infile(t_list *infiles, t_list **last_infile)
-// {
-// 	int		check_access;
-
-// 	if (!infiles || !infiles->content)
-// 		return (0);
-// 	while (infiles)
-// 	{
-// 		check_access = access(infiles->content, O_RDONLY);
-// 		if (check_access < 0)
-// 			return (perror_mnsh(1, 2, infiles->content, strerror(errno)));
-// 		if (!infiles->next)
-// 			(*last_infile) = infiles;
-// 		infiles = infiles->next;
-// 	}
-// 	return (0);
-// }
-
-// int		set_last_outfile(t_list *outfiles, t_list **last_outfile)
-// {
-// 	int			check_access;
-// 	t_outfile 	*outfile;
-// 	struct stat	st;
-// 	int			status;
-
-// 	if (!outfiles || !outfiles->content)
-// 		return (0);
-// 	while (outfiles)
-// 	{
-// 		outfile = (t_outfile *)outfiles->content;
-// 		if (!stat(outfile->file, &st))
-// 		{
-// 			check_access = access(outfile->file, W_OK);
-// 			if (check_access < 0)
-// 				return (perror_mnsh(1, 2, outfile->file, strerror(errno)));
-// 		}
-// 		status = create_outfile(outfile);
-// 		if (status)
-// 			return (status);
-// 		if (!outfiles->next)
-// 			(*last_outfile) = outfiles;
-// 		outfiles = outfiles->next;
-// 	}
-// 	return (0);
-// }
-
-
-// int		exec_ast_cmd_infile(char *last_infile, int *fd)
-// {
-// 	*fd = open(last_infile, O_RDONLY);
-// 	if (*fd < 0)
-// 		return (perror_mnsh(126, 1, strerror(EACCES)));
-// 	if (dup2(*fd, STDIN_FILENO) < 0)
-// 		return (perror_mnsh(errno_to_exit(errno), 2, last_infile, strerror(errno)));
-// 	close(*fd);
-// 	return (0);
-// }
-
-
-// int		exec_ast_cmd_out(t_ast **node, int *fd)
-// {
-// 	t_list	*last_outfile;
-// 	int	status;
-
-// 	last_outfile = NULL;
-// 	status = set_last_outfile((*node)->outfiles, &last_outfile);
-// 	if (status)
-// 		return (status);
-// 	if (last_outfile)
-// 		return (exec_ast_cmd_outfile(last_outfile->content, fd));
-// 	return (0);
-// }
-
-
-
-
-// int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd)
-// {
-// 	int	flag;
-
-// 	if (outfile->outstyle == OUT_APPEND)
-// 		flag = O_APPEND;
-// 	else
-// 		flag = O_TRUNC;
-// 	*fd = open(outfile->file, O_WRONLY | O_CREAT | flag, 0644);
-// 	if (*fd < 0)
-// 		return (perror_mnsh(errno_to_exit(errno), 2, outfile->file, strerror(errno)));
-// 	if (dup2(*fd, STDOUT_FILENO) < 0)
-// 		return (perror_mnsh(errno_to_exit(errno), 2, outfile->file, strerror(errno)));
-// 	close(*fd);
-// 	return (0);
-// }
-
-
-
 
 int	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
 {
