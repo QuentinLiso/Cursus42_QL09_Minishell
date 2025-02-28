@@ -6,7 +6,7 @@
 #    By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/27 14:14:33 by nefadli           #+#    #+#              #
-#    Updated: 2025/02/27 14:29:17 by nefadli          ###   ########.fr        #
+#    Updated: 2025/02/27 17:29:42 by nefadli          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,27 +29,6 @@ CYAN   	= \e[36m
 
 NAME        =   minishell
 
-# Source files
-SRCS_FILES  =   main.c \
-
-# Object files generated in the .objs/ directory
-OBJS_PATH   =   .objs/
-OBJS        =   $(SRCS_FILES:%.c=$(OBJS_PATH)%.o)
-
-# Include and libft paths
-INC_PATH    =   include/
-LIBFT_PATH  =   ./libft
-CFLAGS += -I./libft/includes
-LIBFT_LIB   =   $(LIBFT_PATH)libft.a
-
-# Compilation settings
-CC          =   cc
-CFLAGS      =   -Wall -Werror -Wextra -I$(INC_PATH) -I$(LIBFT_PATH) -g3
-CFLAGS      +=  -I/opt/homebrew/opt/readline/include
-LFLAGS      =   -L$(LIBFT_PATH) -lft -lreadline
-LFLAGS      +=  -L/opt/homebrew/opt/readline/lib -lreadline
-RM          =   rm -rf
-
 # Source files list
 SRCS        =   $(addsuffix .c, \
     00_main \
@@ -66,13 +45,44 @@ SRCS        =   $(addsuffix .c, \
     60_free_management \
 )
 
+# Object files generated in the .objs/ directory
+OBJS_PATH   =   .objs/
+OBJS        =   $(SRCS:%.c=$(OBJS_PATH)%.o)
+
+# Include and libft paths
+INC_PATH    =   include/
+LIBFT_PATH  =   ./libft
+CFLAGS += -I$(INC_PATH) -I$(LIBFT_PATH)/includes
+LIBFT_LIB   =   $(LIBFT_PATH)/libft.a
+
+# Compilation settings
+CC          =   cc
+CFLAGS      =   -Wall -Werror -Wextra -g3
+CFLAGS      +=  -I/opt/homebrew/opt/readline/include
+LFLAGS      =   -L$(LIBFT_PATH) -lft -lreadline
+RM          =   rm -rf
+
 # ################### #
 #*    REGLES         *#
 # ################### #
 
-all:
-	@make -C ./libft/ all
-	@$(CC) $(CFLAGS) $(SRCS) -o $(NAME) $(LFLAGS)
+all: $(OBJS_PATH) $(LIBFT_LIB) $(NAME)
+
+# Rule to create the object directory
+$(OBJS_PATH):
+	@mkdir -p $(OBJS_PATH)
+
+# Rule to build the library only if it needs to be rebuilt
+$(LIBFT_LIB):
+	@make -C $(LIBFT_PATH) all
+
+# Rule to compile object files
+$(OBJS_PATH)%.o: %.c | $(OBJS_PATH)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to link and create the final executable
+$(NAME): $(OBJS)
+	$(CC) $(OBJS) -o $(NAME) $(LFLAGS)
 	@echo "$(BOLD)$(GREEN)[DONE] Minishell created!$(CLASSIC)"
 
 ess: essayage.c
@@ -80,12 +90,10 @@ ess: essayage.c
 	@echo "$(BOLD)$(GREEN)[DONE] Ess created!$(CLASSIC)"
 
 mnsh1:
-	@make -C ./libft/ all
 	@$(CC) $(CFLAGS) $(SRCS) -o minishell1 $(LFLAGS)
 	@echo "$(BOLD)$(GREEN)[DONE] Minishell1 created!$(CLASSIC)"
 
 mnsh2:
-	@make -C ./libft/ all
 	@$(CC) $(CFLAGS) $(SRCS) -o minishell2 $(LFLAGS)
 	@echo "$(BOLD)$(GREEN)[DONE] Minishell2 created!$(CLASSIC)"
 

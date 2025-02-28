@@ -4,9 +4,7 @@ void	print_node(t_ast *node)
 {
 	ft_printf("====\nType : %d\n", node->node_type);
     printf("Cmd : %s\n", node->args[0]);
-    print_infiles(node->infiles);
-	print_strarray("Heredoc", node->heredoc);
-	print_outfiles(node->outfiles);
+    print_redir(node->redir);
 	print_strarray("Args", node->args);
 }
 
@@ -86,40 +84,23 @@ void	print_ast(t_ast *node, int depth)
 			ft_printf("]");
 		}
 		ft_printf("\n");
-		print_infiles(node->infiles);
-		print_infiles(node->heredocs);
-		printf("Instyle : %d\n", node->instyle);
-		print_outfiles(node->outfiles);
+		print_redir(node->redir);
 	}
 	print_ast(node->left_node, depth + 1);
 	print_ast(node->right_node, depth + 1);
 }
 
-void	print_infiles(t_list *infiles)
-{
-	t_list *iter;
-
-	iter = infiles;
-	printf("Infiles : ");
-	while (iter)
-	{
-		printf("%s ", (char *)iter->content);
-		iter = iter->next;
-	}
-	printf("\n");
-}
-
-void	print_outfiles(t_list *outfiles)
+void	print_redir(t_list *redir_files)
 {
 	t_list 		*iter;
-	t_outfile	*outfile;
+	t_redir		*redir_file;
 
-	iter = outfiles;
-	printf("Outfiles : ");
+	iter = redir_files;
+	printf("Redir files : ");
 	while (iter)
 	{
-		outfile = (t_outfile *)iter->content;
-		printf("%s[%d] ", outfile->file, outfile->outstyle);
+		redir_file = (t_redir *)iter->content;
+		printf("%s[%d] ", redir_file->file, redir_file->style);
 		iter = iter->next;
 	}
 	printf("\n");

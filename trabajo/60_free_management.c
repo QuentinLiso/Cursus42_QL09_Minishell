@@ -60,6 +60,23 @@ void	free_outfile(void *ptr)
 	outfile = NULL;
 }
 
+void	free_redir(void *ptr)
+{
+	t_redir		*redir_file;
+
+	redir_file = (t_redir *)ptr;
+	if (redir_file)
+	{
+		ft_free_str(&redir_file->file);
+		ft_free_str(&redir_file->heredoc);
+		free(redir_file);
+	}
+	redir_file = NULL;
+}
+
+
+
+
 void	ft_free_ast(t_ast **root_node)
 {
 	if (!root_node)
@@ -85,7 +102,7 @@ int		free_ast_ret(t_ast **root_node, int errnum)
 
 void	ft_free_reset_mnsh(t_mnsh *mnsh)
 {
-
+	
 	ft_free_str(&mnsh->prompt);
 	ft_free_all_tok(&mnsh->tokis);
 	// if (mnsh->node)

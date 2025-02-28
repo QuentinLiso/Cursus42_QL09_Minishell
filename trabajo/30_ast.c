@@ -161,6 +161,7 @@ int		create_cmd_node(t_ast **node)
 	(*node)->node_type = NODE_CMD;
 	(*node)->op_type = OP_NULL;
     (*node)->args = NULL;
+	(*node)->redir = NULL;
     (*node)->infiles = NULL;
     (*node)->outfiles = NULL;
 	(*node)->instyle = IN_NULL;
@@ -212,62 +213,75 @@ int		set_indir(t_ast **node, t_token *iterator)
 {
 	if (!ft_strcmp(iterator->word, "<>"))
 	{
-		if (set_node_infile(node, iterator))
+		if (set_node_redir(node, iterator, REDIR_IN))
 			return (ENOMEM);
-		if (set_node_outfile(node, iterator, OUT_TRUNC))
+		if (set_node_redir(node, iterator, REDIR_OUT))
 			return (ENOMEM);
 	}
 	else if (!ft_strcmp(iterator->word, "<<"))
 		return (set_node_heredoc(node, iterator));
 	else if (!ft_strcmp(iterator->word, "<"))
-		return (set_node_infile(node, iterator));
+		return (set_node_redir(node, iterator, REDIR_IN));
 	else if (!ft_strcmp(iterator->word, ">>"))
-		return (set_node_outfile(node, iterator, OUT_APPEND));
+		return (set_node_redir(node, iterator, REDIR_APPEND));
 	else if (!ft_strcmp(iterator->word, ">"))
-		return (set_node_outfile(node, iterator, OUT_TRUNC));
+		return (set_node_redir(node, iterator, REDIR_OUT));
 	return (0);
 }
 
-int		set_node_infile(t_ast **node, t_token *iterator)
-{
-	t_list	*inlist_elem;
-	char	*filename;
 
-	filename = ft_strdup(iterator->next->word);
-	if (!filename)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
-	inlist_elem = ft_lstnew(filename);
-	if (!inlist_elem)
+
+int		set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style)
+{
+	t_list		*redir_elem;
+	t_redir		*redir_file;
+
+	redir_elem = NULL;
+	redir_file = ft_calloc(1, sizeof(t_redir));
+	if (!redir_file)
+		return (perror_mnsh(ENOMEM, 1, "malloc err in func set redir"));
+	redir_file->file = ft_strdup(iterator->next->word);
+	if (!redir_file->file)
 	{
-		ft_free_str(&filename);
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
+		free(redir_file);
+		return (perror_mnsh(ENOMEM, 1, "malloc err in func set redir"));
 	}
-	ft_lstadd_back(&(*node)->infiles, inlist_elem);
-	(*node)->instyle = IN_FILE;
+	redir_file->style = style;
+	redir_file->heredoc = NULL;
+	redir_elem = ft_lstnew(redir_file);
+	if (!redir_elem)
+	{
+		free_redir(redir_file);
+		return (perror_mnsh(ENOMEM, 1, "malloc err in func set redir"));
+	}
+	ft_lstadd_back(&(*node)->redir, redir_elem);
 	return (0);
 }
 
 int		set_node_heredoc(t_ast **node, t_token *iterator)
 {
-	t_list	*heredocs_elem;
-	char	*filename;
-	int		status;
+	t_list	*redir_elem;
+	t_redir	*redir_file;
 
-	filename = set_heredoc_name();
-	if (!filename)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
-	heredocs_elem = ft_lstnew(filename);
-	if (!heredocs_elem)
+	redir_elem = NULL;
+	redir_file = ft_calloc(1, sizeof(t_redir));
+	if (!redir_file)
+		return (perror_mnsh(ENOMEM, 1, "malloc err in func set heredoc"));
+	redir_file->file = set_heredoc_name();
+	if (!redir_file->file)
 	{
-		ft_free_str(&filename);
+		free(redir_file);
 		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
 	}
-	ft_lstadd_back(&(*node)->heredocs, heredocs_elem);
-	(*node)->instyle = IN_HEREDOC;
-	status = create_heredoc(filename, iterator->next->word);
-	if (status)
-		return (status);
-	return (0);
+	redir_file->style = REDIR_HEREDOC;
+	redir_elem = ft_lstnew(redir_file);
+	if (!redir_elem)
+	{
+		free_redir(redir_file);
+		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
+	}
+	ft_lstadd_back(&(*node)->redir, redir_elem);
+	return (create_heredoc(redir_file->file, iterator->next->word));
 }
 
 char	*set_heredoc_name()
@@ -312,28 +326,65 @@ int		create_heredoc(char *heredoc, char *heredoc_end)
 	return (0);
 }
 
-int		set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style)
-{
-	t_list		*outlist_elem;
-	t_outfile	*outfile;
 
-	outlist_elem = NULL;
-	outfile = ft_calloc(1, sizeof(t_outfile));
-	if (!outfile)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-	outfile->file = ft_strdup(iterator->next->word);
-	if (!outfile->file)
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-	outfile->outstyle = style;
-	outlist_elem = ft_lstnew(outfile);
-	if (!outlist_elem)
-	{
-		free_outfile(outfile);
-		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
-	}
-	ft_lstadd_back(&(*node)->outfiles, outlist_elem);
-	return (0);
-}
+// int		set_node_infile(t_ast **node, t_token *iterator)
+// {
+// 	t_list	*inlist_elem;
+// 	char	*filename;
+// 	t_redir	*redir;
+
+
+// 	filename = ft_strdup(iterator->next->word);
+// 	if (!filename)
+// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
+// 	inlist_elem = ft_lstnew(filename);
+// 	if (!inlist_elem)
+// 	{
+// 		ft_free_str(&filename);
+// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node infile"));
+// 	}
+// 	ft_lstadd_back(&(*node)->infiles, inlist_elem);
+// 	(*node)->instyle = IN_FILE;
+// 	return (0);
+// }
+
+
+// int		set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style)
+// {
+// 	t_list		*outlist_elem;
+// 	t_outfile	*outfile;
+
+// 	outlist_elem = NULL;
+// 	outfile = ft_calloc(1, sizeof(t_outfile));
+// 	if (!outfile)
+// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
+// 	outfile->file = ft_strdup(iterator->next->word);
+// 	if (!outfile->file)
+// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
+// 	outfile->outstyle = style;
+// 	outlist_elem = ft_lstnew(outfile);
+// 	if (!outlist_elem)
+// 	{
+// 		free_outfile(outfile);
+// 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set node outfile"));
+// 	}
+// 	ft_lstadd_back(&(*node)->outfiles, outlist_elem);
+// 	return (0);
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ====================================
 

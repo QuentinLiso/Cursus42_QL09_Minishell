@@ -109,6 +109,24 @@ typedef enum	e_outstyle
 	OUT_APPEND
 }	t_outstyle;
 
+
+typedef enum	e_redirstyle
+{
+	REDIR_NULL,
+	REDIR_IN,
+	REDIR_HEREDOC,
+	REDIR_OUT,
+	REDIR_APPEND,
+}	t_redirstyle;
+
+typedef struct s_redir
+{
+	t_redirstyle	style;
+	char			*file;
+	char			*heredoc;
+}	t_redir;
+
+
 typedef struct	s_var
 {
 	char			*key;
@@ -129,17 +147,28 @@ typedef struct s_outfile
 	t_outstyle		outstyle;
 }	t_outfile;
 
+
+
 typedef struct s_ast
 {
 	t_nodetype	node_type;
 	t_optype	op_type;
 	char		**args;
+
+
+	t_list		*redir;
+
+
 	t_list		*infiles;
 	t_list		*heredocs;
 	char		**heredoc;
 	char		*heredoc_end;
 	t_instyle	instyle;
 	t_list		*outfiles;
+	
+	
+	
+	
 	struct s_ast	*left_node;
 	struct s_ast	*right_node;
 }	t_ast;
@@ -223,11 +252,10 @@ int			create_cmd_node(t_ast **node);
 int			handle_indir(t_ast **node, t_token *start, t_token *end);
 int			is_indir_error(t_token *iterator, t_token *end);
 int			set_indir(t_ast **node, t_token *iterator);
-int   	 	set_node_infile(t_ast **node, t_token *iterator);
+int			set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style);
 int  		set_node_heredoc(t_ast **node, t_token *iterator);
 char		*set_heredoc_name();
 int			create_heredoc(char *heredoc, char *heredoc_end);
-int  	 	set_node_outfile(t_ast **node, t_token *iterator, t_outstyle style);
 int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
 int     	cmd_args_count(t_token *start, t_token *end);
 
@@ -249,14 +277,19 @@ int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
 int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
 int		right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh);
 
-int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out);
-int		exec_ast_cmd_in(t_ast **node, int *fd);
-int		set_last_infile(t_list *infiles, t_list **last_infile);
-int		exec_ast_cmd_infile(char *last_infile, int *fd);
-int		exec_ast_cmd_out(t_ast **node, int *fd);
-int		set_last_outfile(t_list *outfiles, t_list **last_outfile);
-int		create_outfile(t_outfile *outfile);
-int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd);
+int		exec_ast_cmd_indir(t_list *redir);
+int		check_access_indir_lst(t_list *redir);
+int		check_access_indir_elem(t_redir *elem);
+int		create_outfile(t_redir *redir_file);
+
+// int		set_exec_indir(t_ast **node, int *fd_in, int *fd_out);
+// int		exec_ast_cmd_in(t_ast **node, int *fd);
+// int		set_last_infile(t_list *infiles, t_list **last_infile);
+// int		exec_ast_cmd_infile(char *last_infile, int *fd);
+// int		exec_ast_cmd_out(t_ast **node, int *fd);
+// int		set_last_outfile(t_list *outfiles, t_list **last_outfile);
+// int		create_outfile(t_outfile *outfile);
+// int		exec_ast_cmd_outfile(t_outfile *outfile, int *fd);
 
 
 // builtins
@@ -306,8 +339,7 @@ void	print_strarray(char *name, char **arr);
 void	print_strarray_raw(char **arr, char sep);
 void	print_strarray_endl(char *name, char **arr);
 void	print_env(char **env);
-void	print_infiles(t_list *infiles);
-void	print_outfiles(t_list *outfiles);
+void	print_redir(t_list *redir_files);
 void	print_tokis(t_token	*tokis);
 
 // Free management
@@ -316,6 +348,7 @@ void	safe_free_str(void *ptr);
 void	ft_free_strarray(char ***arr);
 void	ft_free_all_tok(t_token **tok);
 void	free_outfile(void *ptr);
+void	free_redir(void *ptr);
 void	ft_free_ast(t_ast **root_node);
 int		free_ast_ret(t_ast **root_node, int errnum);
 void	ft_free_reset_mnsh(t_mnsh *mnsh);
