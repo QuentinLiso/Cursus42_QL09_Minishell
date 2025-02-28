@@ -32,7 +32,6 @@ char	*get_next_line(int fd)
 		free(line);
 		return (NULL);
 	}
-	printf("%s\n", line);
 	return (line);
 }
 

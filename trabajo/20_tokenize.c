@@ -47,6 +47,7 @@ int		strtok_mnsh(t_mnsh *mnsh, char *s)
 
 	// if (!s)
 	// 	return (0);
+	status = 0;
 	while (*s)
 	{
 		status = tok_check(mnsh, &s);

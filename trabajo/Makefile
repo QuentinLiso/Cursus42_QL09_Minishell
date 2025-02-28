@@ -69,6 +69,11 @@ RM          =   rm -rf
 
 all: $(OBJS_PATH) $(LIBFT_LIB) $(NAME)
 
+run:
+	./minishell
+runv:
+	valgrind --suppressions=readline.supp --leak-check=full --show-leak-kinds=all ./minishell
+
 # Rule to create the object directory
 $(OBJS_PATH):
 	@mkdir -p $(OBJS_PATH)
@@ -87,16 +92,8 @@ $(NAME): $(OBJS)
 	@echo "$(BOLD)$(GREEN)[DONE] Minishell created!$(CLASSIC)"
 
 ess: essayage.c
-	@$(CC) $(CFLAGS) essayage.c 03_env.c 50_utils.c 51_helpers.c 60_free_management.c -o ess $(LFLAGS)
+	@$(CC) $(CFLAGS) essayage.c -o ess $(LFLAGS)
 	@echo "$(BOLD)$(GREEN)[DONE] Ess created!$(CLASSIC)"
-
-mnsh1:
-	@$(CC) $(CFLAGS) $(SRCS) -o minishell1 $(LFLAGS)
-	@echo "$(BOLD)$(GREEN)[DONE] Minishell1 created!$(CLASSIC)"
-
-mnsh2:
-	@$(CC) $(CFLAGS) $(SRCS) -o minishell2 $(LFLAGS)
-	@echo "$(BOLD)$(GREEN)[DONE] Minishell2 created!$(CLASSIC)"
 
 clean:
 	$(RM) $(OBJS_PATH)
