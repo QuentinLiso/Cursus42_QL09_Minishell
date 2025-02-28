@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-void	ft_free_str(char **ptr)
+void	free_str(char **ptr)
 {
 	if (*ptr == NULL)
 		return ;
@@ -8,7 +8,7 @@ void	ft_free_str(char **ptr)
 	*ptr = NULL;
 }
 
-void	safe_free_str(void *ptr)
+void	free_str_lst(void *ptr)
 {
 	char	*str;
 
@@ -19,7 +19,7 @@ void	safe_free_str(void *ptr)
 	str = NULL;
 }
 
-void	ft_free_strarray(char ***arr)
+void	free_strarray(char ***arr)
 {
 	int		i;
 
@@ -27,12 +27,36 @@ void	ft_free_strarray(char ***arr)
 	if ((*arr) == NULL)
 		return ;
 	while ((*arr)[++i])
-		ft_free_str(&(*arr)[i]);
+		free_str(&(*arr)[i]);
 	free(*arr);
 	(*arr) = NULL;
 }
 
-void	ft_free_all_tok(t_token **tok)
+int		free_env_var_ret(t_var *var, int ret)
+{
+	if (var)
+	{
+		free_str(&var->key);
+		free_str(&var->value);
+		free(var);
+	}
+	return (ret);
+}
+
+void	free_env_var(void *ptr)
+{
+	t_var	*var;
+
+	var = (t_var *)ptr;
+	if (var)
+	{
+		free_str(&var->key);
+		free_str(&var->value);
+		free(var);
+	}
+}
+
+void	free_tokis(t_token **tok)
 {
 	t_token	*iterator;
 
@@ -41,23 +65,10 @@ void	ft_free_all_tok(t_token **tok)
 	while (*tok != NULL)
 	{
 		iterator = (*tok)->next;
-		ft_free_str(&(*tok)->word);
+		free_str(&(*tok)->word);
 		free((*tok));
 		*tok = iterator;
 	}
-}
-
-void	free_outfile(void *ptr)
-{
-	t_outfile	*outfile;
-
-	outfile = (t_outfile *)ptr;
-	if (outfile)
-	{
-		ft_free_str(&outfile->file);
-		free(outfile);
-	}
-	outfile = NULL;
 }
 
 void	free_redir(void *ptr)
@@ -67,52 +78,40 @@ void	free_redir(void *ptr)
 	redir_file = (t_redir *)ptr;
 	if (redir_file)
 	{
-		ft_free_str(&redir_file->file);
-		ft_free_str(&redir_file->heredoc);
+		free_str(&redir_file->file);
+		free_str(&redir_file->heredoc);
 		free(redir_file);
 	}
 	redir_file = NULL;
 }
 
-
-
-
-void	ft_free_ast(t_ast **root_node)
+void	free_ast_node(t_ast **node)
 {
-	if (!root_node)
+	if (!*node)
 		return ;
-	ft_free_ast(&(*root_node)->left_node);
-	ft_free_ast(&(*root_node)->right_node);
-	ft_lstclear(&(*root_node)->infiles, &safe_free_str);
-	ft_lstclear(&(*root_node)->heredocs, &safe_free_str);
-	ft_lstclear(&(*root_node)->outfiles, &free_outfile);
-	printf("F\n");
-	if ((*root_node)->args)
-		ft_free_strarray(&(*root_node)->args);
-	printf("G\n");
-	free((*root_node));
-	*root_node = NULL;
+	free_ast_node(&(*node)->left_node);
+	free_ast_node(&(*node)->right_node);
+	free_strarray(&(*node)->args);
+	ft_lstclear(&(*node)->redir, &free_redir);
+	free(*node);
+	*node = NULL;
 }
 
-int		free_ast_ret(t_ast **root_node, int errnum)
+void	free_reset_mnsh(t_mnsh *mnsh)
 {
-	ft_free_ast(root_node);
-	return (errnum);
+	if (!mnsh)
+		return ;
+	free_str(&mnsh->prompt);
+	free_tokis(&mnsh->tokis);
+	free_ast_node(&mnsh->node);
 }
 
-void	ft_free_reset_mnsh(t_mnsh *mnsh)
-{
-	
-	ft_free_str(&mnsh->prompt);
-	ft_free_all_tok(&mnsh->tokis);
-	// if (mnsh->node)
-	// 	ft_free_ast(&mnsh->node);
-}
-
-void	ft_free_all_mnsh(t_mnsh *mnsh)
+void	free_all_mnsh(t_mnsh *mnsh)
 {
 	rl_clear_history();
-	ft_free_str(&mnsh->prompt);
-	ft_free_all_tok(&mnsh->tokis);
-	ft_free_strarray(&mnsh->paths);
+	free_str(&mnsh->prompt);
+	free_tokis(&mnsh->tokis);
+	free_ast_node(&mnsh->node);
+	ft_lstclear(&mnsh->env_mnsh_lst, &free_env_var);
 }
+

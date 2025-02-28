@@ -2,10 +2,15 @@
 
 int		execute_ast(t_ast **node, t_mnsh *mnsh)
 {
+	
 	if (!(*node) || !(*node)->args || !(*node)->args[0])
-		return (0);
+	{
+		mnsh->last_exit_status = 0;
+		return (mnsh->last_exit_status);
+	}
 	if ((*node)->node_type == NODE_CMD)
 	{
+		
 		if (set_mnsh_last_arg(node, mnsh))
 		{
 			mnsh->last_exit_status = errno_to_exit(ENOMEM);
@@ -93,7 +98,6 @@ int		clean_default_fd(int (*default_inout)[2])
 	(*default_inout)[1] = -1;
 	return (status);
 }
-
 
 int		exec_ast_cmd_indir(t_list *redir)
 {
@@ -235,7 +239,6 @@ int		dup_indir_elem_out(char *file, int *fd_out, int flag)
 	return (0);
 }
 
-
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 {
 	pid_t	pid;
@@ -266,7 +269,7 @@ int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
 	status = check_execfile(execfile, args);
 	if (status)
 	{
-		ft_free_str(&execfile);
+		free_str(&execfile);
 		return (status);
 	}
 	return (ft_execve(&execfile, args, mnsh));
@@ -274,15 +277,52 @@ int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
 
 int		set_execfile(char **execfile, char **args, t_mnsh *mnsh)
 {
+	char	**paths;
+	int		status;
+
 	*execfile = NULL;
 	if (*args[0] && !ft_strchr(args[0], '/'))
-		return (get_cmd_path(execfile, args[0], mnsh->paths));
+	{
+		status = set_execfile_paths(mnsh->env_mnsh_lst, &paths);
+		if (status)
+			return (status);
+		status = get_cmd_path(execfile, args[0], paths);
+		free_strarray(&paths);
+		return (status);
+	}
 	else
 	{
 		*execfile = ft_strdup(args[0]);
 		if (!*execfile)
 			return (perror_mnsh(ENOMEM, 1, "err malloc in set exec file"));
 	}
+	return (0);
+}
+
+int		set_execfile_paths(t_list *env_mnsh_list, char ***paths)
+{
+	char	*path;
+	int		i;
+
+	path = get_env_var(env_mnsh_list, "PATH");
+	if (!path)
+		return (1);
+	*paths = ft_split(path, ':');
+	if (!*paths)
+		return (ENOMEM);
+	i = -1;
+	while ((*paths)[++i])
+	{
+		if ((*paths)[i][ft_strlen((*paths)[i]) - 1] != '/')
+		{
+			(*paths)[i] = ft_strappend_mnsh((*paths)[i], "/");
+			if (!(*paths)[i])
+			{
+				free_strarray(paths);
+				return (ENOMEM);
+			}
+		}
+	}           
 	return (0);
 }
 
@@ -319,7 +359,7 @@ int		get_cmd_path(char **execfile, char *cmd, char **paths)
 			return (0);
 		}
 		else
-			ft_free_str(&buf);
+			free_str(&buf);
 	}
 	return (ENOENT);
 }
@@ -327,15 +367,13 @@ int		get_cmd_path(char **execfile, char *cmd, char **paths)
 int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
 {
 	char	**env;
-	int		status;
 
 	env = env_lst_to_arr(mnsh->env_mnsh_lst);
 	if (!env)
 		return (perror_mnsh(12, 1, "err malloc env for exec"));
-	status = execve(*execfile, args, env);
-	printf("Exec : %d\n", status);
-	ft_free_strarray(&env);
-	ft_free_str(execfile);	
+	execve(*execfile, args, env);
+	free_strarray(&env);
+	free_str(execfile);	
 	if (errno == ENOENT)
 		return (perror_mnsh(127, 2, args[0], strerror(ENOENT)));
 	else if (errno == EACCES)
@@ -344,7 +382,7 @@ int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
 		return (perror_mnsh(1, 2, args[0], strerror(errno)));
 }
 
-int	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
+int		exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
 {
 	if (op == OP_AND)
 		return (exec_ast_op_and(node, mnsh));
@@ -356,7 +394,7 @@ int	exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
 		return (0);
 }
 
-int	exec_ast_op_and(t_ast **node, t_mnsh *mnsh)
+int		exec_ast_op_and(t_ast **node, t_mnsh *mnsh)
 {
 	int	status;
 
@@ -366,7 +404,7 @@ int	exec_ast_op_and(t_ast **node, t_mnsh *mnsh)
 	return (status);
 }
 
-int	exec_ast_op_or(t_ast **node, t_mnsh *mnsh)
+int		exec_ast_op_or(t_ast **node, t_mnsh *mnsh)
 {
 	int	status;
 
@@ -376,7 +414,7 @@ int	exec_ast_op_or(t_ast **node, t_mnsh *mnsh)
 	return (status);
 }
 
-int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
+int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 {
 	int		fd[2];
 	pid_t	pid[2];
@@ -397,7 +435,7 @@ int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 	return (0);
 }
 
-int	left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
+int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 {
 	*pid = fork();
 	if (*pid < 0)
@@ -413,7 +451,7 @@ int	left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 	return (0);
 }
 
-int	right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
+int		right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 {
 	*pid = fork();
 	if (*pid < 0)

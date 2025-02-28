@@ -1,35 +1,29 @@
 #include "minishell.h"
 
-void	print_minishell_header()
+int	loop_mnsh(t_mnsh *mnsh)
 {
-	ft_printf(MINISHELL);
-}
-
-int		mnsh_prompt(char **prompt)
-{
-	*prompt = NULL;
-
-	// if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-	*prompt = readline(MINISHELL_PROMPT);
-	// else if (isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))
-	// {
-	// 	ft_putendl_fd("minishell: error: is not a TTY", STDERR_FILENO);
-	// 	exit (1);
-	// }
-	// else if (isatty(STDOUT_FILENO) && !isatty(STDIN_FILENO))
-	// {
-	// 	ft_putendl_fd("minishell: error: is not a TTY", STDERR_FILENO);
-	// 	exit (1);
-	// }
-	// else
-	// {
-	// 	ft_putendl_fd("minishell: error: is not a TTY", STDERR_FILENO);
-	// 	exit (1);
-	// }
-	// if (!*prompt)
-	// {
-	// 	load_message(14, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
-	// 	exit(0);
-	// }
-	return (0);	
+	if (isatty(STDIN_FILENO))
+		ft_putstr_fd(MINISHELL, STDOUT_FILENO);
+	while (1)
+	{
+		free_reset_mnsh(mnsh);
+		if (isatty(STDIN_FILENO))
+			mnsh->prompt = readline(MINISHELL_PROMPT);
+		else
+			mnsh->prompt = readline(MINISHELL_PROMPT);
+		if (!mnsh->prompt && isatty(STDIN_FILENO))
+			continue ;
+		else if (!mnsh->prompt && !isatty(STDIN_FILENO))
+			break ;
+		add_history(mnsh->prompt);
+		if (strtok_mnsh(mnsh, mnsh->prompt) < 0)
+			continue ;
+		if (ast_mnsh(&mnsh->node, mnsh->tokis, mnsh->last_tokis, mnsh))
+			continue ;
+		if (execute_ast(&mnsh->node, mnsh))
+			continue ;
+		if (!isatty(STDIN_FILENO))
+			break ;
+	}
+	return (mnsh->last_exit_status);
 }

@@ -113,7 +113,7 @@ int	mnsh_pwd(void)
 	if (pwd)
 	{
 		ft_putendl_fd(pwd, STDOUT_FILENO);
-		ft_free_str(&pwd);
+		free_str(&pwd);
 		return (0);
 	}
 	else
@@ -135,13 +135,13 @@ int	mnsh_cd(char **args, t_mnsh *mnsh)
 	status = set_cwd(&cwd);
 	if (chdir(target))
 	{
-		ft_free_str(&cwd);
+		free_str(&cwd);
 		return (perror_mnsh(1, 1, strerror(errno)));
 	}
 	if (status)
 		return (status);
 	status = update_pwd_oldpwd(cwd, mnsh);
-	ft_free_str(&cwd);
+	free_str(&cwd);
 	if (status)
 		return (status);
 	return (0);
@@ -183,7 +183,7 @@ int	update_pwd_oldpwd(char *cwd, t_mnsh *mnsh)
 		perror_mnsh(errno_to_exit(status_newwd), 1, "Could not update PWD");
 	if (status_cwd)
 		perror_mnsh(errno_to_exit(status_cwd), 1, "Could not update OLDPWD");
-	ft_free_str(&newwd);
+	free_str(&newwd);
 	if (status_newwd)
 		return (errno_to_exit(status_newwd));
 	if (status_cwd)
@@ -253,8 +253,8 @@ int	handle_export_var(char *arg, t_mnsh *mnsh)
 	if (status)
 		return (status);
 	status = update_export_var(key, value, mnsh);
-	ft_free_str(&key);
-	ft_free_str(&value);
+	free_str(&key);
+	free_str(&value);
 	return (status);
 }
 
@@ -270,7 +270,7 @@ int	set_export_key_value(char *arg, int i, char **key, char **value)
 		*value = ft_strdup(&arg[i + 1]);
 		if (!*value)
 		{
-			ft_free_str(key);
+			free_str(key);
 			return (perror_mnsh(ENOMEM, 1, "malloc err in set export key val"));
 		}
 	}
@@ -351,7 +351,7 @@ int	mnsh_exit(char **args, t_mnsh *mnsh)
 			return (perror_mnsh(errno_to_exit(E2BIG), 2, "exit",
 				"too many arguments"));
 	}
-	ft_free_all_mnsh(mnsh);
+	free_all_mnsh(mnsh);
 	// load_message(17, "☑️  EXIT SUCCESSFUL ☑️\tSee you later :)", 120000);
 	mnsh->last_exit_status = exit_code % 256;
 	exit(exit_code % 256);

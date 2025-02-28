@@ -45,6 +45,8 @@ int		strtok_mnsh(t_mnsh *mnsh, char *s)
 {
 	int		status;
 
+	// if (!s)
+	// 	return (0);
 	while (*s)
 	{
 		status = tok_check(mnsh, &s);
@@ -55,7 +57,6 @@ int		strtok_mnsh(t_mnsh *mnsh, char *s)
 	}
 	if (status < 0)
 	{
-		// ft_free_all_tok(&mnsh->tokis);
 		mnsh->last_exit_status = -status;
 		return (status);
 	}
@@ -127,11 +128,11 @@ int		is_operator(const char *s, const char *list_operators)
 		len = ft_strlen(operators[i]);
 		if (ft_strncmp(s, operators[i], len) == 0)
 		{
-			ft_free_strarray(&operators);
+			free_strarray(&operators);
 			return (len);
 		}
 	}
-	ft_free_strarray(&operators);	
+	free_strarray(&operators);	
 	return (0);
 }
 
@@ -158,7 +159,7 @@ int		tok_check_regular(t_mnsh *mnsh, char **s)
 		(word && *word && !has_quote))
 		return (add_toki_mnsh(mnsh, word, TOKEN_WORD));
 	else
-		ft_free_str(&word);
+		free_str(&word);
 	return (1);
 }
 
@@ -203,7 +204,7 @@ int		split_quote(char **s, char **word)
 	if (!buffer)
 		return (-12);
 	*word = ft_strappend_mnsh(*word, buffer);
-	ft_free_str(&buffer);
+	free_str(&buffer);
 	if (!*word)
 		return (-12);
 	(*s)++;
@@ -272,7 +273,7 @@ int		split_dquote_env(t_mnsh *mnsh, char **s, char **buffer)
 	if (!env)
 		return (-12);
 	*buffer = ft_strappend_mnsh(*buffer, get_env_var(mnsh->env_mnsh_lst, env));
-	ft_free_str(&env);
+	free_str(&env);
 	if (!*buffer)
 		return (-12);
 	return (1);
@@ -314,7 +315,7 @@ int		split_dquote_noenv(char **s, char **buffer)
 	*buffer = ft_strappend_mnsh(*buffer, buffer_2);
 	if (!*buffer)
 		return (-12);
-	ft_free_str(&buffer_2);
+	free_str(&buffer_2);
 	return (0);
 }
 
@@ -326,7 +327,7 @@ int		get_last_exit(t_mnsh *mnsh, char **s, char **buffer)
 	if (!last_exit)
 		return (-12);
 	*buffer = ft_strappend_mnsh(*buffer, last_exit);
-	ft_free_str(&last_exit);
+	free_str(&last_exit);
 	if (!*buffer)
 		return (-12);
 	(*s)++;
@@ -339,7 +340,7 @@ void	append_dquote(char **word, char **buffer)
 		*word = ft_strappend_mnsh(*word, ft_strdup(""));
 	else
 		*word = ft_strappend_mnsh(*word, *buffer);
-	ft_free_str(buffer);
+	free_str(buffer);
 }
 
 // ===============================================
@@ -362,7 +363,7 @@ int		split_noquote(t_mnsh *mnsh, char **s, char **word)
 	}
 	if (buffer)
 		*word = ft_strappend_mnsh(*word, buffer);
-	ft_free_str(&buffer);
+	free_str(&buffer);
 	if (!*word)
 		return (-12);
 	return (1);
@@ -400,7 +401,7 @@ int		split_noquote_env(t_mnsh *mnsh, char **s, char **buffer)
 	if (!env)
 		return (-12);
 	*buffer = ft_strappend_mnsh(*buffer, get_env_var(mnsh->env_mnsh_lst, env));
-	ft_free_str(&env);
+	free_str(&env);
 	if (!*buffer)
 		return (-12);
 	return (1);
@@ -437,7 +438,7 @@ int		split_noquote_noenv(char **s, char **buffer)
 	if (!buffer_2)
 		return (-12);
 	*buffer = ft_strappend_mnsh(*buffer, buffer_2);
-	ft_free_str(&buffer_2);
+	free_str(&buffer_2);
 	if (!*buffer)
 		return (-12);
 	return (0);

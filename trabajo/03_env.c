@@ -20,30 +20,6 @@ t_var	*alloc_env_var(char *key_eq_val)
 	return (var);
 }
 
-int		free_env_var_ret(t_var *var, int ret)
-{
-	if (var)
-	{
-		ft_free_str(&var->key);
-		ft_free_str(&var->value);
-		free(var);
-	}
-	return (ret);
-}
-
-void	free_env_var(void *ptr)
-{
-	t_var	*var;
-
-	var = (t_var *)ptr;
-	if (var)
-	{
-		ft_free_str(&var->key);
-		ft_free_str(&var->value);
-		free(var);
-	}
-}
-
 char	*get_env_var(t_list *env_lst, char *key)
 {
 	t_var	*var;
@@ -109,7 +85,7 @@ int		edit_env_var(t_list **env_lst, char *key, char *value)
 		{
 			if (value)
 			{
-				ft_free_str(&var->value);
+				free_str(&var->value);
 				var->value = ft_strdup(value);
 				if (!var->value)
 					return (ENOMEM);

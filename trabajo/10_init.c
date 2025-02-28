@@ -7,7 +7,7 @@ int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env)
 	init_mnsh_struct(mnsh);
 	if (ac > 1)
 		return (EINVAL);
-	status = set_mnsh_env(mnsh, &mnsh->env_mnsh_lst, env);
+	status = set_mnsh_env(&mnsh->env_mnsh_lst, env);
 	if (status != 0)
 	{
 		mnsh->last_exit_status = errno_to_exit(status);
@@ -20,7 +20,6 @@ int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env)
 void	init_mnsh_struct(t_mnsh *mnsh)
 {
 	mnsh->env_mnsh_lst = NULL;
-	mnsh->paths = NULL;
 	mnsh->prompt = NULL;
 	mnsh->tokis = NULL;
 	mnsh->last_tokis = NULL;
@@ -29,7 +28,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->last_cmd_arg = NULL;
 }
 
-int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env)
+int		set_mnsh_env(t_list **env_lst, char **env)
 {
 	t_list	*new_elem;
 	t_var	*var;
@@ -50,9 +49,7 @@ int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env)
 		ft_lstadd_back(env_lst, new_elem);
 		env++;
 	}
-	if (set_mnsh_env_shlvl(env_lst))
-		return (1);									// ret value
-	return (set_mnsh_paths(*env_lst, &mnsh->paths));	// ret value
+	return (set_mnsh_env_shlvl(env_lst));
 }
 
 int		set_mnsh_empty_env(t_list **env_lst)
@@ -87,7 +84,7 @@ int		set_mnsh_env_shlvl(t_list **env_lst)
 			ft_lstclear(env_lst, &free_env_var);
 			return (ENOMEM);
 		}
-		ft_free_str(&shlvl);
+		free_str(&shlvl);
 	}
 	else if (edit_env_var(env_lst, "SHLVL", "1"))
 	{
@@ -97,29 +94,3 @@ int		set_mnsh_env_shlvl(t_list **env_lst)
 	return (0);
 }
 
-int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths)
-{
-	char	*path;
-	int		i;
-
-	path = get_env_var(env_mnsh_list, "PATH");
-	if (!path)
-		return (1);
-	*paths = ft_split(path, ':');
-	if (!*paths)
-		return (ENOMEM);
-	i = -1;
-	while ((*paths)[++i])
-	{
-		if ((*paths)[i][ft_strlen((*paths)[i]) - 1] != '/')
-		{
-			(*paths)[i] = ft_strappend_mnsh((*paths)[i], "/");
-			if (!(*paths)[i])
-			{
-				ft_free_strarray(paths);
-				return (ENOMEM);
-			}
-		}
-	}           
-	return (0);
-}

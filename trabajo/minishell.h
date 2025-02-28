@@ -61,18 +61,6 @@
 
 typedef struct sigaction	t_sa;
 
-typedef enum	e_error
-{
-	CONTINUE = -1,
-	ERR_NOERR,
-	ERR_ARGS,
-	ERR_MALLOC,
-	ERR_ENV,
-	ERR_QUOTE,
-	ERR_CD,
-	ERR_EXPORT
-}	t_error;
-
 typedef enum	e_toktype
 {
 	TOKEN_NOTYPE,
@@ -94,21 +82,6 @@ typedef enum	e_optype
 	OP_OR,
 	OP_PIPE
 }	t_optype;
-
-typedef enum	e_instyle
-{
-	IN_NULL,
-	IN_FILE,
-	IN_HEREDOC
-}	t_instyle;
-
-typedef enum	e_outstyle
-{
-	OUT_NULL,
-	OUT_TRUNC,
-	OUT_APPEND
-}	t_outstyle;
-
 
 typedef enum	e_redirstyle
 {
@@ -141,34 +114,12 @@ typedef struct s_token
 	struct s_token	*prev;
 }	t_token;
 
-typedef struct s_outfile
-{
-	char			*file;
-	t_outstyle		outstyle;
-}	t_outfile;
-
-
-
 typedef struct s_ast
 {
-	t_nodetype	node_type;
-	t_optype	op_type;
-	char		**args;
-
-
-	t_list		*redir;
-
-
-	t_list		*infiles;
-	t_list		*heredocs;
-	char		**heredoc;
-	char		*heredoc_end;
-	t_instyle	instyle;
-	t_list		*outfiles;
-	
-	
-	
-	
+	t_nodetype		node_type;
+	t_optype		op_type;
+	char			**args;
+	t_list			*redir;
 	struct s_ast	*left_node;
 	struct s_ast	*right_node;
 }	t_ast;
@@ -176,7 +127,6 @@ typedef struct s_ast
 typedef struct s_minishell
 {
 	t_list	*env_mnsh_lst;
-	char	**paths;
 	t_token	*tokis;
 	t_token	*last_tokis;
 	char	*prompt;
@@ -187,32 +137,28 @@ typedef struct s_minishell
 }	t_mnsh;
 
 
-// readline
-void	print_minishell_header();
-int		mnsh_prompt(char **prompt);
-
-// signals
-void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
-void	handle_signal(int signum, siginfo_t *info, void *other);
-
 // init
 int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env);
 void	init_mnsh_struct(t_mnsh *mnsh);
-int		set_mnsh_env(t_mnsh *mnsh, t_list **env_lst, char **env);
+int		set_mnsh_env(t_list **env_lst, char **env);
 int		set_mnsh_empty_env(t_list **env_lst);
 int		set_mnsh_env_shlvl(t_list **env_lst);
-int		set_mnsh_paths(t_list *env_mnsh_list, char ***paths);
 
 // env
 t_var	*alloc_env_var(char *key_eq_val);
-int		free_env_var_ret(t_var *var, int ret);
-void	free_env_var(void *ptr);
 char	*get_env_var(t_list *env_lst, char *key);
 t_list	*get_env_var_prev(t_list *env_lst, char *key);
 int		add_env_var(t_list **env_lst, char *key, char *value);
 int		edit_env_var(t_list **env_lst, char *key, char *value);
 void	display_env_var(void *ptr);
 
+// signals
+void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
+void	handle_signal(int signum, siginfo_t *info, void *other);
+
+// loop
+int		loop_mnsh(t_mnsh *mnsh);
+void	mnsh_prompt(char **prompt);
 
 // tokens
 t_token	*new_toki(char *word, t_toktype type);
@@ -266,6 +212,7 @@ int		exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh);
 int		check_and_execute_cmd(char **args, t_mnsh *mnsh);
 int		set_execfile(char **execfile, char **args, t_mnsh *mnsh);
+int		set_execfile_paths(t_list *env_mnsh_list, char ***paths);
 int		check_execfile(char *execfile, char **args);
 int		get_cmd_path(char **execfile, char *cmd, char **paths);
 int		ft_execve(char **execfile, char **args, t_mnsh *mnsh);
@@ -292,26 +239,21 @@ int		dup_indir_elem_out(char *file, int *fd_out, int flag);
 // builtins
 bool	is_builtin(char *s);
 int		exec_ast_cmd_builtin(char **args, t_mnsh *mnsh);
-
 int		mnsh_echo(char **args);
 bool	is_echo_option_valid(char *arg);
 int		mnsh_env(t_mnsh *mnsh);
 int		mnsh_pwd(void);
-
 int		mnsh_cd(char **args, t_mnsh *mnsh);
 int		set_target(char **args, char **target, t_mnsh *mnsh);
 int		set_cwd(char **cwd);
 int		update_pwd_oldpwd(char *cwd, t_mnsh *mnsh);
-
 int		mnsh_export(char **args, t_mnsh *mnsh);
 int		print_export_var(t_list *env);
 int		handle_export_var(char *arg, t_mnsh *mnsh);
 int		set_export_key_value(char *arg, int i, char **key, char **value);
 int		update_export_var(char *key, char *value, t_mnsh *mnsh);
-
 int		mnsh_unset(char **args, t_mnsh *mnsh);
 void	del_node(t_list **list, char *key);
-
 int		mnsh_exit(char **args, t_mnsh *mnsh);
 bool	strtoll_isnum(char *str, long long *n);
 
@@ -340,15 +282,15 @@ void	print_redir(t_list *redir_files);
 void	print_tokis(t_token	*tokis);
 
 // Free management
-void	ft_free_str(char **ptr);
-void	safe_free_str(void *ptr);
-void	ft_free_strarray(char ***arr);
-void	ft_free_all_tok(t_token **tok);
-void	free_outfile(void *ptr);
+void	free_str(char **ptr);
+void	free_str_lst(void *ptr);
+void	free_strarray(char ***arr);
+int		free_env_var_ret(t_var *var, int ret);
+void	free_env_var(void *ptr);
+void	free_tokis(t_token **tok);
 void	free_redir(void *ptr);
-void	ft_free_ast(t_ast **root_node);
-int		free_ast_ret(t_ast **root_node, int errnum);
-void	ft_free_reset_mnsh(t_mnsh *mnsh);
-void	ft_free_all_mnsh(t_mnsh *mnsh);
+void	free_ast_node(t_ast **node);
+void	free_reset_mnsh(t_mnsh *mnsh);
+void	free_all_mnsh(t_mnsh *mnsh);
 
 #endif

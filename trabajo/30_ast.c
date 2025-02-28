@@ -113,9 +113,7 @@ int 	create_ast_opnode(t_ast **node, char *op)
 	if (!(*node)->args[0])
 		return (ENOMEM);
 	(*node)->args[1] = NULL;
-    (*node)->infiles = NULL;
-    (*node)->outfiles = NULL;
-    (*node)->heredocs = NULL;
+	(*node)->redir = NULL;
     (*node)->left_node = NULL;
     (*node)->right_node = NULL;
 	return (0);
@@ -162,10 +160,6 @@ int		create_cmd_node(t_ast **node)
 	(*node)->op_type = OP_NULL;
     (*node)->args = NULL;
 	(*node)->redir = NULL;
-    (*node)->infiles = NULL;
-    (*node)->outfiles = NULL;
-	(*node)->instyle = IN_NULL;
-    (*node)->heredocs = NULL;
     (*node)->left_node = NULL;
     (*node)->right_node = NULL;
     return (0);
@@ -228,7 +222,6 @@ int		set_indir(t_ast **node, t_token *iterator)
 		return (set_node_redir(node, iterator, REDIR_OUT));
 	return (0);
 }
-
 
 
 int		set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style)
@@ -299,7 +292,7 @@ char	*set_heredoc_name()
 	if (!count_itoa)
 		return (NULL);
 	heredoc_name = ft_strjoin("mnsh-hdoc-tmp-", count_itoa);
-	ft_free_str(&count_itoa);
+	free_str(&count_itoa);
 	if (!heredoc_name)
 		return (NULL);
 	return (heredoc_name);
@@ -319,9 +312,9 @@ int		create_heredoc(char *heredoc, char *heredoc_end)
 		if (!prompt || !ft_strcmp(prompt, heredoc_end))
 			break ;
 		ft_putendl_fd(prompt, fd);
-		ft_free_str(&prompt);
+		free_str(&prompt);
 	}
-	ft_free_str(&prompt);
+	free_str(&prompt);
 	close (fd);
 	return (0);
 }

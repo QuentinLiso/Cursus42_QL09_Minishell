@@ -161,7 +161,7 @@ char    **env_lst_to_arr(t_list *env_list)
 		env_list = env_list->next;
 		if (!arr[i])
 		{
-			ft_free_strarray(&arr);
+			free_strarray(&arr);
 			return (NULL);
 		}
 	}
