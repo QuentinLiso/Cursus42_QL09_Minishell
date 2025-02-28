@@ -33,17 +33,17 @@ NAME        =   minishell
 # Source files list
 SRCS        =   $(addsuffix .c, \
     00_main \
-    01_rl \
-    02_signals \
-    03_env \
-    10_init \
+    01_init \
+    02_env \
+    03_signals \
+    10_loop \
     20_tokenize \
     30_ast \
     40_exec_ast \
-    41_builtins \
-    50_utils \
-    51_helpers \
+    50_builtins \
     60_free_management \
+	70_utils \
+    71_helpers \
 )
 
 # Object files generated in the .objs/ directory

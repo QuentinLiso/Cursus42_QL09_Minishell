@@ -11,5 +11,6 @@ int main(int ac, __attribute__((unused)) char **av, char **env)
 		return (mnsh.last_exit_status);
 	}
 	loop_mnsh(&mnsh);
+	free_all_mnsh(&mnsh);
 	return (mnsh.last_exit_status);
 }
