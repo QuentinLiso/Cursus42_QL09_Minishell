@@ -132,7 +132,7 @@ int		check_access_indir_elem(t_redir *elem)
 	struct stat	st;
 
 	if (elem && elem->file &&
-		((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC)))
+		((elem->style == REDIR_IN)))
 	{
 		if (access(elem->file, R_OK) < 0)
 			return (perror_mnsh(1, 2, elem->file, strerror(errno)));
@@ -199,7 +199,7 @@ int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
 	if (!elem || !elem->file)
 		return (0);
 	if	((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC))
-		return (dup_indir_elem_in(elem->file, fd_in));
+		return (dup_indir_elem_in(elem, fd_in));
 	else if (elem->style == REDIR_OUT)
 		return (dup_indir_elem_out(elem->file, fd_out, O_TRUNC));
 	else if (elem->style == REDIR_APPEND)
@@ -207,9 +207,12 @@ int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
 	return (0);
 }
 
-int		dup_indir_elem_in(char *file, int *fd_in)
+int		dup_indir_elem_in(t_redir *elem, int *fd_in)
 {
-	*fd_in = open(file, O_RDONLY);
+	if (elem->style == REDIR_IN)
+		*fd_in = open(elem->file, O_RDONLY);
+	else
+		*fd_in = elem->fd_heredoc_read;
 	if (*fd_in < 0)
 		return (perror_mnsh(1, 1, strerror(errno)));
 	if (dup2(*fd_in, STDIN_FILENO) < 0)

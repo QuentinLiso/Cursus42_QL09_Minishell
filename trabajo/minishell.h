@@ -16,6 +16,7 @@
 # include <sys/wait.h>
 # include <sys/uio.h>
 # include <sys/stat.h>
+# include <sys/ioctl.h>
 
 # include <readline/readline.h>
 # include <readline/history.h>
@@ -96,7 +97,7 @@ typedef struct s_redir
 {
 	t_redirstyle	style;
 	char			*file;
-	char			*heredoc;
+	int				fd_heredoc_read;
 }	t_redir;
 
 
@@ -202,7 +203,7 @@ int			set_indir(t_ast **node, t_token *iterator, t_mnsh *mnsh);
 int			set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style);
 int  		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh);
 char		*set_heredoc_name();
-int			create_heredoc(char *heredoc, char *heredoc_end, t_mnsh *mnsh);
+int			create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh);
 void	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh);
 void	warn_heredoc(int line, char *heredoc_end);
 int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
@@ -236,7 +237,7 @@ int		check_access_indir_elem(t_redir *elem);
 int		create_outfile(t_redir *redir_file);
 int		dup_indir_lst(t_list *redir);
 int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out);
-int		dup_indir_elem_in(char *file, int *fd_in);
+int		dup_indir_elem_in(t_redir *elem, int *fd_in);
 int		dup_indir_elem_out(char *file, int *fd_out, int flag);
 
 // builtins
@@ -259,6 +260,18 @@ int		mnsh_unset(char **args, t_mnsh *mnsh);
 void	del_node(t_list **list, char *key);
 int		mnsh_exit(char **args, t_mnsh *mnsh);
 bool	strtoll_isnum(char *str, long long *n);
+
+// Free management
+void	free_str(char **ptr);
+void	free_str_lst(void *ptr);
+void	free_strarray(char ***arr);
+int		free_env_var_ret(t_var *var, int ret);
+void	free_env_var(void *ptr);
+void	free_tokis(t_token **tok);
+void	free_redir(void *ptr);
+void	free_ast_node(t_ast **node);
+void	free_reset_mnsh(t_mnsh *mnsh);
+void	free_all_mnsh(t_mnsh *mnsh);
 
 // Utils
 bool	ft_isspace(char c);
@@ -283,17 +296,6 @@ void	print_strarray_endl(char *name, char **arr);
 void	print_env(char **env);
 void	print_redir(t_list *redir_files);
 void	print_tokis(t_token	*tokis);
-
-// Free management
-void	free_str(char **ptr);
-void	free_str_lst(void *ptr);
-void	free_strarray(char ***arr);
-int		free_env_var_ret(t_var *var, int ret);
-void	free_env_var(void *ptr);
-void	free_tokis(t_token **tok);
-void	free_redir(void *ptr);
-void	free_ast_node(t_ast **node);
-void	free_reset_mnsh(t_mnsh *mnsh);
-void	free_all_mnsh(t_mnsh *mnsh);
+void	check_open_fds(void);
 
 #endif

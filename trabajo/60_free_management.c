@@ -79,7 +79,7 @@ void	free_redir(void *ptr)
 	if (redir_file)
 	{
 		free_str(&redir_file->file);
-		free_str(&redir_file->heredoc);
+		redir_file->fd_heredoc_read = -1;
 		free(redir_file);
 	}
 	redir_file = NULL;

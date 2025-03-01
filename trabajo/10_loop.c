@@ -1,23 +1,17 @@
 #include "minishell.h"
 
+void	prompt_mnsh(t_mnsh *mnsh, bool tester);
+
 int	loop_mnsh(t_mnsh *mnsh)
 {
-	// if (isatty(STDIN_FILENO))
-	// 	ft_putstr_fd(MINISHELL, STDOUT_FILENO);
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
+		ft_putstr_fd(MINISHELL, STDOUT_FILENO);
 	while (1)
 	{
 		free_reset_mnsh(mnsh);
-		if (isatty(STDIN_FILENO))
-			mnsh->prompt = readline(MINISHELL_PROMPT);
-		else
-		{
-			// mnsh->prompt = readline(MINISHELL_PROMPT);
-			mnsh->prompt = get_next_line(STDIN_FILENO);
-			if (mnsh->prompt && mnsh->prompt[0])
-				mnsh->prompt[ft_strlen(mnsh->prompt) - 1] = '\0';
-		}
+		prompt_mnsh(mnsh, true);
 		if (!mnsh->prompt)
-			break;
+			break ;
 		mnsh->line_count++;
 		add_history(mnsh->prompt);
 		if (strtok_mnsh(mnsh, mnsh->prompt) < 0)
@@ -26,9 +20,23 @@ int	loop_mnsh(t_mnsh *mnsh)
 			continue ;
 		if (execute_ast(&mnsh->node, mnsh))
 			continue ;
-		if (!isatty(STDIN_FILENO))
-			break ;
 	}
 	return (mnsh->last_exit_status);
 }
 
+void	prompt_mnsh(t_mnsh *mnsh, bool tester)
+{
+	if (tester)
+	{
+		mnsh->prompt = readline(MINISHELL_PROMPT);
+		return ;
+	}
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))			// ./minishell
+		mnsh->prompt = readline(MINISHELL_PROMPT);
+	else if (isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))	// ./minishell | bash
+		mnsh->prompt = readline(NULL);
+	else if (!isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))	// echo echo salut | ./minishell
+		mnsh->prompt = get_next_line(STDIN_FILENO);
+	else if (!isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))	// ./minishell | ./minishell | bash
+		mnsh->prompt = get_next_line(STDIN_FILENO);
+}

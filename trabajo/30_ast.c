@@ -240,7 +240,6 @@ int		set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style)
 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set redir"));
 	}
 	redir_file->style = style;
-	redir_file->heredoc = NULL;
 	redir_elem = ft_lstnew(redir_file);
 	if (!redir_elem)
 	{
@@ -264,9 +263,10 @@ int		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 	if (!redir_file->file)
 	{
 		free(redir_file);
-		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
+		return (perror_mnsh(1, 1, "could not set heredoc file"));
 	}
 	redir_file->style = REDIR_HEREDOC;
+	redir_file->fd_heredoc_read = -1;
 	redir_elem = ft_lstnew(redir_file);
 	if (!redir_elem)
 	{
@@ -274,7 +274,7 @@ int		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 		return (perror_mnsh(ENOMEM, 1, "malloc err in set heredoc"));
 	}
 	ft_lstadd_back(&(*node)->redir, redir_elem);
-	return (create_heredoc(redir_file->file, iterator->next->word, mnsh));
+	return (create_heredoc(redir_file, iterator->next->word, mnsh));
 }
 
 char	*set_heredoc_name()
@@ -298,15 +298,24 @@ char	*set_heredoc_name()
 	return (heredoc_name);
 }
 
-int		create_heredoc(char *heredoc, char *heredoc_end, t_mnsh *mnsh)
+int		create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh)
 {
-	int		fd;
+	int		fd_write;
 
-	fd = open(heredoc, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
+	fd_write = open(redir_file->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd_write < 0)
 		return (perror_mnsh(1, 1, strerror(errno)));
-	fill_heredoc(fd, heredoc_end, mnsh);
-	close (fd);
+	redir_file->fd_heredoc_read = open(redir_file->file, O_RDONLY);
+	if (redir_file->fd_heredoc_read < 0)
+	{
+		close(fd_write);
+		unlink(redir_file->file);
+		return (perror_mnsh(1, 1, strerror(errno)));
+	}
+	if (unlink(redir_file->file) < 0)
+		perror_mnsh(1, 1, strerror(errno));
+	fill_heredoc(fd_write, heredoc_end, mnsh);
+	close (fd_write);
 	return (0);
 }
 
