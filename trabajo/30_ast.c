@@ -254,13 +254,14 @@ int		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 {
 	t_list	*redir_elem;
 	t_redir	*redir_file;
+	int		status;
 
 	redir_elem = NULL;
 	redir_file = ft_calloc(1, sizeof(t_redir));
 	if (!redir_file)
 		return (perror_mnsh(ENOMEM, 1, "malloc err in func set heredoc"));
-	redir_file->file = set_heredoc_name();
-	if (!redir_file->file)
+	status = set_heredoc_name(&redir_file->file);
+	if (status)
 	{
 		free(redir_file);
 		return (perror_mnsh(1, 1, "could not set heredoc file"));
@@ -277,26 +278,52 @@ int		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 	return (create_heredoc(redir_file, iterator->next->word, mnsh));
 }
 
-char	*set_heredoc_name()
+int	set_heredoc_name(char **heredoc_name)
 {
-	static int count = 1;
-	char	*count_itoa;
-	char	*heredoc_name;
+	static int	count = 0;
+	int			attempts;
+	int			status;
 
-	if (count < 0)
-		count = 1;
-	count_itoa = ft_itoa(count);
-		(count)++;
-	if (count < 0)
-		count = 1;
-	if (!count_itoa)
-		return (NULL);
-	heredoc_name = ft_strjoin("mnsh-hdoc-tmp-", count_itoa);
-	free_str(&count_itoa);
-	if (!heredoc_name)
-		return (NULL);
-	return (heredoc_name);
+	attempts = 0;
+	status = 0;
+	while (attempts < 10000)
+	{
+		status = check_valid_heredoc_name(heredoc_name, &count, &attempts);
+		if (status == 0)
+			return (0);
+		else if (status > 0)
+			continue ;
+		else if (status < 0)
+			return (-status);
+	}
+	return (1);
 }
+
+int	check_valid_heredoc_name(char **heredoc_name, int *count, int *attempts)
+{
+	struct stat	st;
+	char		*count_itoa;
+
+	attempts++;
+	(*count)++;
+	if (*count < 0)
+		*count = 1;
+	count_itoa = ft_itoa(*count);
+	if (!count_itoa)
+		return (-ENOMEM);
+	*heredoc_name = ft_strjoin("mnsh-hdoc-tmp-", count_itoa);
+	free_str(&count_itoa);
+	if (!*heredoc_name)
+		return (-ENOMEM);
+	if (!stat(*heredoc_name, &st))
+	{
+		free_str(heredoc_name);
+		return (1);
+	}
+	else
+		return (0);
+}
+
 
 int		create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh)
 {

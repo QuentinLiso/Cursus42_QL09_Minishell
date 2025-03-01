@@ -202,10 +202,11 @@ int			is_indir_error(t_token *iterator, t_token *end);
 int			set_indir(t_ast **node, t_token *iterator, t_mnsh *mnsh);
 int			set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style);
 int  		set_node_heredoc(t_ast **node, t_token *iterator, t_mnsh *mnsh);
-char		*set_heredoc_name();
+int			set_heredoc_name(char **heredoc_name);
+int			check_valid_heredoc_name(char **heredoc_name, int *count, int *attempts);
 int			create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh);
-void	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh);
-void	warn_heredoc(int line, char *heredoc_end);
+void		fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh);
+void		warn_heredoc(int line, char *heredoc_end);
 int			set_cmdnode_args(t_ast **node, t_token *start, t_token *end);
 int     	cmd_args_count(t_token *start, t_token *end);
 
