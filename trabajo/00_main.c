@@ -1,5 +1,6 @@
 #include "minishell.h"
 
+volatile sig_atomic_t g_sigint_received = 0;
 
 int main(int ac, __attribute__((unused)) char **av, char **env)
 {

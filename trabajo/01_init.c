@@ -13,7 +13,6 @@ int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env)
 		mnsh->last_exit_status = errno_to_exit(status);
 		return (mnsh->last_exit_status);
 	}
-	init_sigaction(&mnsh->sa, &handle_signal);
 	return (0);
 }
 

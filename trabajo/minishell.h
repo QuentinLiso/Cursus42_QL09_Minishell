@@ -61,6 +61,7 @@
 # define ERR_QUOTE_MSG "quote error\n"
 
 typedef struct sigaction	t_sa;
+extern volatile sig_atomic_t g_sigint_received;
 
 typedef enum	e_toktype
 {
@@ -155,8 +156,11 @@ int		edit_env_var(t_list **env_lst, char *key, char *value);
 void	display_env_var(void *ptr);
 
 // signals
-void	init_sigaction(t_sa *sa, void (*action)(int, siginfo_t *, void *));
-void	handle_signal(int signum, siginfo_t *info, void *other);
+void	init_sigaction(t_sa *sa, void (*handler)(int));
+void	handle_signal_interactive(int signum);
+void	handle_signal_heredoc(int signum);
+void	set_signal_interactive();
+void	set_signal_heredoc();
 
 // loop
 int		loop_mnsh(t_mnsh *mnsh);

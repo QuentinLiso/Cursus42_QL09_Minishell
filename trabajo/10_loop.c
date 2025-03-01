@@ -9,6 +9,7 @@ int	loop_mnsh(t_mnsh *mnsh)
 	while (1)
 	{
 		free_reset_mnsh(mnsh);
+		set_signal_interactive();
 		prompt_mnsh(mnsh, true);
 		if (!mnsh->prompt)
 			break ;
