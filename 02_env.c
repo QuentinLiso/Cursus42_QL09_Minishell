@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   02_env.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/01 15:41:56 by nefadli           #+#    #+#             */
+/*   Updated: 2025/03/01 15:44:49 by nefadli          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 t_var	*alloc_env_var(char *key_eq_val)
@@ -23,7 +35,7 @@ t_var	*alloc_env_var(char *key_eq_val)
 char	*get_env_var(t_list *env_lst, char *key)
 {
 	t_var	*var;
-	
+
 	if (!env_lst)
 		return (NULL);
 	while (env_lst)
@@ -52,7 +64,7 @@ t_list	*get_env_var_prev(t_list *env_lst, char *key)
 	return (NULL);
 }
 
-int		add_env_var(t_list **env_lst, char *key, char *value)
+int	add_env_var(t_list **env_lst, char *key, char *value)
 {
 	t_var	*var;
 	t_list	*new_elem;
@@ -72,7 +84,7 @@ int		add_env_var(t_list **env_lst, char *key, char *value)
 	return (0);
 }
 
-int		edit_env_var(t_list **env_lst, char *key, char *value)
+int	edit_env_var(t_list **env_lst, char *key, char *value)
 {
 	t_var	*var;
 	t_list	*iterator;
@@ -96,16 +108,3 @@ int		edit_env_var(t_list **env_lst, char *key, char *value)
 	}
 	return (add_env_var(env_lst, key, value));
 }
-
-void	display_env_var(void *ptr)
-{
-	t_var	*env_var;
-
-	if (!ptr)
-		return ;
-	env_var = (t_var *)ptr;
-	ft_putstr_fd(env_var->key, STDOUT_FILENO);
-	ft_putchar_fd('=', STDOUT_FILENO);
-	ft_putendl_fd(env_var->value, STDOUT_FILENO);
-}
-

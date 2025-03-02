@@ -6,7 +6,7 @@
 #    By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/27 14:14:33 by nefadli           #+#    #+#              #
-#    Updated: 2025/02/27 17:29:42 by nefadli          ###   ########.fr        #
+#    Updated: 2025/03/01 17:21:47 by nefadli          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,15 +35,36 @@ SRCS        =   $(addsuffix .c, \
     00_main \
     01_init \
     02_env \
+	02_env2 \
     03_signals \
     10_loop \
     20_tokenize \
+	20_tokenize_2 \
+	20_tokenize_3 \
+	20_tokenize_4 \
+	20_tokenize_5 \
     30_ast \
+	30_ast_1 \
+	30_ast_2 \
+	30_ast_3 \
+	30_ast_4 \
     40_exec_ast \
+	40_exec_ast_1 \
+	40_exec_ast_2 \
+	40_exec_ast_3 \
+	40_exec_ast_4 \
+	40_exec_ast_5\
     50_builtins \
+	50_builtins_1 \
+	50_builtins_2 \
+	50_builtins_3 \
     60_free_management \
+	60_free_management_1 \
 	70_utils \
+	70_utils_1 \
+	70_utils_2 \
     71_helpers \
+	71_helpers_1 \
 )
 
 # Object files generated in the .objs/ directory

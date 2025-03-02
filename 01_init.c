@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   01_init.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/01 15:34:42 by nefadli           #+#    #+#             */
+/*   Updated: 2025/03/01 15:41:51 by nefadli          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int		mnsh_initialization(t_mnsh *mnsh, int ac, char **env)
+int	mnsh_initialization(t_mnsh *mnsh, int ac, char **env)
 {
 	int	status;
 
@@ -28,14 +40,14 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->line_count = 0;
 }
 
-int		set_mnsh_env(t_list **env_lst, char **env)
+int	set_mnsh_env(t_list **env_lst, char **env)
 {
 	t_list	*new_elem;
 	t_var	*var;
 
 	*env_lst = NULL;
 	if (!env || !*env)
-		return (set_mnsh_empty_env(env_lst));		// ret value
+		return (set_mnsh_empty_env(env_lst));
 	while (*env)
 	{
 		var = alloc_env_var(*env);
@@ -44,7 +56,7 @@ int		set_mnsh_env(t_list **env_lst, char **env)
 		if (!var || !new_elem)
 		{
 			ft_lstclear(env_lst, &free_env_var);
-			return (free_env_var_ret(var, 1));    // ret value
+			return (free_env_var_ret(var, 1));
 		}
 		ft_lstadd_back(env_lst, new_elem);
 		env++;
@@ -52,7 +64,7 @@ int		set_mnsh_env(t_list **env_lst, char **env)
 	return (set_mnsh_env_shlvl(env_lst));
 }
 
-int		set_mnsh_empty_env(t_list **env_lst)
+int	set_mnsh_empty_env(t_list **env_lst)
 {
 	char	*cwd;
 
@@ -69,7 +81,7 @@ int		set_mnsh_empty_env(t_list **env_lst)
 	return (0);
 }
 
-int		set_mnsh_env_shlvl(t_list **env_lst)
+int	set_mnsh_env_shlvl(t_list **env_lst)
 {
 	char	*shlvl;
 
@@ -93,4 +105,3 @@ int		set_mnsh_env_shlvl(t_list **env_lst)
 	}
 	return (0);
 }
-

@@ -1,0 +1,51 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   20_tokenize_5.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/01 15:52:30 by nefadli           #+#    #+#             */
+/*   Updated: 2025/03/01 17:47:48 by nefadli          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minishell.h"
+
+int	split_noquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
+{
+	if (**s == '?')
+		return (get_last_exit(mnsh, s, buffer));
+	else if (ft_isspecial(**s, ENV_SPECIALS))
+	{
+		(*s)++;
+		return (1);
+	}
+	else if (!ft_isalnum(**s) && **s != '_' && !isquote(**s))
+	{
+		*buffer = ft_strappend_mnsh(*buffer, "$");
+		if (!*buffer)
+			return (-12);
+		return (1);
+	}
+	return (0);
+}
+
+int	split_noquote_noenv(char **s, char **buffer)
+{
+	char	*start;
+	char	*buffer_2;
+
+	start = *s;
+	while (**s && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS)
+		&& !ft_isspecial(**s, "'\"$"))
+		(*s)++;
+	buffer_2 = ft_substr(start, 0, *s - start);
+	if (!buffer_2)
+		return (-12);
+	*buffer = ft_strappend_mnsh(*buffer, buffer_2);
+	free_str(&buffer_2);
+	if (!*buffer)
+		return (-12);
+	return (0);
+}
