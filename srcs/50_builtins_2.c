@@ -72,7 +72,7 @@ int	handle_export_var(char *arg, t_mnsh *mnsh)
 	status = set_export_key_value(arg, i, &key, &value);
 	if (status)
 		return (status);
-	status = update_export_var(key, value, mnsh);
+	status = edit_env_var(&mnsh->env_mnsh_lst, key, value);
 	free_str(&key);
 	free_str(&value);
 	return (status);
@@ -95,19 +95,4 @@ int	set_export_key_value(char *arg, int i, char **key, char **value)
 		}
 	}
 	return (0);
-}
-
-int	update_export_var(char *key, char *value, t_mnsh *mnsh)
-{
-	char	*env_var_val;
-
-	env_var_val = get_env_var(mnsh->env_mnsh_lst, key);
-	if (!value)
-	{
-		if (!env_var_val)
-			return (add_env_var(&mnsh->env_mnsh_lst, key, value));
-		return (0);
-	}
-	else
-		return (edit_env_var(&mnsh->env_mnsh_lst, key, value));
 }
