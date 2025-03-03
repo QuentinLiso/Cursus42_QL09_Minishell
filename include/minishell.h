@@ -58,14 +58,10 @@
 ===================================\n\n" RST
 
 # define MINISHELL_PROMPT B "🐚 Minishell 🐚 > " RST
-# define TOK_OPERATORS "&& || | &"
+# define TOK_OPERATORS "&& || |"
 # define TOK_INDIR "<> >> > << <"
 # define TOK_SPECIALS "&|<>"
 # define ENV_SPECIALS "#*@$!0123456789-"
-# define ERR_NOERR_MSG "no error\n"
-# define ERR_ARGS_MSG "args error\n"
-# define ERR_ENV_MSG "env error\n"
-# define ERR_QUOTE_MSG "quote error\n"
 
 typedef struct sigaction		t_sa;
 typedef struct termios			t_termios;
