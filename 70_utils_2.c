@@ -56,3 +56,13 @@ char	*env_var_to_char(t_var *var)
 	s[key_len + value_len + 1] = '\0';
 	return (s);
 }
+
+void	increment_mnsh_line_count(t_mnsh *mnsh, int i)
+{
+	while (i-- > 0)
+	{
+		mnsh->line_count++;
+		if (mnsh->line_count < 0)
+			mnsh->line_count = 1;
+	}
+}

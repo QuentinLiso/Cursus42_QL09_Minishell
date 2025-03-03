@@ -82,7 +82,7 @@ void	check_open_fds(void)
 	int	bytes;
 
 	fd = 0;
-	while (fd < 10)
+	while (fd < 15)
 	{
 		if (ioctl(fd, FIONREAD, &bytes) != -1)
 			printf("FD is open : %d\n", fd);

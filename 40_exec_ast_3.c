@@ -12,6 +12,45 @@
 
 #include "minishell.h"
 
+int		exec_ast_cmd_ext_parent(pid_t pid, t_mnsh *mnsh)
+{
+	int	status;
+
+	set_sigaction(&mnsh->sa_sigint, SIGINT, SIG_IGN, 0);
+	waitpid(pid, &status, 0);
+	set_sigaction(&mnsh->sa_sigint, SIGINT, h_sigint_loop, 0);
+	if (WIFSIGNALED(status))
+	{
+		status = WTERMSIG(status);
+		if (status == SIGQUIT)
+			write(STDERR_FILENO, "Quit (core dumped)\n", 19);
+		else if (status == SIGINT)
+			write(STDOUT_FILENO, "\n", 1);
+		return (128 + status);
+	}
+	return (WEXITSTATUS(status));
+}
+
+int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
+{
+	char		*execfile;
+	int			status;
+
+	if (!args || !args[0])
+		return (0);
+	status = set_execfile(&execfile, args, mnsh);
+	if (status == ENOMEM)
+		return (status);
+	status = check_execfile(execfile, args);
+	if (status)
+	{
+		free_str(&execfile);
+		return (status);
+	}
+	return (ft_execve(&execfile, args, mnsh));
+}
+
+
 int		set_execfile(char **execfile, char **args, t_mnsh *mnsh)
 {
 	char	**paths;
@@ -76,45 +115,4 @@ int		check_execfile(char *execfile, char **args)
 	if (!(S_IXUSR & st.st_mode))
 		return (perror_mnsh(126, 2, args[0], strerror(EACCES)));
 	return (0);
-}
-
-int		get_cmd_path(char **execfile, char *cmd, char **paths)
-{
-	int		i;
-	char 	*buf;
-	struct stat	st;
-
-	i = -1;
-	while (paths[++i])
-	{
-		buf = ft_strjoin(paths[i], cmd);
-		if (!buf)
-			return (perror_mnsh(ENOMEM, 1, "err malloc get cmd path"));
-		if (stat(buf, &st) == 0 && (st.st_mode & S_IXUSR))
-		{
-			*execfile = buf;
-			return (0);
-		}
-		else
-			free_str(&buf);
-	}
-	return (ENOENT);
-}
-
-int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
-{
-	char	**env;
-
-	env = env_lst_to_arr(mnsh->env_mnsh_lst);
-	if (!env)
-		return (perror_mnsh(12, 1, "err malloc env for exec"));
-	execve(*execfile, args, env);
-	free_strarray(&env);
-	free_str(execfile);	
-	if (errno == ENOENT)
-		return (perror_mnsh(127, 2, args[0], strerror(ENOENT)));
-	else if (errno == EACCES)
-		return (perror_mnsh(126, 2, args[0], strerror(EACCES)));
-	else
-		return (perror_mnsh(1, 2, args[0], strerror(errno)));
 }

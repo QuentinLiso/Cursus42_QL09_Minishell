@@ -77,10 +77,12 @@ int		create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh)
 		perror_mnsh(1, 1, strerror(errno));
 	status = fill_heredoc(fd_write, heredoc_end, mnsh);
 	close (fd_write);
+	if (status)
+		close(redir_file->fd_heredoc_read);
 	return (status);
 }
 
-int	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh)
+int	fill_heredoc(int fd_wr, char *heredoc_end, t_mnsh *mnsh)
 {
 	int		count_pipe[2];
 	pid_t	pid;
@@ -91,12 +93,12 @@ int	fill_heredoc(int fd, char *heredoc_end, t_mnsh *mnsh)
 	if (pid < 0)
 		return (perror_mnsh(1, 1, "fork failed"));
 	else if (pid == 0)
-		return (child_heredoc(fd, count_pipe, heredoc_end, mnsh));
+		exit(child_heredoc(fd_wr, count_pipe, heredoc_end, mnsh));
 	else
 		return (parent_heredoc(count_pipe, pid, mnsh));
 }
 
-int	child_heredoc(int fd, int count_pipe[2], char *heredoc_end, t_mnsh *mnsh)
+int	child_heredoc(int fd_wr, int count_pipe[2], char *h_end, t_mnsh *mnsh)
 {
 	int		count;
 	int		status;
@@ -104,11 +106,11 @@ int	child_heredoc(int fd, int count_pipe[2], char *heredoc_end, t_mnsh *mnsh)
 	close(count_pipe[0]);
 	set_sigaction(&mnsh->sa_sigint, SIGINT, h_sigint_heredoc, 0);
 	count = 0;
-	status = loop_heredoc(fd, &count, heredoc_end, mnsh);
+	status = loop_heredoc(fd_wr, &count, h_end, mnsh);
+	g_signal_received = 0;
 	write(count_pipe[1], &count, sizeof(int));
 	close(count_pipe[1]);
-	if (status)
-		free_all_mnsh(mnsh);
+	free_all_mnsh(mnsh);
 	return (status);
 }
 

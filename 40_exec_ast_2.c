@@ -63,40 +63,28 @@ int		dup_indir_elem_out(char *file, int *fd_out, int flag)
 int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 {
 	pid_t	pid;
-	int		status;
-	int		child_exit;
 
 	pid = fork();
 	if (pid < 0)
 		return (perror_mnsh(1, 1, "fork failed"));
 	else if (pid == 0)
-	{
-		child_exit = check_and_execute_cmd(args, mnsh);
-		free_all_mnsh(mnsh);
-		exit(child_exit);
-	}
+		exit(exec_ast_cmd_ext_child(args, mnsh));
 	else
-	{
-		waitpid(pid, &status, 0);
-		return (WEXITSTATUS(status));
-	}
+		return (exec_ast_cmd_ext_parent(pid, mnsh));
 }
 
-int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
+int		exec_ast_cmd_ext_child(char **args, t_mnsh *mnsh)
 {
-	char		*execfile;
-	int			status;
+	int	child_exit;
 
-	if (!args || !args[0])
-		return (0);
-	status = set_execfile(&execfile, args, mnsh);
-	if (status == ENOMEM)
-		return (status);
-	status = check_execfile(execfile, args);
-	if (status)
-	{
-		free_str(&execfile);
-		return (status);
-	}
-	return (ft_execve(&execfile, args, mnsh));
+	set_sigaction(&mnsh->sa_sigint, SIGINT, h_sigint_cmd, 0);
+	set_sigaction(&mnsh->sa_sigquit, SIGQUIT, h_sigquit_cmd, 0);
+	if (g_signal_received == SIGINT)
+		child_exit = 130;
+	else if (g_signal_received == SIGQUIT)
+		child_exit = 131;
+	g_signal_received = 0;
+	child_exit = check_and_execute_cmd(args, mnsh);
+	free_all_mnsh(mnsh);
+	return (child_exit);
 }

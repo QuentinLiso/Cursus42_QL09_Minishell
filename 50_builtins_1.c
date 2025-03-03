@@ -58,7 +58,13 @@ int	set_target(char **args, char **target, t_mnsh *mnsh)
 	{
 		*target = get_env_var(mnsh->env_mnsh_lst, "HOME");
 		if (!*target)
-			return (perror_mnsh(1, 1, "HOME env var not set"));
+			return (perror_mnsh(1, 1, "HOME not set"));
+	}
+	else if (!ft_strcmp(args[1], "-"))
+	{
+		*target = get_env_var(mnsh->env_mnsh_lst, "OLDPWD");
+		if (!*target)
+			return (perror_mnsh(1, 1, "OLDPWD not set"));
 	}
 	else
 		*target = args[1];

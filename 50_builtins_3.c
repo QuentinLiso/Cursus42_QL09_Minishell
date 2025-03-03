@@ -70,7 +70,7 @@ int	mnsh_exit(char **args, t_mnsh *mnsh)
 	}
 	free_all_mnsh(mnsh);
 	mnsh->last_exit_status = exit_code % 256;
-	exit(exit_code % 256);
+	exit(mnsh->last_exit_status);
 	return (0);
 }
 

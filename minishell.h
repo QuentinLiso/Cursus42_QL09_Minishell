@@ -68,6 +68,7 @@
 # define ERR_QUOTE_MSG "quote error\n"
 
 typedef struct sigaction		t_sa;
+typedef struct termios			t_termios;
 extern volatile sig_atomic_t	g_signal_received;
 
 typedef enum e_toktype
@@ -169,8 +170,9 @@ void							h_sigint_heredoc(__attribute__((unused)) int signum);
 void							h_sigint_cmd(__attribute__((unused)) int signum);
 void							h_sigquit_cmd(__attribute__((unused)) int signum);
 
-void							prompt_mnsh(t_mnsh *mnsh, bool tester);
 int								loop_mnsh(t_mnsh *mnsh);
+void							prompt_mnsh(t_mnsh *mnsh, bool tester);
+void							check_sigint_loop(t_mnsh *mnsh);
 
 t_token							*new_toki(char *word, t_toktype type);
 int								add_toki_mnsh(t_mnsh *mnsh, char *word,
@@ -238,12 +240,12 @@ int								check_valid_heredoc_name(char **heredoc_name,
 									int *count, int *attempts);
 int								create_heredoc(t_redir *redir_file,
 									char *heredoc_end, t_mnsh *mnsh);
-int								fill_heredoc(int fd, char *heredoc_end,
+int								fill_heredoc(int fd_wr, char *heredoc_end,
 									t_mnsh *mnsh);
-int								child_heredoc(int fd, int count_pipe[2],
-									char *heredoc_end, t_mnsh *mnsh);
-int								loop_heredoc(int fd, int *count, 
-									char *heredoc_end, t_mnsh *mnsh);
+int								child_heredoc(int fd_wr, int count_pipe[2],
+										char *h_end, t_mnsh *mnsh);
+int								loop_heredoc(int fd_wr, int *count,
+										char *heredoc_end, t_mnsh *mnsh);
 void							warn_heredoc(int line, char *heredoc_end);
 int								parent_heredoc(int count_pipe[2], pid_t pid,
 									t_mnsh *mnsh);
@@ -255,6 +257,10 @@ int								execute_ast(t_ast **node, t_mnsh *mnsh);
 int								set_mnsh_last_arg(t_ast **node, t_mnsh *mnsh);
 int								exec_ast_cmd(t_ast **node, t_mnsh *mnsh);
 int								exec_ast_cmd_external(char **args,
+									t_mnsh *mnsh);
+int								exec_ast_cmd_ext_child(char **args,
+									t_mnsh *mnsh);
+int								exec_ast_cmd_ext_parent(pid_t pid, 
 									t_mnsh *mnsh);
 int								check_and_execute_cmd(char **args,
 									t_mnsh *mnsh);
@@ -338,6 +344,7 @@ int								perror_mnsh(int errnum, int count, ...);
 int								perror2_mnsh(int errnum, int count, ...);
 char							**env_lst_to_arr(t_list *env_list);
 char							*env_var_to_char(t_var *var);
+void							increment_mnsh_line_count(t_mnsh *mnsh, int i);
 
 void							print_node(t_ast *node);
 void							print_ast(t_ast *node, int depth);

@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-int	loop_heredoc(int fd, int *count, char *heredoc_end, t_mnsh *mnsh)
+int	loop_heredoc(int fd_wr, int *count, char *heredoc_end, t_mnsh *mnsh)
 {
 	char *prompt;
 
@@ -32,7 +32,7 @@ int	loop_heredoc(int fd, int *count, char *heredoc_end, t_mnsh *mnsh)
 		(*count)++;
 		if (!ft_strcmp(prompt, heredoc_end))
 			break ;
-		ft_putendl_fd(prompt, fd);
+		ft_putendl_fd(prompt, fd_wr);
 		free_str(&prompt);
 	}
 	free_str(&prompt);
@@ -62,7 +62,7 @@ int	parent_heredoc(int count_pipe[2], pid_t pid, t_mnsh *mnsh)
 		perror_mnsh(1, 1, "Error while counting lines");
 		count = 0;
 	}
-	mnsh->line_count += count;
+	increment_mnsh_line_count(mnsh, count);
 	close(count_pipe[0]);
 	set_sigaction(&mnsh->sa_sigint, SIGINT, h_sigint_loop, 0);
 	return (WEXITSTATUS(status));

@@ -26,7 +26,8 @@ void	set_sigaction(t_sa *sa, int signum, void (*handler)(int), int flags)
 
 void	h_sigint_loop(__attribute__((unused)) int signum)
 {
-	g_signal_received = SIGINT;
+	g_signal_received += (1 << 8);
+	g_signal_received = (g_signal_received & 0xFFFFFF00) | SIGINT;
 	write(STDOUT_FILENO, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
@@ -37,25 +38,19 @@ void	h_sigint_loop(__attribute__((unused)) int signum)
 
 void	h_sigint_heredoc(__attribute__((unused)) int signum)
 {
-	// rl_on_new_line();
-	// rl_replace_line("", 0);
-	ft_putchar_fd('\n', STDOUT_FILENO);
-	// rl_redisplay();
-	close(STDIN_FILENO);
 	g_signal_received = SIGINT;
+	write(STDOUT_FILENO, "\n", 1);
+	close(STDIN_FILENO);
 }
 
 // =================================
 
 void	h_sigint_cmd(__attribute__((unused)) int signum)
 {
-	close(STDIN_FILENO);
 	g_signal_received = SIGINT;
 }
 
 void	h_sigquit_cmd(__attribute__((unused)) int signum)
 {
-	ft_putstr_fd("Quit (core dumped)\n", STDERR_FILENO);
-	close(STDIN_FILENO);
 	g_signal_received = SIGQUIT;
 }

@@ -13,6 +13,47 @@
 #include "minishell.h"
 
 
+int		get_cmd_path(char **execfile, char *cmd, char **paths)
+{
+	int		i;
+	char 	*buf;
+	struct stat	st;
+
+	i = -1;
+	while (paths[++i])
+	{
+		buf = ft_strjoin(paths[i], cmd);
+		if (!buf)
+			return (perror_mnsh(ENOMEM, 1, "err malloc get cmd path"));
+		if (stat(buf, &st) == 0 && (st.st_mode & S_IXUSR))
+		{
+			*execfile = buf;
+			return (0);
+		}
+		else
+			free_str(&buf);
+	}
+	return (ENOENT);
+}
+
+int		ft_execve(char **execfile, char **args, t_mnsh *mnsh)
+{
+	char	**env;
+
+	env = env_lst_to_arr(mnsh->env_mnsh_lst);
+	if (!env)
+		return (perror_mnsh(12, 1, "err malloc env for exec"));
+	execve(*execfile, args, env);
+	free_strarray(&env);
+	free_str(execfile);	
+	if (errno == ENOENT)
+		return (perror_mnsh(127, 2, args[0], strerror(ENOENT)));
+	else if (errno == EACCES)
+		return (perror_mnsh(126, 2, args[0], strerror(EACCES)));
+	else
+		return (perror_mnsh(1, 2, args[0], strerror(errno)));
+}
+
 int		exec_ast_op(t_ast **node, t_optype op, t_mnsh *mnsh)
 {
 	if (op == OP_AND)
@@ -43,45 +84,4 @@ int		exec_ast_op_or(t_ast **node, t_mnsh *mnsh)
 	if (mnsh->last_exit_status != 0)
 		return (execute_ast(&(*node)->right_node, mnsh));
 	return (status);
-}
-
-int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
-{
-	int		fd[2];
-	pid_t	pid[2];
-	int		status[2];
-
-	if (pipe(fd) < 0)
-		return (perror_mnsh(1, 1, strerror(errno)));
-	if (left_pipe(node, &fd, &pid[0], mnsh))
-		return (1);
-	if (right_pipe(node, &fd, &pid[1], mnsh))
-		return (1);
-	close(fd[0]);
-	close(fd[1]);
-	waitpid(pid[0], &status[0], 0);
-	waitpid(pid[1], &status[1], 0);
-	if (status[1])
-		return (1);
-	return (0);
-}
-
-int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
-{
-	int	child_exit;
-
-	*pid = fork();
-	if (*pid < 0)
-		return (perror_mnsh(1, 1, strerror(errno)));
-	else if (*pid == 0)
-	{
-		close((*fd)[0]);
-		if (dup2((*fd)[1], STDOUT_FILENO) < 0)
-			exit(perror_mnsh(1, 1, strerror(errno)));
-		close((*fd)[1]);
-		child_exit = execute_ast(&(*node)->left_node, mnsh);
-		free_all_mnsh(mnsh);
-		exit(child_exit);
-	}
-	return (0);
 }
