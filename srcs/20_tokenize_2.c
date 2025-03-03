@@ -64,7 +64,10 @@ int	tok_check_regular(t_mnsh *mnsh, char **s)
 	{
 		status = tok_check_regular_split(mnsh, s, &word, &has_quote);
 		if (status < 0)
+		{
+			free_str(&word);
 			return (status);
+		}
 		else if (status > 0)
 			continue ;
 	}

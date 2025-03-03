@@ -49,3 +49,13 @@ int	split_noquote_noenv(char **s, char **buffer)
 		return (-12);
 	return (0);
 }
+
+int	append_noquote(char **word, char **buffer)
+{
+	if (*buffer)
+		*word = ft_strappend_mnsh(*word, *buffer);
+	free_str(buffer);
+	if (!*word)
+		return (-12);
+	return (1);
+}

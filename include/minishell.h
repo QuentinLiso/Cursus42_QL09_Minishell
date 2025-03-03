@@ -199,7 +199,8 @@ int								split_dquote_env_spec(t_mnsh *mnsh, char **s,
 int								get_last_exit(t_mnsh *mnsh, char **s,
 									char **buffer);
 int								split_dquote_noenv(char **s, char **buffer);
-void							append_dquote(char **word, char **buffer);
+int								append_dquote(char **s, char **word,
+									char **buffer);
 int								split_noquote(t_mnsh *mnsh, char **s,
 									char **word);
 int								check_split_noquote(t_mnsh *mnsh, char **s,
@@ -209,7 +210,7 @@ int								split_noquote_env(t_mnsh *mnsh, char **s,
 int								split_noquote_env_spec(t_mnsh *mnsh, char **s,
 									char **buffer);
 int								split_noquote_noenv(char **s, char **buffer);
-
+int								append_noquote(char **word, char **buffer);
 int								ast_mnsh(t_ast **node, t_token *start,
 									t_token *end, t_mnsh *mnsh);
 int								create_ast(t_ast **node, t_token *start,

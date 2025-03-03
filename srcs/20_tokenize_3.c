@@ -27,17 +27,14 @@ int	split_dquote(t_mnsh *mnsh, char **s, char **word)
 	{
 		status = check_split_dquote(mnsh, s, &buffer);
 		if (status < 0)
+		{
+			free_str(&buffer);
 			return (status);
+		}
 		else if (status > 0)
 			continue ;
 	}
-	if (!**s)
-		return (perror_mnsh(-2, 1, "Open dquote error"));
-	append_dquote(word, &buffer);
-	if (!word)
-		return (-12);
-	(*s)++;
-	return (1);
+	return (append_dquote(s, word, &buffer));
 }
 
 int	check_split_dquote(t_mnsh *mnsh, char **s, char **buffer)

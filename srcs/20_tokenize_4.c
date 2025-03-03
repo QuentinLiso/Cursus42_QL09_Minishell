@@ -27,13 +27,22 @@ int	get_last_exit(t_mnsh *mnsh, char **s, char **buffer)
 	return (1);
 }
 
-void	append_dquote(char **word, char **buffer)
+int	append_dquote(char **s, char **word, char **buffer)
 {
+	if (!**s)
+	{
+		free_str(buffer);
+		return (perror_mnsh(-2, 1, "Open dquote error"));
+	}
 	if (!*buffer)
 		*word = ft_strappend_mnsh(*word, ft_strdup(""));
 	else
 		*word = ft_strappend_mnsh(*word, *buffer);
 	free_str(buffer);
+	if (!word)
+		return (perror_mnsh(-12, 1, "Err malloc in append dquote"));
+	(*s)++;
+	return (1);
 }
 
 int	split_noquote(t_mnsh *mnsh, char **s, char **word)
@@ -49,16 +58,14 @@ int	split_noquote(t_mnsh *mnsh, char **s, char **word)
 	{
 		status = check_split_noquote(mnsh, s, &buffer);
 		if (status < 0)
+		{
+			free_str(&buffer);
 			return (status);
+		}
 		else if (status > 0)
 			continue ;
 	}
-	if (buffer)
-		*word = ft_strappend_mnsh(*word, buffer);
-	free_str(&buffer);
-	if (!*word)
-		return (-12);
-	return (1);
+	return (append_noquote(word, &buffer));
 }
 
 int	check_split_noquote(t_mnsh *mnsh, char **s, char **buffer)
