@@ -10,8 +10,6 @@
 #                                                                              #
 # **************************************************************************** #
 
-#valgrind --suppressions=readline.supp --leak-check=full --show-leak-kinds=all ./minishell
-
 # ################ #
 #*    COULEURS    *#
 # ################ #
@@ -31,56 +29,58 @@ CYAN   	= \e[36m
 NAME        =   minishell
 
 # Source files list
-SRCS        =   $(addsuffix .c, \
-    00_main \
-    01_init \
-    02_env \
-	02_env2 \
-    03_signals \
-    10_loop \
-    20_tokenize \
-	20_tokenize_2 \
-	20_tokenize_3 \
-	20_tokenize_4 \
-	20_tokenize_5 \
-    30_ast \
-	30_ast_1 \
-	30_ast_2 \
-	30_ast_3 \
-	30_ast_4 \
-    40_exec_ast \
-	40_exec_ast_1 \
-	40_exec_ast_2 \
-	40_exec_ast_3 \
-	40_exec_ast_4 \
-	40_exec_ast_5\
-    50_builtins \
-	50_builtins_1 \
-	50_builtins_2 \
-	50_builtins_3 \
-    60_free_management \
-	60_free_management_1 \
-	70_utils \
-	70_utils_1 \
-	70_utils_2 \
-    71_helpers \
-	71_helpers_1 \
-)
+SRCS_PATH	=	./srcs/
+SRCS_FILES	=  $(addsuffix .c, \
+		00_main \
+		01_init \
+		02_env \
+		02_env2 \
+		03_signals \
+		10_loop \
+		20_tokenize \
+		20_tokenize_2 \
+		20_tokenize_3 \
+		20_tokenize_4 \
+		20_tokenize_5 \
+		30_ast \
+		30_ast_1 \
+		30_ast_2 \
+		30_ast_3 \
+		30_ast_4 \
+		40_exec_ast \
+		40_exec_ast_1 \
+		40_exec_ast_2 \
+		40_exec_ast_3 \
+		40_exec_ast_4 \
+		40_exec_ast_5\
+		50_builtins \
+		50_builtins_1 \
+		50_builtins_2 \
+		50_builtins_3 \
+		60_free_management \
+		60_free_management_1 \
+		70_utils \
+		70_utils_1 \
+		70_utils_2 \
+		71_helpers \
+		71_helpers_1 \
+	)
+SRCS	= $(addprefix $(SRCS_PATH), $(SRCS_FILES))
 
 # Object files generated in the .objs/ directory
 OBJS_PATH   =   .objs/
-OBJS        =   $(SRCS:%.c=$(OBJS_PATH)%.o)
+OBJS        =   $(SRCS_FILES:%.c=$(OBJS_PATH)%.o)
 
 # Include and libft paths
-INC_PATH    =   include/
+INC_PATH    =   ./include/
 LIBFT_PATH  =   ./libft
-CFLAGS += -I$(INC_PATH) -I$(LIBFT_PATH)/includes
 LIBFT_LIB   =   $(LIBFT_PATH)/libft.a
 
 # Compilation settings
 CC          =   cc
-CFLAGS      =   -Wall -Werror -Wextra -g3
+CFLAGS      =  -Wall -Werror -Wextra -g3
 CFLAGS      +=  -I/opt/homebrew/opt/readline/include
+CFLAGS 		+= 	-I$(INC_PATH) -I$(LIBFT_PATH)/includes
 LFLAGS      =   -L$(LIBFT_PATH) -lft -lreadline
 RM          =   rm -rf
 
@@ -104,7 +104,7 @@ $(LIBFT_LIB):
 	@make -C $(LIBFT_PATH) all
 
 # Rule to compile object files
-$(OBJS_PATH)%.o: %.c | $(OBJS_PATH)
+$(OBJS_PATH)%.o: $(SRCS_PATH)%.c | $(OBJS_PATH)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule to link and create the final executable

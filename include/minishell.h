@@ -13,7 +13,7 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-# include "libft/includes/libft.h"
+# include "../libft/includes/libft.h"
 # include <errno.h>
 # include <fcntl.h>
 # include <limits.h>
