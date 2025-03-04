@@ -3,26 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   70_utils_2.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:17:27 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:17:55 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:29:23 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char    **env_lst_to_arr(t_list *env_list)
+char	**env_lst_to_arr(t_list *env_list)
 {
-	char	**arr;
 	t_var	*env_var;
-    int len;
-    int i;
+	char	**arr;
+	int		len;
+	int		i;
 
-    len = ft_lstsize(env_list);
-    arr = ft_calloc(len + 1, sizeof(char *));
-    i = -1;
-    while (++i < len)
+	len = ft_lstsize(env_list);
+	arr = ft_calloc(len + 1, sizeof(char *));
+	i = -1;
+	while (++i < len)
 	{
 		env_var = (t_var *)env_list->content;
 		arr[i] = env_var_to_char(env_var);
@@ -33,8 +33,8 @@ char    **env_lst_to_arr(t_list *env_list)
 			return (NULL);
 		}
 	}
-    arr[i] = NULL;
-    return (arr);
+	arr[i] = NULL;
+	return (arr);
 }
 
 char	*env_var_to_char(t_var *var)

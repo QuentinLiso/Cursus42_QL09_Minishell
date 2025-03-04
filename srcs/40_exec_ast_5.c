@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   40_exec_ast_5.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:13:49 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:14:12 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:22:48 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-
-int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
+int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 {
 	int		fd[2];
 	pid_t	pid[2];
@@ -34,7 +33,7 @@ int		exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 	return (0);
 }
 
-int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
+int	left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 {
 	int	child_exit;
 
@@ -54,7 +53,7 @@ int		left_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 	return (0);
 }
 
-int		right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
+int	right_pipe(t_ast **node, int (*fd)[2], int *pid, t_mnsh *mnsh)
 {
 	int	child_exit;
 

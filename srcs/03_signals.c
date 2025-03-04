@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   03_signals.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:44:57 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 15:46:08 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:08:02 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ void	set_sigaction(t_sa *sa, int signum, void (*handler)(int), int flags)
 	sigaction(signum, sa, NULL);
 }
 
-// =============================
-
 void	h_sigint_loop(__attribute__((unused)) int signum)
 {
 	g_signal_received += (1 << 8);
@@ -34,16 +32,12 @@ void	h_sigint_loop(__attribute__((unused)) int signum)
 	rl_redisplay();
 }
 
-// ===============================
-
 void	h_sigint_heredoc(__attribute__((unused)) int signum)
 {
 	g_signal_received = SIGINT;
 	write(STDOUT_FILENO, "\n", 1);
 	close(STDIN_FILENO);
 }
-
-// =================================
 
 void	h_sigint_cmd(__attribute__((unused)) int signum)
 {

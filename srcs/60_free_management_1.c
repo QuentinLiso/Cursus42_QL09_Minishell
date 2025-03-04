@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   60_free_management_1.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:24:17 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:24:50 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:24:38 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 
 void	free_tokis(t_token **tok)
 {
@@ -26,6 +25,7 @@ void	free_tokis(t_token **tok)
 		free((*tok));
 		*tok = iterator;
 	}
+	*tok = NULL;
 }
 
 void	free_redir(void *ptr)

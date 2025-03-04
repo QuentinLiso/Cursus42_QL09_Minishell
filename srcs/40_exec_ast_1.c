@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   40_exec_ast_1.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:06:15 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:06:59 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:17:49 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-
-int		exec_ast_cmd_indir(t_list *redir)
+int	exec_ast_cmd_indir(t_list *redir)
 {
 	int	status;
 
@@ -26,7 +25,7 @@ int		exec_ast_cmd_indir(t_list *redir)
 	return (0);
 }
 
-int		check_access_indir_lst(t_list *redir)
+int	check_access_indir_lst(t_list *redir)
 {
 	t_redir	*elem;
 	int		status;
@@ -42,18 +41,18 @@ int		check_access_indir_lst(t_list *redir)
 	return (0);
 }
 
-int		check_access_indir_elem(t_redir *elem)
+int	check_access_indir_elem(t_redir *elem)
 {
 	struct stat	st;
 
-	if (elem && elem->file &&
-		((elem->style == REDIR_IN)))
+	if (elem && elem->file
+		&& ((elem->style == REDIR_IN)))
 	{
 		if (access(elem->file, R_OK) < 0)
 			return (perror_mnsh(1, 2, elem->file, strerror(errno)));
 	}
-	else if (elem && elem->file &&
-			((elem->style == REDIR_OUT) || (elem->style == REDIR_APPEND)))
+	else if (elem && elem->file
+		&& ((elem->style == REDIR_OUT) || (elem->style == REDIR_APPEND)))
 	{
 		if (!stat(elem->file, &st))
 		{
@@ -66,7 +65,7 @@ int		check_access_indir_elem(t_redir *elem)
 	return (0);
 }
 
-int		create_outfile(t_redir *redir_file)
+int	create_outfile(t_redir *redir_file)
 {
 	int	flag;
 	int	fd;
@@ -78,12 +77,12 @@ int		create_outfile(t_redir *redir_file)
 	fd = open(redir_file->file, O_WRONLY | O_CREAT | flag, 0644);
 	if (fd < 0)
 		return (perror_mnsh(errno_to_exit(errno), 2, redir_file->file,
-			strerror(errno)));
+				strerror(errno)));
 	close(fd);
 	return (0);
 }
 
-int		dup_indir_lst(t_list *redir)
+int	dup_indir_lst(t_list *redir)
 {
 	t_redir	*elem;
 	int		status;

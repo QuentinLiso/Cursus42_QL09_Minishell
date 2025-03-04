@@ -3,26 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   30_ast_1.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:57:03 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:49:34 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:17:39 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	ast_opnode(t_ast **node, t_token *start, t_token *split_tok, t_token *end, t_mnsh *mnsh)
+int	ast_opnode(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 {
 	int		status;
+	t_token	*split_token;
 
-	status = create_ast_opnode(node, split_tok->word);
+	split_token = set_split_token(start, end);
+	status = create_ast_opnode(node, split_token->word);
 	if (status)
 		return (status);
-	status = create_ast(&(*node)->left_node, start, split_tok->prev, mnsh);
+	status = create_ast(&(*node)->left_node, start, split_token->prev, mnsh);
 	if (status)
 		return (status);
-	status = create_ast(&(*node)->right_node, split_tok->next, end, mnsh);
+	status = create_ast(&(*node)->right_node, split_token->next, end, mnsh);
 	if (status)
 		return (status);
 	return (0);
@@ -64,17 +66,17 @@ t_optype	set_op_type(char *op)
 
 int	ast_cmdnode(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 {
-	int		status;
+	int	status;
 
 	status = create_cmd_node(node);
 	if (status)
 		return (status);
 	status = handle_indir(node, start, end, mnsh);
 	if (status)
-		return (status);	
+		return (status);
 	status = set_cmdnode_args(node, start, end);
 	if (status)
-		return (status);	
+		return (status);
 	return (0);
 }
 

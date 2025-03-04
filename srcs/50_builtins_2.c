@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   50_builtins_2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:19:29 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:20:31 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:23:04 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 
 int	mnsh_export(char **args, t_mnsh *mnsh)
 {
@@ -63,7 +62,7 @@ int	handle_export_var(char *arg, t_mnsh *mnsh)
 	if (!ft_isalpha(arg[0]) && arg[0] != '_')
 		return (perror_mnsh(1, 3, "export", arg, "not a valid identifier"));
 	i = 0;
-	while(arg[i] && arg[i] != '=')
+	while (arg[i] && arg[i] != '=')
 	{
 		if (!ft_isalnum(arg[i]) && arg[i] != '_')
 			return (perror_mnsh(1, 3, "export", arg, "not a valid identifier"));

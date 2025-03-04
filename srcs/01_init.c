@@ -38,6 +38,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->last_exit_status = 0;
 	mnsh->last_cmd_arg = NULL;
 	mnsh->line_count = 0;
+	mnsh->tty_loop = false;
 }
 
 int	set_mnsh_env(t_list **env_lst, char **env)

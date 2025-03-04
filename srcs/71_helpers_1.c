@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   71_helppers_1.c                                    :+:      :+:    :+:   */
+/*   71_helpers_1.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:20:05 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:20:47 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:31:43 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,8 @@ void	print_ast(t_ast *node, int depth)
 		if (node->args)
 		{
 			ft_printf("%s ", node->args[0]);
-			ft_printf("[");
 			while (node->args[++i])
 				ft_printf("%s ", node->args[i]);
-			ft_printf("]");
 		}
 		ft_printf("\n");
 		print_redir(node->redir);
@@ -44,8 +42,8 @@ void	print_ast(t_ast *node, int depth)
 
 void	print_redir(t_list *redir_files)
 {
-	t_list 		*iter;
-	t_redir		*redir_file;
+	t_list	*iter;
+	t_redir	*redir_file;
 
 	iter = redir_files;
 	printf("Redir files : ");
@@ -60,7 +58,7 @@ void	print_redir(t_list *redir_files)
 
 void	print_tokis(t_token *tokis)
 {
-	t_token *iter;
+	t_token	*iter;
 
 	iter = tokis;
 	printf("Tokis : \n[");
@@ -69,7 +67,7 @@ void	print_tokis(t_token *tokis)
 		if (!iter->word)
 			printf("(null)[%d]", iter->type);
 		else
-			printf("%s[%d]", iter->word, iter->type);			
+			printf("%s[%d]", iter->word, iter->type);
 		printf(", ");
 		iter = iter->next;
 	}

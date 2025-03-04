@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   40_exec_ast_3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:11:43 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:12:17 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:21:20 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int		exec_ast_cmd_ext_parent(pid_t pid, t_mnsh *mnsh)
+int	exec_ast_cmd_ext_parent(pid_t pid, t_mnsh *mnsh)
 {
 	int	status;
 
@@ -31,7 +31,7 @@ int		exec_ast_cmd_ext_parent(pid_t pid, t_mnsh *mnsh)
 	return (WEXITSTATUS(status));
 }
 
-int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
+int	check_and_execute_cmd(char **args, t_mnsh *mnsh)
 {
 	char		*execfile;
 	int			status;
@@ -50,8 +50,7 @@ int		check_and_execute_cmd(char **args, t_mnsh *mnsh)
 	return (ft_execve(&execfile, args, mnsh));
 }
 
-
-int		set_execfile(char **execfile, char **args, t_mnsh *mnsh)
+int	set_execfile(char **execfile, char **args, t_mnsh *mnsh)
 {
 	char	**paths;
 	int		status;
@@ -75,7 +74,7 @@ int		set_execfile(char **execfile, char **args, t_mnsh *mnsh)
 	return (0);
 }
 
-int		set_execfile_paths(t_list *env_mnsh_list, char ***paths)
+int	set_execfile_paths(t_list *env_mnsh_list, char ***paths)
 {
 	char	*path;
 	int		i;
@@ -98,14 +97,14 @@ int		set_execfile_paths(t_list *env_mnsh_list, char ***paths)
 				return (ENOMEM);
 			}
 		}
-	}           
+	}
 	return (0);
 }
 
-int		check_execfile(char *execfile, char **args)
+int	check_execfile(char *execfile, char **args)
 {
-	struct stat st;
-	
+	struct stat	st;
+
 	if (!execfile || *execfile == '\0')
 		return (perror_mnsh(127, 2, args[0], "command not found"));
 	if (stat(execfile, &st) == -1)

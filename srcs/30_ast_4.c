@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   30_ast_4.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:59:32 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:00:00 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:17:27 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	loop_heredoc(int fd_wr, int *count, char *heredoc_end, t_mnsh *mnsh)
 {
-	char *prompt;
+	char	*prompt;
 
 	while (1)
 	{
@@ -27,7 +27,7 @@ int	loop_heredoc(int fd_wr, int *count, char *heredoc_end, t_mnsh *mnsh)
 		if (!prompt)
 		{
 			warn_heredoc(mnsh->line_count, heredoc_end);
-			break;
+			break ;
 		}
 		(*count)++;
 		if (!ft_strcmp(prompt, heredoc_end))
@@ -56,8 +56,8 @@ int	parent_heredoc(int count_pipe[2], pid_t pid, t_mnsh *mnsh)
 	close(count_pipe[1]);
 	set_sigaction(&mnsh->sa_sigint, SIGINT, SIG_IGN, 0);
 	waitpid(pid, &status, 0);
-	if (read(count_pipe[0], &count, sizeof(int)) < (ssize_t)sizeof(int) ||
-		count < 0)
+	if (read(count_pipe[0], &count, sizeof(int)) < (ssize_t) sizeof(int)
+		|| count < 0)
 	{
 		perror_mnsh(1, 1, "Error while counting lines");
 		count = 0;
@@ -68,7 +68,7 @@ int	parent_heredoc(int count_pipe[2], pid_t pid, t_mnsh *mnsh)
 	return (WEXITSTATUS(status));
 }
 
-int		set_cmdnode_args(t_ast **node, t_token *start, t_token *end)
+int	set_cmdnode_args(t_ast **node, t_token *start, t_token *end)
 {
 	t_token	*iterator;
 	int		i;
@@ -93,11 +93,11 @@ int		set_cmdnode_args(t_ast **node, t_token *start, t_token *end)
 	return (0);
 }
 
-int     	cmd_args_count(t_token *start, t_token *end)
+int	cmd_args_count(t_token *start, t_token *end)
 {
-	t_token	*iterator;
-    int		len;
-	
+	t_token		*iterator;
+	int			len;
+
 	iterator = start;
 	len = 0;
 	while (iterator != end->next)
@@ -105,7 +105,7 @@ int     	cmd_args_count(t_token *start, t_token *end)
 		if (iterator->type == TOKEN_INDIR)
 		{
 			iterator = iterator->next->next;
-			continue;
+			continue ;
 		}
 		iterator = iterator->next;
 		len++;

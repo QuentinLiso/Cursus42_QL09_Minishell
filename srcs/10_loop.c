@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   10_loop.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:46:16 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 15:46:42 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:07:49 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,15 @@
 int	loop_mnsh(t_mnsh *mnsh)
 {
 	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		ft_putstr_fd(MINISHELL, STDOUT_FILENO);
+		print_header();
 	while (1)
 	{
+		if (mnsh->tty_loop)
+			break ;
 		free_reset_mnsh(mnsh);
 		set_sigaction(&mnsh->sa_sigint, SIGINT, h_sigint_loop, 0);
 		set_sigaction(&mnsh->sa_sigquit, SIGQUIT, SIG_IGN, 0);
-		prompt_mnsh(mnsh, true);
+		prompt_mnsh(mnsh);
 		if (!mnsh->prompt)
 			break ;
 		check_sigint_loop(mnsh);
@@ -37,21 +39,37 @@ int	loop_mnsh(t_mnsh *mnsh)
 	return (mnsh->last_exit_status);
 }
 
-void	prompt_mnsh(t_mnsh *mnsh, bool tester)
+void	print_header(void)
 {
-	if (tester)
+	ft_printf("\033[34m===================================");
+	ft_printf("======================================\n\n");
+	ft_printf("__  __   ___   _   _   ___     ");
+	ft_printf("___    _   _   _____   _       _       \n");
+	ft_printf("|  \\/  | |_ _| | \\ | | |_ _|   ");
+	ft_printf("/ ___|  | | | | | ____| | |     | |      \n");
+	ft_printf("| |\\/| |  | |  |  \\| |  | |    ");
+	ft_printf("\\___ \\  | |_| | |  _|   | |     | |      \n");
+	ft_printf("| |  | |  | |  | |\\  |  | |     ");
+	ft_printf("___) | |  _  | | |___  | |___  | |___   \n");
+	ft_printf("|_|  |_| |___| |_| \\_| |___|   ");
+	ft_printf("|____/  |_| |_| |_____| |_____| |_____|  \n\n\n");
+	ft_printf("========================================");
+	ft_printf("===================================\n\n\033[0m");
+}
+
+void	prompt_mnsh(t_mnsh *mnsh)
+{
+	char	*gnl;
+
+	if (isatty(STDIN_FILENO))
+		mnsh->prompt = readline("\033[34m 🐚 Minishell 🐚 > \033[0m");
+	else
 	{
-		mnsh->prompt = readline(MINISHELL_PROMPT);
-		return ;
+		gnl = get_next_line(STDIN_FILENO);
+		mnsh->prompt = ft_strtrim(gnl, "\n");
+		free_str(&gnl);
+		mnsh->tty_loop = true;
 	}
-	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		mnsh->prompt = readline(MINISHELL_PROMPT);
-	else if (isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))
-		mnsh->prompt = readline(NULL);
-	else if (!isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
-		mnsh->prompt = get_next_line(STDIN_FILENO);
-	else if (!isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))
-		mnsh->prompt = get_next_line(STDIN_FILENO);
 }
 
 void	check_sigint_loop(t_mnsh *mnsh)

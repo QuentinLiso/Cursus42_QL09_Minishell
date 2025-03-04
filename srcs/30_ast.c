@@ -38,7 +38,7 @@ int	create_ast(t_ast **node, t_token *start, t_token *end, t_mnsh *mnsh)
 		return (ast_cmdnode(node, start, end, mnsh));
 	else if (is_syntax_error(start, end, split_token))
 		return (errno_to_exit(2));
-	return (ast_opnode(node, start, split_token, end, mnsh));
+	return (ast_opnode(node, start, end, mnsh));
 }
 
 t_token	*set_split_token(t_token *start, t_token *end)

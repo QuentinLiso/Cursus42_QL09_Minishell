@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   30_ast_2.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:57:06 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:52:30 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:10:04 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ int	is_indir_error(t_token *iterator, t_token *end)
 {
 	if (iterator == end || !iterator->next)
 		return (perror2_mnsh(2, 3, ": ",
-			"syntax error near unexpected token"," `newline'"));
+				"syntax error near unexpected token", " `newline'"));
 	else if (iterator->next->type == TOKEN_INDIR)
 		return (perror2_mnsh(2, 5, ": ", "syntax error near unexpected token",
-			" `", iterator->word, "'"));
+				" `", iterator->word, "'"));
 	else if (iterator->next->word && !*iterator->next->word)
 		return (perror_mnsh(1, 2, "", "No such file or directory"));
 	return (0);
@@ -67,7 +67,6 @@ int	set_indir(t_ast **node, t_token *iterator, t_mnsh *mnsh)
 		return (set_node_redir(node, iterator, REDIR_OUT));
 	return (0);
 }
-
 
 int	set_node_redir(t_ast **node, t_token *iterator, t_redirstyle style)
 {

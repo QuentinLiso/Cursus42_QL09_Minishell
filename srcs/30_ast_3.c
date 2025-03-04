@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   30_ast_3.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:57:09 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 15:58:17 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:10:48 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ int	check_valid_heredoc_name(char **heredoc_name, int *count, int *attempts)
 		return (0);
 }
 
-int		create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh)
+int	create_heredoc(t_redir *redir_file, char *heredoc_end, t_mnsh *mnsh)
 {
 	int		fd_write;
 	int		status;
@@ -113,4 +113,3 @@ int	child_heredoc(int fd_wr, int count_pipe[2], char *h_end, t_mnsh *mnsh)
 	free_all_mnsh(mnsh);
 	return (status);
 }
-

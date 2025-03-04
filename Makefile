@@ -112,10 +112,6 @@ $(NAME): $(OBJS)
 	$(CC) $(OBJS) -o $(NAME) $(LFLAGS)
 	@echo "$(BOLD)$(GREEN)[DONE] Minishell created!$(CLASSIC)"
 
-ess: essayage.c
-	@$(CC) $(CFLAGS) essayage.c -o ess $(LFLAGS)
-	@echo "$(BOLD)$(GREEN)[DONE] Ess created!$(CLASSIC)"
-
 clean:
 	$(RM) $(OBJS_PATH)
 	@make clean -C $(LIBFT_PATH)

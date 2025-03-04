@@ -3,21 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   40_exec_ast_2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:07:19 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 16:07:53 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:18:42 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-
-int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
+int	dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
 {
 	if (!elem || !elem->file)
 		return (0);
-	if	((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC))
+	if ((elem->style == REDIR_IN) || (elem->style == REDIR_HEREDOC))
 		return (dup_indir_elem_in(elem, fd_in));
 	else if (elem->style == REDIR_OUT)
 		return (dup_indir_elem_out(elem->file, fd_out, O_TRUNC));
@@ -26,7 +25,7 @@ int		dup_indir_elem(t_redir *elem, int *fd_in, int *fd_out)
 	return (0);
 }
 
-int		dup_indir_elem_in(t_redir *elem, int *fd_in)
+int	dup_indir_elem_in(t_redir *elem, int *fd_in)
 {
 	if (elem->style == REDIR_IN)
 		*fd_in = open(elem->file, O_RDONLY);
@@ -45,7 +44,7 @@ int		dup_indir_elem_in(t_redir *elem, int *fd_in)
 	return (0);
 }
 
-int		dup_indir_elem_out(char *file, int *fd_out, int flag)
+int	dup_indir_elem_out(char *file, int *fd_out, int flag)
 {
 	*fd_out = open(file, O_WRONLY | O_CREAT | flag, 0644);
 	if (*fd_out < 0)
@@ -60,7 +59,7 @@ int		dup_indir_elem_out(char *file, int *fd_out, int flag)
 	return (0);
 }
 
-int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
+int	exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 {
 	pid_t	pid;
 
@@ -73,7 +72,7 @@ int		exec_ast_cmd_external(char **args, t_mnsh *mnsh)
 		return (exec_ast_cmd_ext_parent(pid, mnsh));
 }
 
-int		exec_ast_cmd_ext_child(char **args, t_mnsh *mnsh)
+int	exec_ast_cmd_ext_child(char **args, t_mnsh *mnsh)
 {
 	int	child_exit;
 

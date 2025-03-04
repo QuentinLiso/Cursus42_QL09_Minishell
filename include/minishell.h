@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fzayani <fzayani@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:28:51 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:56:43 by fzayani          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:01:45 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,32 +32,6 @@
 # include <termios.h>
 # include <unistd.h>
 
-# define BK "\033[30m"
-# define R "\033[31m"
-# define G "\033[32m"
-# define Y "\033[33m"
-# define B "\033[34m"
-# define M "\033[35m"
-# define C "\033[36m"
-# define W "\033[37m"
-# define RST "\033[0m"
-
-# define MINISHELL B "===================================\
-======================================\n\n\
-   __  __   ___   _   _   ___     \
-   ___    _   _   _____   _       _       \n\
-  |  \\/  | |_ _| | \\ | | |_ _|   \
-  / ___|  | | | | | ____| | |     | |      \n\
-  | |\\/| |  | |  |  \\| |  | |    \
-  \\___ \\  | |_| | |  _|   | |     | |      \n\
-  | |  | |  | |  | |\\  |  | |     \
-  ___) | |  _  | | |___  | |___  | |___   \n\
-  |_|  |_| |___| |_| \\_| |___|   \
-  |____/  |_| |_| |_____| |_____| |_____|  \n\n\n\
-========================================\
-===================================\n\n" RST
-
-# define MINISHELL_PROMPT B "🐚 Minishell 🐚 > " RST
 # define TOK_OPERATORS "&& || |"
 # define TOK_INDIR "<> >> > << <"
 # define TOK_SPECIALS "&|<>"
@@ -141,6 +115,7 @@ typedef struct s_minishell
 	int							last_exit_status;
 	char						*last_cmd_arg;
 	int							line_count;
+	bool						tty_loop;
 }								t_mnsh;
 
 int								mnsh_initialization(t_mnsh *mnsh, int ac,
@@ -161,13 +136,14 @@ void							display_env_var(void *ptr);
 
 void							set_sigaction(t_sa *sa, int signum,
 									void (*handler)(int), int flags);
-void							h_sigint_loop(__attribute__((unused)) int signum);
-void							h_sigint_heredoc(__attribute__((unused)) int signum);
-void							h_sigint_cmd(__attribute__((unused)) int signum);
-void							h_sigquit_cmd(__attribute__((unused)) int signum);
+void							h_sigint_loop(int signum);
+void							h_sigint_heredoc(int signum);
+void							h_sigint_cmd(int signum);
+void							h_sigquit_cmd(int signum);
 
 int								loop_mnsh(t_mnsh *mnsh);
-void							prompt_mnsh(t_mnsh *mnsh, bool tester);
+void							print_header(void);
+void							prompt_mnsh(t_mnsh *mnsh);
 void							check_sigint_loop(t_mnsh *mnsh);
 
 t_token							*new_toki(char *word, t_toktype type);
@@ -216,8 +192,7 @@ int								get_operator_precedence(char *op);
 bool							is_syntax_error(t_token *start, t_token *end,
 									t_token *split_token);
 int								ast_opnode(t_ast **node, t_token *start,
-									t_token *split_tok, t_token *end,
-									t_mnsh *mnsh);
+									t_token *end, t_mnsh *mnsh);
 int								create_ast_opnode(t_ast **node, char *op);
 t_optype						set_op_type(char *op);
 int								ast_cmdnode(t_ast **node, t_token *start,
@@ -240,9 +215,9 @@ int								create_heredoc(t_redir *redir_file,
 int								fill_heredoc(int fd_wr, char *heredoc_end,
 									t_mnsh *mnsh);
 int								child_heredoc(int fd_wr, int count_pipe[2],
-										char *h_end, t_mnsh *mnsh);
+									char *h_end, t_mnsh *mnsh);
 int								loop_heredoc(int fd_wr, int *count,
-										char *heredoc_end, t_mnsh *mnsh);
+									char *heredoc_end, t_mnsh *mnsh);
 void							warn_heredoc(int line, char *heredoc_end);
 int								parent_heredoc(int count_pipe[2], pid_t pid,
 									t_mnsh *mnsh);
@@ -257,7 +232,7 @@ int								exec_ast_cmd_external(char **args,
 									t_mnsh *mnsh);
 int								exec_ast_cmd_ext_child(char **args,
 									t_mnsh *mnsh);
-int								exec_ast_cmd_ext_parent(pid_t pid, 
+int								exec_ast_cmd_ext_parent(pid_t pid,
 									t_mnsh *mnsh);
 int								check_and_execute_cmd(char **args,
 									t_mnsh *mnsh);

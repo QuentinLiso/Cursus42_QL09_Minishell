@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   70_utils_1.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:16:40 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:17:09 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 12:25:32 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 
 char	*ft_strappend_mnsh(char *s1, char *s2)
 {
@@ -39,7 +38,7 @@ char	*ft_strappend_mnsh(char *s1, char *s2)
 	return (d);
 }
 
-int		load_message(int size, char *msg, int speed)
+int	load_message(int size, char *msg, int speed)
 {
 	int	i;
 	int	j;
@@ -52,7 +51,7 @@ int		load_message(int size, char *msg, int speed)
 		while (++j < i)
 			ft_putchar_fd('#', STDOUT_FILENO);
 		while (++j <= size)
-		ft_putchar_fd('.', STDOUT_FILENO);
+			ft_putchar_fd('.', STDOUT_FILENO);
 		ft_putstr_fd("] ", STDOUT_FILENO);
 		ft_putnbr_fd(((float)i / (float)size) * 100, STDOUT_FILENO);
 		ft_putstr_fd("%\t", STDOUT_FILENO);
@@ -66,9 +65,9 @@ int		load_message(int size, char *msg, int speed)
 	return (0);
 }
 
-int		errno_to_exit(int errnum)
+int	errno_to_exit(int errnum)
 {
-	if(errnum == ENOMEM)
+	if (errnum == ENOMEM)
 		return (12);
 	else if (errnum == EACCES || errnum == EISDIR)
 		return (126);
@@ -78,10 +77,9 @@ int		errno_to_exit(int errnum)
 		return (0);
 	else
 		return (1);
-
 }
 
-int		perror_mnsh(int errnum, int count, ...)
+int	perror_mnsh(int errnum, int count, ...)
 {
 	va_list	args;
 
@@ -97,7 +95,7 @@ int		perror_mnsh(int errnum, int count, ...)
 	return (errnum);
 }
 
-int		perror2_mnsh(int errnum, int count, ...)
+int	perror2_mnsh(int errnum, int count, ...)
 {
 	va_list	args;
 
