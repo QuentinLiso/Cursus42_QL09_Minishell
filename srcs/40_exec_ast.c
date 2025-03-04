@@ -28,7 +28,7 @@ int	execute_ast(t_ast **node, t_mnsh *mnsh)
 		}
 		mnsh->last_exit_status = exec_ast_cmd(node, mnsh);
 		return (mnsh->last_exit_status);
-	}		
+	}
 	else if ((*node)->node_type == NODE_OP)
 	{
 		mnsh->last_exit_status = exec_ast_op(node, (*node)->op_type, mnsh);

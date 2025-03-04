@@ -67,7 +67,7 @@ int	mnsh_echo(char **args)
 			if (!is_echo_option_valid(args[i]))
 				break ;
 		else
-		option = true;
+			option = true;
 		print_strarray_raw(&args[i], ' ');
 		if (!option)
 			ft_putchar_fd('\n', STDOUT_FILENO);
