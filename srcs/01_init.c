@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:34:42 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:39:25 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 16:59:24 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,14 +81,14 @@ int	set_mnsh_empty_env(t_list **env_lst)
 	char	*cwd;
 
 	cwd = NULL;
-	cwd = getcwd(cwd, 2);
+	cwd = getcwd(cwd, 0);
 	if (!cwd)
 		return (errno);
 	if (add_env_var(env_lst, "PWD", cwd))
 		return (ENOMEM);
 	if (add_env_var(env_lst, "SHLVL", "1"))
 		return (ENOMEM);
-	if (add_env_var(env_lst, "_", "PATH/TO/MNSH"))
+	if (add_env_var(env_lst, "_", "minishell"))
 		return (ENOMEM);
 	return (0);
 }
