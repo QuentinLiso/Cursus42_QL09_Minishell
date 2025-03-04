@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   20_tokenize_4.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:51:29 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:47:11 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:33 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ int	split_noquote(t_mnsh *mnsh, char **s, char **word)
 	if (!buffer)
 		return (perror_mnsh(-12, 1, "Err malloc in split noquote"));
 	while (**s && **s != '"' && **s != '\'' && !ft_isspace(**s)
-		&& !ft_isspecial(**s, TOK_SPECIALS))
+		&& !mnsh_special(*s, mnsh->tok_operators)
+		&& !mnsh_special(*s, mnsh->tok_indir))
 	{
 		status = check_split_noquote(mnsh, s, &buffer);
 		if (status < 0)
@@ -75,7 +76,7 @@ int	check_split_noquote(t_mnsh *mnsh, char **s, char **buffer)
 	status = split_noquote_env(mnsh, s, buffer);
 	if (status)
 		return (status);
-	status = split_noquote_noenv(s, buffer);
+	status = split_noquote_noenv(mnsh, s, buffer);
 	if (status)
 		return (status);
 	return (0);

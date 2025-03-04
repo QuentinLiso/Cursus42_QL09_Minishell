@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:17:27 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 12:29:23 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 16:31:02 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,4 +65,31 @@ void	increment_mnsh_line_count(t_mnsh *mnsh, int i)
 		if (mnsh->line_count < 0)
 			mnsh->line_count = 1;
 	}
+}
+
+int	load_message(int size, char *msg, int speed)
+{
+	int	i;
+	int	j;
+
+	i = -1;
+	while (++i <= size)
+	{
+		j = -1;
+		ft_putstr_fd("\033[32m   [", STDOUT_FILENO);
+		while (++j < i)
+			ft_putchar_fd('#', STDOUT_FILENO);
+		while (++j <= size)
+			ft_putchar_fd('.', STDOUT_FILENO);
+		ft_putstr_fd("] ", STDOUT_FILENO);
+		ft_putnbr_fd(((float)i / (float)size) * 100, STDOUT_FILENO);
+		ft_putstr_fd("%%\t", STDOUT_FILENO);
+		if (i < size)
+			ft_putchar_fd('\r', STDOUT_FILENO);
+		usleep(speed);
+	}
+	ft_putstr_fd("\033[0m\033[0;35m  ", STDOUT_FILENO);
+	ft_putendl_fd(msg, STDOUT_FILENO);
+	ft_putstr_fd("\033[0m", STDOUT_FILENO);
+	return (0);
 }

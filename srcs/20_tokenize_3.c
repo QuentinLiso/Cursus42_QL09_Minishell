@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   20_tokenize_3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:49:40 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:46:18 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:32 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ int	split_dquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
 {
 	if (**s == '?')
 		return (get_last_exit(mnsh, s, buffer));
-	else if (ft_isspecial(**s, ENV_SPECIALS))
+	else if (mnsh_lookup(**s, mnsh->env_specials))
 	{
 		*buffer = ft_strappend_mnsh(*buffer, "");
 		if (!*buffer)

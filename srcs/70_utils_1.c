@@ -6,11 +6,23 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:16:40 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 12:25:32 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 16:30:27 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+int	ft_strarrlen(char **arr)
+{
+	int	len;
+
+	if (!arr)
+		return (0);
+	len = 0;
+	while (arr[len])
+		len++;
+	return (len);
+}
 
 char	*ft_strappend_mnsh(char *s1, char *s2)
 {
@@ -36,33 +48,6 @@ char	*ft_strappend_mnsh(char *s1, char *s2)
 	free(s1);
 	ft_memcpy(d + len1, s2, len2 + 1);
 	return (d);
-}
-
-int	load_message(int size, char *msg, int speed)
-{
-	int	i;
-	int	j;
-
-	i = -1;
-	while (++i <= size)
-	{
-		j = -1;
-		ft_putstr_fd("\033[32m   [", STDOUT_FILENO);
-		while (++j < i)
-			ft_putchar_fd('#', STDOUT_FILENO);
-		while (++j <= size)
-			ft_putchar_fd('.', STDOUT_FILENO);
-		ft_putstr_fd("] ", STDOUT_FILENO);
-		ft_putnbr_fd(((float)i / (float)size) * 100, STDOUT_FILENO);
-		ft_putstr_fd("%\t", STDOUT_FILENO);
-		if (i < size)
-			ft_putchar_fd('\r', STDOUT_FILENO);
-		usleep(speed);
-	}
-	ft_putstr_fd("\033[0m\033[0;35m  ", STDOUT_FILENO);
-	ft_putendl_fd(msg, STDOUT_FILENO);
-	ft_putstr_fd("\033[0m", STDOUT_FILENO);
-	return (0);
 }
 
 int	errno_to_exit(int errnum)

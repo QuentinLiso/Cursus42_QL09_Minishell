@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   01_init.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:34:42 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 15:41:51 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:25 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,17 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->last_cmd_arg = NULL;
 	mnsh->line_count = 0;
 	mnsh->tty_loop = false;
+	mnsh->tok_operators[0] = "&&";
+	mnsh->tok_operators[1] = "||";
+	mnsh->tok_operators[2] = "|";
+	mnsh->tok_operators[3] = NULL;
+	mnsh->tok_indir[0] = "<>";
+	mnsh->tok_indir[1] = "<<";
+	mnsh->tok_indir[2] = ">>";
+	mnsh->tok_indir[3] = "<";
+	mnsh->tok_indir[4] = ">";
+	mnsh->tok_indir[5] = NULL;
+	mnsh->env_specials = "aaaa";
 }
 
 int	set_mnsh_env(t_list **env_lst, char **env)

@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:28:51 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 12:01:45 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 16:24:34 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@
 
 # define TOK_OPERATORS "&& || |"
 # define TOK_INDIR "<> >> > << <"
-# define TOK_SPECIALS "&|<>"
 # define ENV_SPECIALS "#*@$!0123456789-"
 
 typedef struct sigaction		t_sa;
@@ -116,6 +115,9 @@ typedef struct s_minishell
 	char						*last_cmd_arg;
 	int							line_count;
 	bool						tty_loop;
+	char						*tok_operators[4];
+	char						*tok_indir[6];
+	char						*env_specials;
 }								t_mnsh;
 
 int								mnsh_initialization(t_mnsh *mnsh, int ac,
@@ -152,8 +154,10 @@ int								add_toki_mnsh(t_mnsh *mnsh, char *word,
 int								strtok_mnsh(t_mnsh *mnsh, char *s);
 int								tok_check(t_mnsh *mnsh, char **s);
 int								tok_check_spaces(char **s);
-int								tok_check_ope_ind(t_mnsh *mnsh, char **s,
-									char *spec, t_toktype type);
+int								tok_check_ope(t_mnsh *mnsh, char **s,
+									t_toktype type);
+int								tok_check_ind(t_mnsh *mnsh, char **s,
+									t_toktype type);
 int								is_operator(const char *s,
 									const char *list_operators);
 int								tok_check_regular(t_mnsh *mnsh, char **s);
@@ -181,7 +185,8 @@ int								split_noquote_env(t_mnsh *mnsh, char **s,
 									char **buffer);
 int								split_noquote_env_spec(t_mnsh *mnsh, char **s,
 									char **buffer);
-int								split_noquote_noenv(char **s, char **buffer);
+int								split_noquote_noenv(t_mnsh *mnsh, char **s,
+									char **buffer);
 int								append_noquote(char **word, char **buffer);
 int								ast_mnsh(t_ast **node, t_token *start,
 									t_token *end, t_mnsh *mnsh);
@@ -306,7 +311,8 @@ void							free_all_mnsh(t_mnsh *mnsh);
 
 bool							ft_isspace(char c);
 bool							isquote(char c);
-bool							ft_isspecial(char c, const char *list_specials);
+bool							mnsh_lookup(char c, char *s);
+int								mnsh_special(char *s, char **operators);
 int								ft_strcmp(const char *s1, const char *s2);
 int								ft_strarrlen(char **arr);
 char							*ft_strappend_mnsh(char *s1, char *s2);

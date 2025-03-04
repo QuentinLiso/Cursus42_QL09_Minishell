@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:52:30 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 12:08:10 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:33 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	split_noquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
 {
 	if (**s == '?')
 		return (get_last_exit(mnsh, s, buffer));
-	else if (ft_isspecial(**s, ENV_SPECIALS))
+	else if (mnsh_lookup(**s, mnsh->env_specials))
 	{
 		(*s)++;
 		return (1);
@@ -31,14 +31,14 @@ int	split_noquote_env_spec(t_mnsh *mnsh, char **s, char **buffer)
 	return (0);
 }
 
-int	split_noquote_noenv(char **s, char **buffer)
+int	split_noquote_noenv(t_mnsh *mnsh, char **s, char **buffer)
 {
 	char	*start;
 	char	*buffer_2;
 
 	start = *s;
-	while (**s && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS)
-		&& !ft_isspecial(**s, "'\"$"))
+	while (**s && !ft_isspace(**s) && !mnsh_special(*s, mnsh->tok_operators)
+		&& !mnsh_special(*s, mnsh->tok_indir) && !mnsh_lookup(**s, "'\"$"))
 		(*s)++;
 	buffer_2 = ft_substr(start, 0, *s - start);
 	if (!buffer_2)

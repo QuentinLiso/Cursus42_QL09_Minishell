@@ -3,21 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   20_tokenize_2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:48:48 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 17:45:17 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:31 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	tok_check_ope_ind(t_mnsh *mnsh, char **s, char *spec, t_toktype type)
+int	tok_check_ope(t_mnsh *mnsh, char **s, t_toktype type)
 {
 	int	ope_len;
 	int	status;
 
-	ope_len = is_operator(*s, spec);
+	ope_len = mnsh_special(*s, mnsh->tok_operators);
 	if (ope_len > 0)
 	{
 		status = add_toki_mnsh(mnsh, ft_substr(*s, 0, (size_t)ope_len), type);
@@ -29,27 +29,21 @@ int	tok_check_ope_ind(t_mnsh *mnsh, char **s, char *spec, t_toktype type)
 	return (ope_len);
 }
 
-int	is_operator(const char *s, const char *list_operators)
+int	tok_check_ind(t_mnsh *mnsh, char **s, t_toktype type)
 {
-	char	**operators;
-	int		i;
-	size_t	len;
+	int	ope_len;
+	int	status;
 
-	operators = ft_split(list_operators, ' ');
-	i = -1;
-	if (!operators)
-		return (-12);
-	while (operators[++i])
+	ope_len = mnsh_special(*s, mnsh->tok_indir);
+	if (ope_len > 0)
 	{
-		len = ft_strlen(operators[i]);
-		if (ft_strncmp(s, operators[i], len) == 0)
-		{
-			free_strarray(&operators);
-			return (len);
-		}
+		status = add_toki_mnsh(mnsh, ft_substr(*s, 0, (size_t)ope_len), type);
+		if (status)
+			return (status);
+		(*s) += ope_len;
+		return (1);
 	}
-	free_strarray(&operators);
-	return (0);
+	return (ope_len);
 }
 
 int	tok_check_regular(t_mnsh *mnsh, char **s)
@@ -60,7 +54,8 @@ int	tok_check_regular(t_mnsh *mnsh, char **s)
 
 	word = NULL;
 	has_quote = false;
-	while (**s && !ft_isspace(**s) && !ft_isspecial(**s, TOK_SPECIALS))
+	while (**s && !ft_isspace(**s) && !mnsh_special(*s, mnsh->tok_operators)
+		&& !mnsh_special(*s, mnsh->tok_indir))
 	{
 		status = tok_check_regular_split(mnsh, s, &word, &has_quote);
 		if (status < 0)

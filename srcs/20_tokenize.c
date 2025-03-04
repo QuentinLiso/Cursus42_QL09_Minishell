@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   20_tokenize.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:46:53 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/01 15:53:51 by nefadli          ###   ########.fr       */
+/*   Updated: 2025/03/04 16:39:34 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,10 @@ int	tok_check(t_mnsh *mnsh, char **s)
 	status = tok_check_spaces(s);
 	if (status)
 		return (status);
-	status = tok_check_ope_ind(mnsh, s, TOK_OPERATORS, TOKEN_OPERATOR);
+	status = tok_check_ope(mnsh, s, TOKEN_OPERATOR);
 	if (status)
 		return (status);
-	status = tok_check_ope_ind(mnsh, s, TOK_INDIR, TOKEN_INDIR);
+	status = tok_check_ind(mnsh, s, TOKEN_INDIR);
 	if (status)
 		return (status);
 	status = tok_check_regular(mnsh, s);
