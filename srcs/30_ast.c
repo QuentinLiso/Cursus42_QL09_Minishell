@@ -82,8 +82,10 @@ bool	is_syntax_error(t_token *start, t_token *end, t_token *split_token)
 	if (split_token == start || split_token == end
 		|| split_token->next == NULL
 		|| split_token->next->type == TOKEN_OPERATOR
+		|| split_token->next->type == TOKEN_INDIR
 		|| split_token->prev == NULL
-		|| split_token->prev->type == TOKEN_OPERATOR)
+		|| split_token->prev->type == TOKEN_OPERATOR
+		|| split_token->next->type == TOKEN_INDIR)
 	{
 		perror2_mnsh(2, 4, ": ", "syntax error near unexpected token `",
 			split_token->word, "'");

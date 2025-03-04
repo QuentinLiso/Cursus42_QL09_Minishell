@@ -1,0 +1,15 @@
+env
+env hola
+env hola que tal
+env env
+env env env env env
+env ls
+env ./Makefile
+export $DONTEXIST
+export | grep "HOME"
+export ""
+export =
+export %
+export $?
+export ?=2
+export 9HOLA=
