@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:28:51 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:24:34 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 17:01:41 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,6 @@
 # include <sys/wait.h>
 # include <termios.h>
 # include <unistd.h>
-
-# define TOK_OPERATORS "&& || |"
-# define TOK_INDIR "<> >> > << <"
-# define ENV_SPECIALS "#*@$!0123456789-"
 
 typedef struct sigaction		t_sa;
 typedef struct termios			t_termios;

@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:34:42 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:59:24 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/04 17:01:02 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void	init_mnsh_struct(t_mnsh *mnsh)
 	mnsh->tok_indir[3] = "<";
 	mnsh->tok_indir[4] = ">";
 	mnsh->tok_indir[5] = NULL;
-	mnsh->env_specials = "aaaa";
+	mnsh->env_specials = "#*@$!0123456789-";
 }
 
 int	set_mnsh_env(t_list **env_lst, char **env)
