@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:19:27 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:39:49 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 09:35:06 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ int	mnsh_exit(char **args, t_mnsh *mnsh)
 	bool			is_llong_num;
 
 	exit_code = 0;
+	ft_putendl_fd("exit", STDOUT_FILENO);
 	if (args[1] == NULL)
 		exit_code = mnsh->last_exit_status;
 	else

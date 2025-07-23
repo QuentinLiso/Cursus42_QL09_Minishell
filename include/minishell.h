@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 17:28:51 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 17:01:41 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 14:03:17 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,6 +142,7 @@ void							h_sigquit_cmd(int signum);
 int								loop_mnsh(t_mnsh *mnsh);
 void							print_header(void);
 void							prompt_mnsh(t_mnsh *mnsh);
+void							prompt_mnsh_tty(t_mnsh *mnsh);
 void							check_sigint_loop(t_mnsh *mnsh);
 
 t_token							*new_toki(char *word, t_toktype type);
@@ -252,11 +253,10 @@ int								exec_ast_op(t_ast **node, t_optype op,
 int								exec_ast_op_and(t_ast **node, t_mnsh *mnsh);
 int								exec_ast_op_or(t_ast **node, t_mnsh *mnsh);
 int								exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh);
-int								left_pipe(t_ast **node, int (*fd)[2], int *pid,
-									t_mnsh *mnsh);
-int								right_pipe(t_ast **node, int (*fd)[2], int *pid,
-									t_mnsh *mnsh);
-
+int								left_pipe(t_ast **node, int (*fd)[2],
+									int *pid, t_mnsh *mnsh);
+int								right_pipe(t_ast **node, int (*fd)[2],
+									int *pid, t_mnsh *mnsh);
 int								init_default_fd(int (*default_inout)[2]);
 int								clean_default_fd(int (*default_inout)[2]);
 

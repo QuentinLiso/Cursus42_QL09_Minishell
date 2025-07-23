@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:13:49 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:39:45 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 14:59:27 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	exec_ast_op_pipe(t_ast **node, t_mnsh *mnsh)
 	waitpid(pid[0], &status[0], 0);
 	waitpid(pid[1], &status[1], 0);
 	if (status[1])
-		return (1);
+		return (WEXITSTATUS(status[1]));
 	return (0);
 }
 

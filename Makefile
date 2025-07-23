@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: nefadli <nefadli@student.42.fr>            +#+  +:+       +#+         #
+#    By: qliso <qliso@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/27 14:14:33 by nefadli           #+#    #+#              #
-#    Updated: 2025/03/01 17:21:47 by nefadli          ###   ########.fr        #
+#    Updated: 2025/03/05 12:08:17 by qliso            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -89,11 +89,6 @@ RM          =   rm -rf
 # ################### #
 
 all: $(OBJS_PATH) $(LIBFT_LIB) $(NAME)
-
-run:
-	./minishell
-runv:
-	valgrind --suppressions=readline.supp --leak-check=full --show-leak-kinds=all ./minishell
 
 # Rule to create the object directory
 $(OBJS_PATH):

@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:55:31 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:39:40 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 10:03:26 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,10 +82,8 @@ bool	is_syntax_error(t_token *start, t_token *end, t_token *split_token)
 	if (split_token == start || split_token == end
 		|| split_token->next == NULL
 		|| split_token->next->type == TOKEN_OPERATOR
-		|| split_token->next->type == TOKEN_INDIR
 		|| split_token->prev == NULL
-		|| split_token->prev->type == TOKEN_OPERATOR
-		|| split_token->next->type == TOKEN_INDIR)
+		|| split_token->prev->type == TOKEN_OPERATOR)
 	{
 		perror2_mnsh(2, 4, ": ", "syntax error near unexpected token `",
 			split_token->word, "'");

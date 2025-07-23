@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 16:06:42 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:39:46 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 13:48:32 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ int	set_mnsh_last_arg(t_ast **node, t_mnsh *mnsh)
 	int		len;
 
 	len = ft_strarrlen((*node)->args);
-	if (len < 2)
+	if (len < 1)
 		return (0);
 	return (edit_env_var(&mnsh->env_mnsh_lst, "_", (*node)->args[len - 1]));
 }

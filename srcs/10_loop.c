@@ -6,7 +6,7 @@
 /*   By: qliso <qliso@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/01 15:46:16 by nefadli           #+#    #+#             */
-/*   Updated: 2025/03/04 16:41:00 by qliso            ###   ########.fr       */
+/*   Updated: 2025/03/05 11:05:35 by qliso            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,8 @@ void	print_header(void)
 {
 	ft_printf("\033[34m===================================");
 	ft_printf("======================================\n\n");
-	ft_printf("__  __   ___   _   _   ___     ");
-	ft_printf("___    _   _   _____   _       _       \n");
+	ft_printf(" __  __   ___   _   _   ___     ");
+	ft_printf(" ___    _   _   _____   _       _       \n");
 	ft_printf("|  \\/  | |_ _| | \\ | | |_ _|   ");
 	ft_printf("/ ___|  | | | | | ____| | |     | |      \n");
 	ft_printf("| |\\/| |  | |  |  \\| |  | |    ");
@@ -59,10 +59,21 @@ void	print_header(void)
 
 void	prompt_mnsh(t_mnsh *mnsh)
 {
+	mnsh->prompt = readline("\033[34m 🐚 Minishell 🐚 > \033[0m");
+}
+
+void	prompt_mnsh_tty(t_mnsh *mnsh)
+{
 	char	*gnl;
 
-	if (isatty(STDIN_FILENO))
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))
 		mnsh->prompt = readline("\033[34m 🐚 Minishell 🐚 > \033[0m");
+	else if (isatty(STDIN_FILENO) && !isatty(STDOUT_FILENO))
+	{
+		gnl = get_next_line(STDIN_FILENO);
+		mnsh->prompt = ft_strtrim(gnl, "\n");
+		free_str(&gnl);
+	}
 	else
 	{
 		gnl = get_next_line(STDIN_FILENO);
